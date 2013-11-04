@@ -1,0 +1,1579 @@
+\chapter{Mathematical Theory}
+A suitable gateway to the theory of multiwavelets is through the idea of
+multiresolution analysis (MRA). A detailed description of MRAs can be found in
+Keinert \cite{Keinert}, from which a brief summary of the key issues are 
+given in the following. This work is concerned with orthogonal MRA only, and
+for a description of the general bi-orthogonal MRA the reader is referred to
+Keinerts book. 
+
+\section{Multiresolution Analysis}
+A multiresolution analysis is an infinite nested sequence
+of subspaces of $L^2(\mathbb{R})$ 
+\begin{equation}
+	\label{eq:MRA}
+	V^0_k\subset V^1_k\subset \cdots \subset V^n_k\subset \cdots
+\end{equation}
+with the following properties
+\begin{enumerate}
+	\item $V^\infty_k\ is\ dense\ in\ L^2$
+	\item $f(x) \in V^n_k \Longleftrightarrow f(2x) \in V^{n+1}_k\ ,\ \ 
+		0 \leq n \leq \infty$
+	\item $f(x) \in V^n_k \Longleftrightarrow f(x-2^{-n}l) \in V^n_k\ ,\ \ 
+		0 \leq l \leq (2^n-1)$
+	\item There exists a function vector $\boldsymbol{\phi}$ of length $k+1$
+			in $L^2$ such that 
+			\[\lbrace \phi_j(x):\  0\leq j\leq k \rbrace\] 
+			forms a basis for $V^0_k$. 
+\end{enumerate}
+
+\noindent
+This means that if we can construct a basis of $V^0_k$, which consists of only
+$k+1$ functions, we can construct a basis of \emph{any} space $V^n_k$, by
+simple compression (by a factor of $2^n$), and translations (to all dyadic
+grid points at scale $n$), of the original $k+1$ functions, and by increasing
+the scale $n$, we are approaching a complete basis of $L^2$. Since $V^n_k
+\subset V^{n+1}_k$ the basis functions of $V^n_k$ can be expanded in the basis 
+of $V^{n+1}_k$
+\begin{equation}
+	\label{eq:twoscalescaling}
+	\boldsymbol{\phi}^n_l(x) \mydef 2^{n/2}\boldsymbol{\phi}(2^nx-l) = 
+								\sum_l H^{(l)} \boldsymbol{\phi}^{n+1}_l(x)
+\end{equation}
+where the $H^{(l)}$s are the so-called filter matrices that describes the 
+transformation between different spaces $V^n_k$.\\
+
+\noindent
+The MRA is called orthogonal if 
+\begin{equation}
+	\label{eq:orthogonality}
+	\langle \boldsymbol{\phi}_0^n(x), \boldsymbol{\phi}_l^n(x) \rangle = 
+	\delta_{0l}I_{k+1}
+\end{equation}
+where $I_{k+1}$ is the $(k+1) \times (k+1)$ unit matrix, and $k+1$ is the 
+length of the function vector. This orthogonality condition means that the 
+functions are orthogonal both within one function
+vector and through all possible translations on one scale, but \emph{not} 
+through the different scales.\\
+
+\noindent
+Complementary to the nested sequence of subspaces $V^n_k$, we can define 
+another series of spaces $W^n_k$ that complements $V^n_k$ in $V^{n+1}_k$
+\begin{equation}
+	\label{eq:MRAcomplement}
+		V^{n+1}_k = V^n_k \oplus W^n_k
+\end{equation}
+where there exists another function vector $\boldsymbol{\psi}$ of lenght
+$k+1$ that, with all its translations on scale $n$ forms a basis for $W^n_k$. 
+Analogously to eq.(\ref{eq:twoscalescaling}) the function vector can be expanded 
+in the basis of $V^{n+1}_k$
+\begin{equation}
+	\label{eq:twoscalewavelet}
+	\boldsymbol{\psi}^n_l(x) \mydef 2^{n/2}\boldsymbol{\psi}(2^nx-l) = 
+									\sum_l G^{(l)}\boldsymbol{\phi}_l^{n+1}(x)
+\end{equation}
+\noindent
+with filter matrices $G^{(l)}$. In orthogonal MRA the functions 
+$\boldsymbol{\psi}$ fulfill the same othogonality condition as 
+eq.(\ref{eq:orthogonality}), and if we combine eq.(\ref{eq:MRA}) and eq.
+(\ref{eq:MRAcomplement}) we see that they must also be orthogonal with respect 
+to different scales. Using eq.(\ref{eq:MRAcomplement}) recursively we obtain
+\begin{equation}
+	\label{eq:MRArecursive}
+	V^n_k = V^0_k \oplus W^0_k \oplus W^1_k \oplus \dots \oplus W^{n-1}_k
+\end{equation}
+which will prove to be an important relation.
+
+\section{Multiwavelets}
+There are many ways to choose the basis functions $\boldsymbol{\phi}$
+and $\boldsymbol{\psi}$ (which define the spanned spaces $V^n_k$ and $W^n_k$),
+and there have been constructed functions with a 
+variety of properties, and we should choose the wavelet family that best suits
+the needs of the problem we are trying to solve. Otherwise, we could start from
+scratch and construct a new family, one that is custom-made for the problem at
+hand. Of course, this is not a trivial task, and it might prove more efficient 
+to use an existing family, even though its properties are not right on cue.\\
+
+\noindent
+There is a one-to-one correspondence between the basis functions
+$\boldsymbol{\phi}$ and $\boldsymbol{\psi}$, and the filter matrices $H^{(l)}$ 
+and $G^{(l)}$ used in the two-scale relation equations eq.
+(\ref{eq:twoscalescaling}) and eq.(\ref{eq:twoscalewavelet}), and most well known 
+wavelet families are defined only by their filter coefficients. This usually 
+leads to non-smooth functions, like the Daubechies $D_2$ wavelet family (figure
+\ref{fig:daubechies}).\\
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.58]{figures/daubechies.pdf}
+	\caption{Daubechies $D_2$ scaling (left) and wavelet (right) function.}
+	\label{fig:daubechies}
+\end{figure}
+
+\noindent
+In the following we are taking a different, more intuitive approach, which
+follows the original construction of multiwavelets done by Alpert
+\cite{Alpert93}. We define the \emph{scaling space} $V^n_k$ as the space of 
+piecewise polynomial functions
+\begin{equation}
+	\begin{array}{rl}
+		\displaystyle V^n_k \mydef & \lbrace f:\ all\ polynomials\ of\ 
+													degree\ \leq\ k\\ 
+	\displaystyle &\ on\ the\ interval\ (2^{-n}l,2^{-n}(l+1))\\
+	\displaystyle &\ for\ 0 \leq l < 2^n,\ f\ vanishes\ elsewhere \rbrace
+	\end{array}
+\end{equation}
+It is quite obviuos that one polynomial of degree $k$ on the interval [0,1] 
+can be exactly reproduced by two polynomials of degree $k$, one on the 
+interval [0,$\frac{1}{2}$] and the other on the interval [$\frac{1}{2}$,1]. The
+spaces $V^n_k$ hence fulfills the MRA condition eq.(\ref{eq:MRA}), and if the 
+polynomial basis is chosen to be orthogonal, the $V^n_k$ constitutes an 
+\emph{orthogonal} MRA.\\
+
+\subsection{The wavelet basis}
+The \emph{wavelet space} $W^n_k$ is defined, according to eq.
+(\ref{eq:MRAcomplement}), as the orthogonal complement of $V^n_k$ in 
+$V^{n+1}_k$. The multiwavelet basis functions of $W^n_k$ are hence piece-wise
+polynomials of degree $\leq k$ on \emph{each} of the two intervals on scale n+1 
+that overlaps with \emph{one} interval on scale n. These piece-wise polynomials
+are then made orthogonal to a basis of $V^n_k$ and to each other. The 
+construction of the multiwavelet basis follows exactly \cite{Alpert93} where 
+a simple Gram-Schmidt orthogonolization were employed to construct a basis that
+met the necessary orthogonality conditions. The wavelet functions for $k=5$ are
+shown in figure \ref{fig:waveletbasis}\\
+
+\noindent
+One important property of the wavelet basis is the number of vanishing
+moments. The k-th continuous moment of a function $\psi$ is defined as the
+integral
+\begin{equation}
+	\mu_k \mydef \int_0^1 x^k\psi(x)dx 	
+\end{equation}
+and the function $\psi$ has $M$ vanishing moments if 
+\[\mu_k = 0,\ \ \ \ \ \ k=0,\dots, M-1 \]
+The vanishing moments of the \emph{wavelet} functions gives information on the
+approximation order of the \emph{scaling} functions. If the wavelet function
+$\psi$ has $M$ vanishing moments, any polynomial of order $\leq M-1$ can be 
+exactly reproduced by the scaling function $\phi$, and the error in
+representing an arbitrary function in the scaling basis is of $M$-th order. 
+By construction, $x^i$ is in the space $V^0_k$ for $0\leq i \leq k$, and since
+$W^0_k \perp V^0_k$, the first $k+1$ moments of $\psi^0_j$ must vanish.
+
+\begin{figure}
+	\centering
+	\includegraphics[bb = 70 410 600 740, clip, scale=0.78]{figures/wavelet.pdf}
+	\caption{First six wavelet functions at scale zero}
+	\label{fig:waveletbasis}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[bb = 70 90 600 740, clip, scale=0.78]{figures/scaling.pdf}
+	\caption{First six Legendre (left) and Interpolating (right) scaling 
+		functions at scale zero}
+	\label{fig:scalingbasis}
+\end{figure}
+
+\subsection{The scaling basis}
+The construction of the scaling functions is quite straightforward; $k+1$ 
+suitable polynomials are chosen to span any polynomial of degree 
+$\leq k$ on the unit interval. The total basis for $V^n_k$ is then 
+obtained by appropriate dilation and translation of these functions. Of course, 
+any polynomial basis can be used, the simplest of them the standard basis 
+$\lbrace1,x,\dots, x^k\rbrace$. However, this basis is not orthogonal on 
+the unit interval and cannot be used in \emph{orthogonal} MRA. In the 
+following, two choices of orthogonal scaling functions will be presented, and 
+even though they span exactly the same spaces $V_k^n$ there are some important
+numerical differences between the two. These differences will be considered in
+the implementation part of this thesis.\\
+
+\noindent
+In order to construct a set of orthogonal polynomials we could proceed in the
+same manner as for the wavelet functions and do a Gram-Schmidt
+orthogonalization of the standard basis $\lbrace 1, x, \dots, x^k\rbrace$. 
+If this is done on the interval $x \in [-1,1]$ we end up with the Legendre
+polynomials $\lbrace L_j\rbrace_{j=0}^k$. These functions are usually 
+normalized such that $L_j(1) = 1$ for all $j$. To
+make the \emph{Legendre scaling functions} $\phi_j^L$ we transform the Legendre
+polynomials to the interval $x \in [0,1]$, and $L^2$-normalize
+\begin{equation}
+	\phi_j^L(x) = \sqrt{2j+1}L_j(2x-1),\ x \in [0,1]
+\end{equation}
+The basis for the space $V^n_k$ is then made by proper dilation and 
+translation of $\phi_j^L$. This is the original construction of scaling 
+functions done by Alpert \cite{Alpert93}.\\
+
+\noindent
+Alpert et al. \cite{Alpert02} presented an alternative set of scaling functions 
+with interpolating properties. These \emph{Interpolating scaling functions} 
+$\phi_j^I$ are based on the Legendre scaling functions $\lbrace \phi_j^L
+\rbrace_{j=0}^k$, and the roots $\lbrace y_j\rbrace_{j=0}^k$ and weights
+$\lbrace w_j \rbrace_{j=0}^k$ of the Gauss-Legendre quadrature of order 
+$k+1$, and are organized in the linear combinations
+\begin{equation}
+	\label{eq:interpolating}
+	\phi_j^I(x) = \sqrt{w_j}\sum_{i=0}^{k_p} \phi_i^L(y_j)\phi_i^L(x)
+																,\ x \in [0,1]
+\end{equation}
+Again the basis of $V^n_k$ is made by dilation and translation of $\phi_j^I$.
+The Legendre and Interpolating scaling functions of order $k=5$ are shown in 
+figure\ref{fig:scalingbasis}.
+The construction of $\phi_j^I$ gives them the interpolating property
+\begin{equation}
+	\label{eq:interprop}
+	\phi_j^I(y_i) = \frac{\delta_{ji}}{\sqrt{w_i}}
+\end{equation}
+which will prove important for numerical efficiency.\\
+
+\noindent
+A detailed discussion on the properties of Interpolating wavelets can be found
+in Donoho \cite{Donoho}, but the case of Interpolating multiwavelets is
+somewhat different. An important property of Interpolating wavelets is the
+\emph{smoothness} of any function represented in this basis. This property
+stems from general Lagrange interpolation. In the multiwavelet case the 
+interpolating property applies \emph{within} one scaling function vector
+only, which means that functions represented in this basis can be discontinous
+in any merging point between the different translations on any scale. This is
+also the case for the Legendre scaling functions, and it makes differentiation 
+awkward in these bases.\\
+
+\noindent
+With the basis functions in place we can now use these to construct the filter
+matrices that fulfill the two-scale conditions eq.(\ref{eq:twoscalescaling}) and
+eq.(\ref{eq:twoscalewavelet}). The details of this construction are given in
+Alpert et al. \cite{Alpert02}, and will not be presented here, but we
+specifically end up with four matrices $H^{(0)}, H^{(1)}, G^{(0)}$ and
+$G^{(1)}$, which size and contents are dependent on the order and type of
+scaling functions chosen. Eq.(\ref{eq:twoscalescaling}) and 
+eq.(\ref{eq:twoscalewavelet}) thus reduces to
+\begin{eqnarray}
+	\label{eq:twoscalerelations}
+	\begin{split}
+	\boldsymbol{\phi}_l^n = H^{(0)}\boldsymbol{\phi}_{2l}^{n+1} + 
+							  H^{(1)}\boldsymbol{\phi}_{2l+1}^{n+1}\\
+	\boldsymbol{\psi}_l^n = G^{(0)}\boldsymbol{\phi}_{2l}^{n+1} + 
+							  G^{(1)}\boldsymbol{\phi}_{2l+1}^{n+1}
+	\end{split}
+\end{eqnarray}
+
+\subsection{Multiwavelets in $d$ dimensions}
+When dealing with multidimensional multiwavelets we open a notational can of
+worms that easily gets confusing. The following notation is aiming to be as
+intuitive as possible, and is similar to the one presented in 
+\cite{Fossgaard}.\\
+
+\noindent
+Multidimensional wavelets are usually constructed by tensor products, where the
+scaling space is defined as
+\begin{equation}
+	V^{n,d}_k \mydef \bigotimes^d V^n_k
+\end{equation}
+The basis for this $d$-dimensional space is given as tensor products of the
+one-dimensional bases.
+\begin{equation}
+	\label{eq:multidimscaling}
+	\Phi^n_{\boldsymbol{j},\boldsymbol{l}}(\boldsymbol{x}) = 
+	\Phi^n_{j_1 j_2\dots j_d,l_1 l_2\dots l_d} (x_1,x_2,\dots,x_d) \mydef
+	\prod_{i=1}^d \phi^n_{j_i,l_i}(x_i)
+\end{equation}
+The number of basis functions on each hypercube
+$\boldsymbol{l}=(l_1,l_2,\dots,l_d)$ becomes $(k+1)^d$, while the number of 
+such hypercubes on scale $n$ becomes $2^{dn}$, which again means that the total 
+number of basis functions is growing exponentially with the number of
+dimensions.\\
+
+\noindent
+The wavelet space can be defined using eq.(\ref{eq:MRAcomplement})
+\begin{equation}
+	\label{eq:multidimW}
+	V^{n+1,d}_k = \bigotimes^d V^{n+1}_k = \bigotimes^d (V^n_k \oplus W^n_k)
+\end{equation}
+where the pure scaling term obtained when expanding the product on the right
+hand side of eq.(\ref{eq:multidimW}) is recognized as $V^{n,d}_k$, making the
+wavelet space $W^{n,d}_k$ consist of all the remaining terms of the product, 
+which are terms that contain at least one wavelet space.\\
+
+\noindent
+To achieve a uniform notation, we can introduce a "generalized" one-dimensional
+wavelet function $\lbrace\varphi_{j,l}^{\alpha,n}\rbrace$ that, depending on 
+the index $\alpha$ can be either the scaling or the wavelet function
+\begin{equation}
+	\varphi^{\alpha_i,n}_{j_i,l_i} \mydef 
+		\left\{
+		\begin{array}{lll}
+			\phi^n_{j_i,l_i}	&\mbox{ if }\alpha_i = 0\\
+			\psi^n_{j_i,l_i}	&\mbox{ if }\alpha_i = 1
+		\end{array}
+		\right.
+\end{equation}
+The wavelet functions for the $d$-dimensional space can thus be expressed as
+\begin{equation}
+	\Psi^{\alpha,n}_{\boldsymbol{j}, \boldsymbol{l}}(\boldsymbol{x}) =
+	\prod_{i=1}^d\varphi^{\alpha_i,n}_{j_i,l_i}(x_i)
+\end{equation}
+Where the total $\alpha$ index on $\Psi$ separates the $2^d$ different
+possibilities of combining scaling/wavelet functions with the same index
+combination $\boldsymbol{j} = (j_0,j_1,\dots,j_k)$. $\alpha$ is given by the 
+binary expansion
+\begin{equation}
+	\alpha = \sum_{i=1}^d 2^{i-1}\alpha_i
+\end{equation}
+and thus runs from $0$ to $2^d-1$. By closer inspection we see that $\alpha=0$
+recovers the pure scaling function
+\begin{equation}
+	\Psi^{0,n}_{\boldsymbol{j},\boldsymbol{l}}(\boldsymbol{x}) \equiv
+	\Phi^n_{\boldsymbol{j},\boldsymbol{l}}(\boldsymbol{x})
+\end{equation}
+and we will keep the notation $\Phi^n_{\boldsymbol{j},\boldsymbol{l}}$ for the
+scaling function, and exclude the $\alpha=0$ term in the wavelet notation
+when treating multidimensional functions.\\
+
+\noindent
+We can immediately see that the dimensionality of the wavelet space is higher
+than the scaling space on the same scale $n$, specifically $2^d-1$ times
+higher. This must be the case in order to conserve the 
+dimensionality through the equation
+\begin{equation}
+	V^{n+1,d}_k = V^{n,d}_k \oplus W^{n,d}_k
+\end{equation}
+since $dim(V^{n+1,d}_k) = 2^d dim(V^{n,d}_k)$.\\
+
+\noindent
+As for the monodimensional case we can define filter matrices that transform
+the scaling functions at scale $n+1$,
+$\lbrace\Phi^{n+1}_{\boldsymbol{j},\boldsymbol{l}}\rbrace$, into scaling and 
+wavelet functions at scale $n$, $\lbrace\Psi^{\alpha,n}_{\boldsymbol{j},
+\boldsymbol{l}}\rbrace_{\alpha=0}^{2^d-1}$. Details of this construction can be
+found in \cite{Fossgaard}, where the corresponding matrices are shown to be 
+tensor products of the monodimensional matrices. 
+
+\section{Function representation}
+With the multiwavelet basis introduced, we have a hierarchy of basis sets with
+increasing flexibility, and we can start making approximations of functions by
+expanding them in these bases.
+
+\subsection{Function projection}
+We introduce the projection operator $P^n$ that projects an arbitrary function 
+$f(x)$ onto the basis $\lbrace\phi^n_{j,l}\rbrace$ of the scaling space $V^n$
+(in the remaining of this text the subscript $k$ of the scaling and wavelet
+spaces will be omitted, and it will always be assumed that we are dealing with
+a $k$-order polynomial basis).
+\begin{equation}
+	\label{eq:funcprojection}
+	f(x) \approx P^nf(x) \mydef f^n(x) =
+		\sum_{l=0}^{2^n-1}\sum_{j=0}^ks^{n,f}_{j,l}\phi^n_{j,l}(x)
+\end{equation}
+where the expansion coefficients $s^{n,f}_{j,l}$, the so-called \emph{scaling}
+coefficients, are obtained by the usual integral
+\begin{equation}
+	\label{eq:scalingint}
+	s^{n,f}_{j,l} \mydef \langle f, \phi^n_{j,l}\rangle =
+	\int_0^1f(x)\phi^n_{j,l}(x)dx
+\end{equation}
+If this approximation turns out to be too crude, we double our basis set by
+increasing the scale and perform the projection $P^{n+1}$. This can be
+continued until we reach a scale $N$ where we are satisfied with the overall
+accuracy of $f^N$ relative to the true function $f$.
+
+\subsection{Multiresolution functions}
+We can also introduce the projection operator $Q^n$ that projects
+$f(x)$ onto the wavelet basis of the space $W^n$
+\begin{equation}
+	Q^nf(x) \mydef df^n(x) =
+	\sum_{l=0}^{2^n-1}\sum_{j=0}^kd^{n,f}_{j,l}\psi^n_{j,l}(x)
+\end{equation}
+where the \emph{wavelet} coefficients are given as
+\begin{equation}
+	d^{n,f}_{j,l} \mydef \langle f, \psi^n_{j,l}\rangle =
+	\int_0^1f(x)\psi^n_{j,l}(x)dx
+\end{equation}
+According to eq.(\ref{eq:MRAcomplement}) we have the following relationship
+between the projection operators
+\begin{equation}
+	\label{eq:projectionoperator}
+	P^{n+1} = P^n + Q^n
+\end{equation}
+and it should be noted that $df^n$ is \emph{not} an approximation of $f$, but
+rather the \emph{difference} between two approximations. We know that the
+basis of $V^\infty$ forms a complete set in $L^2$, which implies that
+$P^\infty$ must be the identity operator. Combining this with
+eq.(\ref{eq:projectionoperator}) we can decompose the function $f$ into
+multiresolution contributions
+\begin{align}
+	\label{eq:MRfuncinf}
+		\nonumber
+		f(x) 	&= P^\infty f(x)\\
+		\nonumber
+			&= P^0f(x) + \sum_{n=0}^\infty Q^nf(x)\\
+			&= \sum_{j=0}^ks^{0,f}_{j,0}\phi^0_{j,0}(x) +
+			\sum_{n=0}^\infty\sum_{l=0}^{2^n-1}\sum_{j=0}^kd^{n,f}_{j,l}
+			\psi^n_{j,l}(x)
+\end{align}
+This expansion is exact, but contains infinitely many coefficients. If we
+want to make approximations of the function $f$ we must truncate the infinite
+sum in the wavelet expansion at some finest scale $N$
+\begin{equation}
+	\label{eq:MRfunc}
+	f(x) \approx f^N(x) = \sum_{j=0}^ks^{0,f}_{j,0}\phi^0_{j,0}(x) +
+	\sum_{n=0}^{N-1}\sum_{l=0}^{2^n-1}\sum_{j=0}^kd^{n,f}_{j,l}\psi^n_{j,l}(x)
+\end{equation}
+This expansion is completely equivalent to eq.(\ref{eq:funcprojection}) (with
+$n=N$) both in terms of accuracy and in number of expansion coefficients. 
+However, as we have seen, the wavelet projections $df^n$ are defined as the 
+difference between two 
+consecutive scaling projections, and since we know, for $L^2$ functions, that 
+the scaling projections is approaching the exact function $f$, we also know 
+that the \emph{wavelet} projections must approach zero. This means that as we
+increase the accuracy by increasing $N$ in eq.(\ref{eq:MRfunc}) we know that the
+wavelet terms we are introducing will become smaller and smaller, and we can
+choose to keep only the terms that are above some threshold. This makes the
+multiresolution representation preferred since it allows for strict error
+control with a minimum of expansion coefficients. This is the heart of wavelet 
+theory.
+
+\subsection*{Wavelet transforms}
+The filter matrices $H^{(0)}, H^{(1)}, G^{(0)}$ and $G^{(1)}$ allow us to 
+change between the representations eq.(\ref{eq:funcprojection}) and
+eq.(\ref{eq:MRfunc}). The two-scale relations of the scaling and wavelet
+functions eq.(\ref{eq:twoscalerelations}) apply directly to the scaling 
+coefficient vectors $\boldsymbol{s}_l^n$, and wavelet coefficient vectors
+$\boldsymbol{d}_l^{n}$, and the coefficients on scale $n$ are obtained by the 
+coefficients on scale $n+1$ through
+\begin{eqnarray}
+	\label{eq:decomposition}
+	\begin{split}
+	\boldsymbol{s}_l^n = H^{(0)}\boldsymbol{s}_{2l}^{n+1} + 
+							  H^{(1)}\boldsymbol{s}_{2l+1}^{n+1}\\
+	\boldsymbol{d}_l^n = G^{(0)}\boldsymbol{s}_{2l}^{n+1} + 
+							  G^{(1)}\boldsymbol{s}_{2l+1}^{n+1}
+	\end{split}
+\end{eqnarray}
+This transformation is called forward wavelet transform or wavelet 
+decomposition of the scaling coefficients on scale $n+1$. By doing this 
+decomposition recursively we can get from eq.(\ref{eq:funcprojection}) to 
+eq.(\ref{eq:MRfunc}). Rearranging eq.(\ref{eq:decomposition}) we arrive at the
+backward wavelet transform or wavelet reconstruction
+\begin{eqnarray}
+	\label{eq:reconstruction}
+	\begin{split}
+		\boldsymbol{s}_{2l}^{n+1} = H^{(0)T}\boldsymbol{s}_l^n + 
+								   G^{(0)T}\boldsymbol{d}_l^n\\
+		\boldsymbol{s}_{2l+1}^{n+1} = H^{(1)T}\boldsymbol{s}_l^n + 
+									  G^{(1)T}\boldsymbol{d}_l^n
+	\end{split}
+\end{eqnarray}
+where the transposed filter matrices are used.\\
+
+\noindent
+It should be emphasized that these wavelet transforms do not change
+the \emph{function} that is represented by these coefficients, they just
+change the \emph{basis set} used to represent the exact same function.
+This means that the accuracy of the representation is determined only by the 
+finest scale of which the coefficients were obtained by \emph{projection}, and 
+a backward wavelet transform beyond this scale will not improve our
+approximation (but it will increase the number of expansion coefficients).\\
+
+\noindent
+The true power of multiwavelets is that, by truncating eq.(\ref{eq:MRfunc})
+\emph{locally} whenever the wavelet coefficients are sufficiently small, we
+end up with a space adaptive basis expansion, in that we are focusing the
+basis functions in the regions of space where they are most needed.
+
+%With the help of the nested sequence of scaling spaces (\ref{eq:MRA}) one can 
+%approximate any function $f \in L^2$ by projecting it onto the scaling space 
+%$V^n$
+%\begin{equation}
+%    \label{eq:funcuniform}
+%    f(x) \approx f^n(x) \mydef \sum_l \textbf{s}_l^n \boldsymbol{\phi}^n_l(x),
+%        \ \ \ 
+%    \textbf{s}_l^n = \langle f,\boldsymbol{\phi}^n_l\rangle
+%\end{equation}
+%\noindent
+%The finer the scale (higher n), the better the approximation, $V^{\infty}$ 
+%being exact. Making use of (\ref{eq:MRArecursive}) we have an equivalent 
+%way of representing the approximation on scale n, by projecting it on a coarser
+%scale $n_0$ and adding detail corrections up to scale $n-1$
+%\begin{equation}
+%    \label{eq:funcadaptive}
+%    f^n(x) = \sum_l \textbf{s}_l^{n_0}
+%    \boldsymbol{\phi}^{n_0}_l(x) + \sum_{j=n_0}^{n-1} \sum_l 
+%    \textbf{d}^j_l\boldsymbol{\psi}^j_l(x),\ \ \
+%    \textbf{d}_l^j = \langle f,\boldsymbol{\phi}^j_l\rangle
+%\end{equation}
+%\noindent
+%These representations are completely equivalent both in terms of accuracy and
+%in number of expansion coefficients. However, the latter representation is 
+%preferred because of its possibility of discarding terms in its last sum with
+%expansion coefficient below a certain threshold, allowing strict error
+%control with a minimum of expansion coefficients. This is the heart of wavelet 
+%theory.
+
+%\section{Function projection}
+
+\subsection{Multiresolution functions in $d$ dimensions}
+The multidimensional function representation is obtained similarly to
+eq.(\ref{eq:funcprojection}) by projection onto the multidimensional basis
+eq.(\ref{eq:multidimscaling})
+\begin{equation}
+	\label{eq:funcprojectionND}
+	f(\boldsymbol{x}) \approx f^n(\boldsymbol{x}) = \sum_{\boldsymbol{l}}
+	\sum_{\boldsymbol{j}} s^{n,f}_{\boldsymbol{j},\boldsymbol{l}} 
+	\Phi^n_{\boldsymbol{j},\boldsymbol{l}}(\boldsymbol{x})
+\end{equation}
+where the sums are over all possible translation vectors 
+$\boldsymbol{l} = (l_1,\dots,l_d)$ for $0\leq l_i\leq 2^n-1$, and all possible 
+scaling function combinations $\boldsymbol{j} = (j_1,\dots,j_d)$ for 
+$0\leq j_i\leq k$. The scaling coefficients are obtained by the
+multidimensional integral
+\begin{equation}
+	s^{n,f}_{\boldsymbol{j},\boldsymbol{l}} \mydef \langle f,
+	\Phi^n_{\boldsymbol{j},\boldsymbol{l}}\rangle =
+	\int_{[0,1]^d}f(\boldsymbol{x})\Phi^n_{\boldsymbol{j},
+	\boldsymbol{l}}(\boldsymbol{x})d\boldsymbol{x}
+\end{equation}
+The wavelet components are given as
+\begin{equation}
+	df^n(\boldsymbol{x}) = \sum_{\boldsymbol{l}} \sum_{\boldsymbol{j}} 
+	\sum_{\alpha=1}^{2^d-1}d^{\alpha,n,f}_{\boldsymbol{j},\boldsymbol{l}} 
+	\Psi^{\alpha,n}_{\boldsymbol{j},\boldsymbol{l}}(\boldsymbol{x})
+\end{equation}
+where the $\boldsymbol{l}$ and $\boldsymbol{j}$ summations are the same as in
+eq.(\ref{eq:funcprojectionND}), and the $\alpha$ sum is over all combinations of
+scaling/wavelet functions (excluding the pure scaling $\alpha=0$).
+The expansion coefficients are obtained by the multidimensional projection
+\begin{equation}
+	d^{\alpha,n,f}_{\boldsymbol{j},\boldsymbol{l}} \mydef \langle f,
+	\Psi^{\alpha,n}_{\boldsymbol{j},\boldsymbol{l}}\rangle =
+	\int_{[0,1]^d}f(\boldsymbol{x})\Psi^{\alpha,n}_{\boldsymbol{j},
+	\boldsymbol{l}}(\boldsymbol{x})d\boldsymbol{x}
+\end{equation}
+We can express a multidimensional function $f(\boldsymbol{x})$ by its 
+multiresolution contributions as for the monodimensional case
+\begin{equation}
+	f^N(\boldsymbol{x}) =
+	\sum_{\boldsymbol{j}}s^{0,f}_{\boldsymbol{j},\boldsymbol{0}}
+	\Phi^0_{\boldsymbol{j},\boldsymbol{0}}(\boldsymbol{x}) + \sum_{n=0}^{N-1}
+	\sum_{\boldsymbol{l}}\sum_{\boldsymbol{j}}\sum_{\alpha=1}^{2^d-1}
+	d^{\alpha,n,f}_{\boldsymbol{j},\boldsymbol{l}}
+	\Psi^{\alpha,n}_{\boldsymbol{j},\boldsymbol{l}}(\boldsymbol{x})
+\end{equation}
+
+\subsection*{Wavelet transforms in $d$ dimensions}
+The $d$-dimensional filter matrices were obtained by tensor products of the
+monodimensional filters. This means that by the tensor structure of
+the multidimensional basis, we can perform the wavelet transform one dimension 
+at the time. This allows for the situation where the basis is represented at
+different scales in different directions. Specifically, in two dimensions, the 
+way to go from the scaling plus wavelet representation on the square
+$\boldsymbol{l}$ at scale $n$ to the pure scaling representation in the four
+subsquares of $\boldsymbol{l}$ at scale $n+1$, we perform the transform first 
+in one direction by dividing the square into two rectangular boxes, and then
+the other direction, dividing the two rectangels into four squares.\\
+
+\noindent
+One important implication of this tensor structure is that the work done in
+the $d$-dimensional transform scales linearly in the number of dimensions. If 
+the full
+$d$-dimensional filter matrix had been applied, the work would have scaled
+as the power of the dimension, hence limiting the practical use in higher
+dimensions. A more rigorous treatment of the multidimensional wavelet
+transforms can be found in \cite{Tymczak}.
+
+\subsection{Addition of functions}
+The addition of functions in the multiwavelet basis is quite straightforward, 
+since it is represented by the mappings
+\begin{align}
+	\label{eq:addmap}
+	\begin{split}
+	V^n + V^n &\rightarrow V^n\\
+	W^n + W^n &\rightarrow W^n
+	\end{split}
+\end{align}
+This basically means that the projection of the sum equals the sum of the
+projections. In the polynomial basis this is simply the fact that the sum of
+two $k$-order polynomials is still a $k$-order polynomial.\\
+
+\noindent
+Consider the equation $h(x) = f(x)+g(x)$. Projecting $h$ onto the scaling
+space yields
+\begin{align}
+	\nonumber
+	h^n(x)	&= P^nh(x)\\
+	\nonumber
+			&= P^n\left(f(x)+g(x)\right)\\
+	\nonumber
+			&= P^nf(x)+P^ng(x)\\
+			&= f^n(x)+g^n(x)
+	\label{eq:scalingadd}
+\end{align}
+and similarly
+\begin{equation}
+	dh^n(x) = df^n(x)+dg^n(x)
+	\label{eq:waveletadd}
+\end{equation}
+The functions $f(x)$ and $g(x)$ are expanded in the same basis set and the
+sum simplifies to an addition of coefficients belonging to the same basis
+function and can be done one scale at the time.
+\begin{align}
+	\nonumber
+	h^n(x)	&= f^n(x) + g^n(x)\\
+	\nonumber
+	&= 	\sum_{l=0}^{2^n-1} \sum_{j=0}^k s^{n,f}_{j,l}\phi^n_{j,l}(x) + 
+		\sum_{l=0}^{2^n-1}\sum_{j=0}^k s^{n,g}_{j,l}\phi^n_{j,l}(x)\\
+	\label{eq:addscaling}
+			&= \sum_{l=0}^{2^n-1}\sum_{j=0}^k 
+					\left(s^{n,f}_{j,l}+s^{n,g}_{j,l}\right)\phi^n_{j,l}(x)
+\end{align}
+and similarly
+\begin{align}
+	\label{eq:addwavelet}
+	dh^n(x)	&= \sum_{l=0}^{2^n-1}\sum_{j=0}^k 
+					\left(d^{n,f}_{j,l}+d^{n,g}_{j,l}\right)\psi^n_{j,l}(x)
+\end{align}
+The generalization to multiple dimensions is trivial, and will not be
+discussed at this point.
+
+\subsection{Multiplication of functions}
+Multiplication of functions in the multiwavelet basis is somewhat more
+involved than addition. The reason for this is that, in contrast to
+eq.(\ref{eq:addmap}), the product is represented by the mapping \cite{Beylkin92}
+\begin{equation}
+	\label{eq:multmap}
+	V^n_k \times V^n_k \rightarrow V^n_{2k}
+\end{equation}
+This means that the product of two functions falls outside of the MRA and
+needs to be projected back onto the scaling space sequence. This is easily
+seen in our polynomial basis; the product of two piecewise degree $\leq k$ 
+polynomials is a piecewise polynomial of degree $\leq 2k$, which cannot be
+exactly reproduced by any piecewise degree $\leq k$ polynomial (other than in
+the limit $V^{\infty}$). In particular this means that the product of two 
+functions on a given scale ''spills over'' into the finer scales, in the sense 
+that 
+\begin{equation}
+	\label{eq:multmapinf}
+	V^n \times V^n \rightarrow V^n \oplus \bigoplus_{n'=n}^{\infty} W^{n'}
+\end{equation}
+Working with a finite precision it is desirable to make the product as accurate
+as each of the multiplicands. This is done by terminating the sum in
+eq.(\ref{eq:multmapinf}) at a sufficiently large scale $N$.
+\begin{align}
+	\label{eq:multmapN}
+	V^n \times V^n \rightarrow V^n \oplus \bigoplus_{n'=n}^{N-1} W^{n'} &= V^N
+\end{align}
+Assume now that $n$ is the finest scale present in either of the multiplicands,
+and $N>n$ is the finest scale present in the product. An algorithm to 
+determine the maximum scale $N$ needed in the result will be presented in the 
+implementation part of this thesis, and in the following it is simply assumed 
+that $N$ is known a priori. We know that
+\[
+	V^n \subset V^{n+1} \subset \cdots \subset V^N
+\]
+which means that the multiplication could just as well have been written 
+\[
+	V^N \times V^N \rightarrow V^N
+\]
+where the representations of the multiplicands on scale $N$ is obtained by a
+series of backward wavelet transforms. As pointed out before this will result
+in an increase in the number of coefficients without changing the
+\emph{information} that we are able to extract from these functions. This
+\emph{oversampling} of the multiplicands allow us to relate the scaling
+coefficients of the product on scale $N$ to the coefficiens of the
+multiplicands on the same scale.\\
+
+\noindent
+Finally, when we have obtained the scaling coefficients of the product on scale
+$N$ we do a forward wavelet transform to obtain wavelet coefficients on 
+the coarser scales. We can now throw away all wavelet terms that are
+sufficiently small, and we have an adaptive representation of the product.
+
+\subsection*{Scaling function multiplication}
+Consider the equation $h(x) = f(x)\times g(x)$. We want to represent the
+function $h(x)$ at some scale $N$ 
+\begin{align}
+	\nonumber
+	h^N(x)  &= P^Nh(x)\\
+			&= P^N\left(f(x)\times g(x)\right)
+	\label{eq:multprojection}
+\end{align}
+However, as we have seen, the projection of the product
+eq.(\ref{eq:multprojection}) does \emph{not} equal the product of the
+projections, and we will actually have to perform this projection. We will of
+course not have available the functions $f(x)$ and $g(x)$ analytically, so the 
+best thing we can do is
+\begin{equation}
+	h^N(x) \approx P^N\left(f^N(x) \times g^N(x)\right) \mydef P^N\tilde{h}(x)
+\end{equation}
+The scaling coefficients of the product is approximated by the projection 
+integral
+\begin{align}
+	\nonumber
+	s^{N,h}_{j^h,l} 
+	&\approx \int_0^1	\tilde{h}(x)\phi_{j^h,l}^N(x)dx\\
+	\nonumber
+	&= \int_0^1 f^N(x)g^N(x)\phi^N_{j^h,l}(x)dx\\
+	\nonumber
+	&= \int_0^1 
+	\left(\sum_{j^f=0}^k s^{N,f}_{j^f,l} \phi^N_{j^f,l}(x)\right)
+	\left(\sum_{j^g=0}^k s^{N,g}_{j^g,l} \phi^N_{j^g,l}(x)\right)
+	\phi_{j^h,l}^N(x)dx\\
+	&= 2^N \sum_{j^f=0}^k\sum_{j^g=0}^k 
+	s_{j^f,l}^{N,f} s_{j^g,l}^{N,g} \int_0^1 
+	\phi_{j^f,0}^0(x)\phi_{j^g,0}^0(x)\phi_{j^h,0}^0(x)dx
+	\label{eq:multexpansion}
+\end{align}
+and if the scale $N$ is chosen properly, the error in the coefficients can
+be made negligeable compared to the total error in $h^N(x)$. We see that the
+multiplication is related to a limited number of integrals, specifically 
+$(k+1)^3$ different integrals involving scale zero scaling functions, 
+regardless of how many total basis functions being used. A lot of these 
+integrals will again be identical because of symmetry.
+
+\subsection*{Multiplication in $d$ dimensions}
+The generalization to multiple dimensions is quite straightforward, using the
+notation of eq.(\ref{eq:multidimscaling})
+\begin{align}
+	\nonumber
+	s^{N,h}_{\boldsymbol{j}^h,\boldsymbol{l}}
+	&= 2^N \sum_{\boldsymbol{j}^f}\sum_{\boldsymbol{j}^g} 
+		s_{\boldsymbol{j}^f,\boldsymbol{l}}^{N,f} 
+		s_{\boldsymbol{j}^g,\boldsymbol{l}}^{N,g} \int_{[0,1]^d}
+		\Phi_{\boldsymbol{j}^f,\boldsymbol{0}}^0(\boldsymbol{x})
+		\Phi_{\boldsymbol{j}^g,\boldsymbol{0}}^0(\boldsymbol{x})
+		\Phi_{\boldsymbol{j}^h,\boldsymbol{0}}^0(\boldsymbol{x})
+		d\boldsymbol{x}\\
+	\label{eq:multexpansionND}
+\end{align}
+The only difference consists in the number of integrals, which grows
+exponentially in the number of dimensions. The multidimensional integral can
+however be decomposed into a product of monodimensional ones
+\begin{align}
+	\nonumber
+	\int_{[0,1]^d} 
+	\Phi_{\boldsymbol{j}^f,\boldsymbol{0}}^0(\boldsymbol{x})
+	\Phi_{\boldsymbol{j}^g,\boldsymbol{0}}^0(\boldsymbol{x})
+	\Phi_{\boldsymbol{j}^h,\boldsymbol{0}}^0(\boldsymbol{x})
+	d\boldsymbol{x}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \\
+	\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
+	= 	\prod_{i=1}^d \int_0^1
+		\phi_{j_i^f,0}^0(x_i)\phi_{j_i^g,0}^0(x_i)\phi_{j_i^h,0}^0(x_i)dx_i
+\end{align}
+and we have again related all the integrals to the same small set of 
+$(k+1)^3$ different integrals, even though the total number of basis functions
+quickly becomes millions and billions in several dimensions. However, the 
+summations in eq.(\ref{eq:multexpansionND})
+runs over all $(k+1)^d$ different scaling function combinations of both $f$
+and $g$, and the multiplication still seem to be a considerable task in 
+multiple dimensions.
+
+%\subsection*{Legendre scaling functions}
+%Consider the multiplication $h(x) = f(x)g(x)$. We want to be able to calculate 
+%the scaling coefficients $s_{j,l}^{N,h}$ of $h^N(x)$. According to
+%(\ref{eq:quadrature}) this is given as
+%\begin{equation}
+%    \label{eq:multprojection}
+%    s_{j,l}^{N,h}=2^{-N/2}\sum_{i=0}^{k_q} w_i h(2^{-N}(y_i+l))\phi_{j0}^0(y_i)
+%\end{equation}
+%so what we need is the pointvalues of $h$ in the quadrature roots
+%$\lbrace y_i\rbrace_{i=0}^{k_q}$. These are of course obtained by a pointwise
+%multiplication of the function values of $f$ and $g$ in the same quadrature
+%roots. These pointvalues are obtained as
+%\begin{align}
+%    \nonumber
+%    f^N(x) &= \sum_j \sum_l s^{N,f}_{j,l}\phi^N_{j,l}(x)\\
+%    f^N(2^{-N}(y_i+l)) &= 2^{N/2} \sum_j s^{N,f}_{j,l}\phi^0_{j,0}(y_i)
+%\end{align}
+%and similarly for $g^N(x)$. The sum over translations $l$ disappears since we
+%are using wavelets with disjoint support, and the translation subscript will
+%be omitted in the following. We can now get the scaling coefficients of the 
+%product as
+%\begin{align}
+%    \nonumber
+%    s_{h_1}^{N,h} =&\ 2^{-N/2}\sum_{x_1=0}^{k_q} w_{x_1}
+%    \left(2^{N/2} \sum_{f_1=0}^{k_p} s^{N,f}_{f_1}\phi^0_{f_1}(y_{x_1})\right)\ 
+%    \left(2^{N/2} \sum_{g_1=0}^{k_p} s^{N,g}_{g_1}\phi^0_{g_1}(y_{x_1})\right)\ 
+%    \phi_{h_1}^0(y_{x_1})\\
+%    =&\ 2^{N/2} \sum_{x_1=0}^{k_q}\sum_{f_1=0}^{k_p}\sum_{g_1=0}^{k_p}
+%    w_{x_1}\ s^{N,f}_{f_1}\ s^{N,g}_{g_1}\ \phi^0_{f_1}(y_{x_1})\
+%                            \phi^0_{g_1}(y_{x_1})\ \phi^0_{h_1}(y_{x_1})
+%\end{align}
+%This is all nice and manageabel in one dimension, but it generalizes to the
+%following for d dimensions 
+
+%\begin{align}
+%    \nonumber
+%    s^{N,h}_{h_1,h_2,\dots,h_d} 
+%    =&\ 
+%    \left(\sum_{x_1=0}^{k_q}\sum_{x_2=0}^{k_q}\cdots\sum_{x_d=0}^{k_q}\right)
+%    \left(\sum_{f_1=0}^{k_p}\sum_{f_2=0}^{k_p}\cdots\sum_{f_d=0}^{k_p}\right)
+%    \left(\sum_{g_1=0}^{k_p}\sum_{g_2=0}^{k_p}\cdots\sum_{g_d=0}^{k_p}\right)\\
+%    \nonumber
+%    &\times
+%    2^{dN/2}\times s^{N,f}_{f_1,f_2,\dots,f_d}\times 
+%                                            s^{N,g}_{g_1,g_2,\dots,g_d}\\
+%    \label{eq:legmult}
+%    &\times
+%    \left( w_{x_1}w_{x_2}\cdots w_{x_d}\right)\\
+%    \nonumber
+%    &\times
+%    \left(\phi^0_{f_1}(y_{x_1})\phi^0_{f_2}(y_{x_2})\cdots
+%                                        \phi^0_{f_d}(y_{x_d})\right)\\
+%    \nonumber
+%    &\times
+%    \left(\phi^0_{g_1}(y_{x_1})\phi^0_{g_2}(y_{x_2})\cdots
+%                                        \phi^0_{g_d}(y_{x_d})\right)\\
+%    \nonumber
+%    &\times
+%    \left(\phi^0_{h_1}(y_{x_1})\phi^0_{h_2}(y_{x_2})\cdots
+%                                        \phi^0_{h_d}(y_{x_d})\right) 
+%\end{align}
+%which gives a staggering number of $(k_p+1)^{3d} \sim 10^8$ terms in the 
+%evaluation of \emph{one} coefficient of the product for $k_q = k_p = 8$ in 
+%three dimensions. This huge number of contributing terms makes multiplication
+%a timeconsuming process in more than one dimension. Fortunately, this is where
+%the interpolating scaling functions comes to our rescue.
+
+%\pagebreak
+%\subsection*{Interpolating scaling functions}
+%The true power of interpolating scaling functions becomes clear when
+%considering the equation (\ref{eq:legmult}), in that they are specifically
+%designed to return Kronecker deltas when evaluated in the quadrature roots.
+%This transforms (\ref{eq:legmult}) to
+%\begin{align}
+%    \nonumber
+%    s^{N,h}_{h_1,h_2,\dots,h_d} 
+%    =&\ 
+%    (\sum_{x_1=0}^{k_q}\sum_{x_2=0}^{k_q}\cdots\sum_{x_d=0}^{k_q})
+%    (\sum_{f_1=0}^{k_p}\sum_{f_2=0}^{k_p}\cdots\sum_{f_d=0}^{k_p})
+%    (\sum_{g_1=0}^{k_p}\sum_{g_2=0}^{k_p}\cdots\sum_{g_d=0}^{k_p})\\
+%    \nonumber
+%    &\times
+%    2^{dN/2}\times s^{N,f}_{f_1,f_2,\dots,f_d}\times 
+%                                            s^{N,g}_{g_1,g_2,\dots,g_d}\\
+%    \nonumber
+%    &\times
+%    ( w_{x_1}w_{x_2}\cdots w_{x_d})\\
+%    \nonumber
+%    &\times
+%    ( \delta_{f_1x_1}\delta_{f_2x_2}\cdots\delta_{f_dx_d})\\
+%    \nonumber
+%    &\times
+%    ( \delta_{g_1x_1}\delta_{g_2x_2}\cdots\delta_{g_dx_d})\\
+%    \nonumber
+%    &\times
+%    ( \delta_{h_1x_1}\delta_{h_2x_2}\cdots\delta_{h_dx_d})\\
+%    =&\ 
+%    2^{dN/2}\times s^{N,f}_{h_1,h_2,\dots,h_d}\times s^{N,g}_{h_1,h_2,\dots,h_d}
+%    \label{eq:intmult}
+%    \times
+%    ( w_{h_1}w_{h_2}\cdots w_{h_d})
+%\end{align}
+%so that each coefficient of the product is determined by only one term. This 
+%makes the interpolating basis vastly superior to the Legendre basis when it 
+%comes to multiplication efficiency.
+
+\pagebreak
+\ \\
+\pagebreak
+\section{Operator representation}
+
+When we now have a way of expressing an arbitrary function in terms of the
+multiwavelet basis, and we have the possibility of doing some basic arithmetic
+operations with these function representations, the next step should be to be
+able to apply operators to these functions. Specifically, we want to be able
+to compute the expansion coefficients of a function $g(x)$, given the
+coefficients of $f(x)$ based on the equation 
+\begin{equation}
+	[Tf](x) = g(x)
+\end{equation}
+
+\subsection{Operator projection}
+When applying the operator we will only have an approximation of the 
+function $f(x)$ available
+\begin{equation}
+	[TP^nf](x) = \tilde{g}(x)
+\end{equation}
+and we can only obtain in the projected solution
+\begin{equation}
+	[P^nTP^nf](x) = P^n\tilde{g}(x)
+\end{equation}
+Using the fundamental property of projection operators $P^nP^n = P^n$ we get
+\begin{equation}
+	[P^nTP^nP^nf](x) = P^n\tilde{g}(x)
+\end{equation}
+We now define the projection of the operator $T$ on scale $n$ as
+\begin{equation}
+	\label{eq:defTn}
+	T \sim\ ^nT^n \mydef P^nTP^n
+\end{equation}
+This approximation makes sense since $\lim_{n\to\infty} P^n = 1$. We can now
+represent the entire operation on scale $n$
+\begin{equation}
+	^nT^nf^n = \tilde{g}^n
+\end{equation}
+Here we should note the difference between $\tilde{g}^n$ and $g^n$ in that
+$\tilde{g}^n$ is \emph{not} the projection of the true function $g$, but
+rather the projection of the \emph{true} $T$ operating on the \emph{projected}
+$f$, and one should be concerned of whether the error $|\tilde{g}^n - g^n|$ is
+comparable to $|g - g^n|$, but it can be shown \cite{Fossgaard} that this will 
+not be a 
+problem if $f$ and $g$ have comparable norms.
+
+\subsection{Multiresolution operators}
+Making use of eq.(\ref{eq:defTn}) and eq.(\ref{eq:projectionoperator}) we can 
+decompose the operator into multiresolution contributions
+\begin{eqnarray}
+	\nonumber
+	T &=& P^\infty TP^\infty\\
+	\nonumber
+	&=& P^0 TP^0 + \sum_{n=0}^\infty (P^{n+1}TP^{n+1} - P^nTP^n)\\
+	\nonumber
+	&=& P^0 TP^0 + \sum_{n=0}^\infty [(P^{n+1}-P^n)T(P^{n+1}-P^n) + \\
+	\nonumber
+	&&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (P^{n+1}-P^n)TP^n + 
+														P^nT(P^{n+1}-P^n)]\\
+	&=& P^0 TP^0 + \sum_{n=0}^\infty [Q^nTQ^n + Q^nTP^n + P^nTQ^n]
+	\label{eq:multiresT1}
+\end{eqnarray}
+and we simplify the notation with the following definitions, 
+eq.(\ref{eq:defTn}) is repeated for clearity
+\begin{eqnarray}
+	\begin{split}
+		^nA^{n'} &\mydef& Q^nTQ^{n'}:& W^{n'}\rightarrow W^n\\
+		^nB^{n'} &\mydef& Q^nTP^{n'}:& V^{n'}\rightarrow W^n\\
+		^nC^{n'} &\mydef& P^nTQ^{n'}:& W^{n'}\rightarrow V^n\\
+		^nT^{n'} &\mydef& P^nTP^{n'}:& V^{n'}\rightarrow V^n
+	\end{split}
+	\label{eq:defABCT}
+\end{eqnarray}
+By truncating the sum in eq.(\ref{eq:multiresT1}) we get a multiresolution
+representation of the operator with finite precision
+\begin{equation}
+	\label{eq:MRoper}
+	T \approx\ ^NT^N =\ ^0T^0 + \sum_{n=0}^{N-1} (\ ^nA^n +\ ^nB^n +\ ^nC^n)
+\end{equation}
+\subsection*{Standard representation}
+Suppose we have some a priori knowledge that the resulting function $g$ is
+required to be refined to some global finest scale $N$ in order to satisfy
+some accuracy condition. The matrix representation of the operation on this 
+scale is simply
+\begin{equation}
+\begin{split} 
+	\label{eq:Tmatrix}
+	\left(
+	\begin{array}{c}
+		$\multirow{12}{*}{$
+		\ \ \ \  \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ^NT^N
+		\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ $}$
+		\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
+	\end{array}
+	\right) \left(
+	\begin{array}{c}
+		$\multirow{12}{*}{$\ \ f^N\ \ $}$\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
+	\end{array}
+	\right)	= \left(
+	\begin{array}{c}
+		$\multirow{12}{*}{$\ \ g^N\ \ $}$\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
+	\end{array}
+	\right)
+\end{split}
+\end{equation}
+where the representations of $T$ and $f$ on scale $N$ are obtained by wavelet
+transform from their respective finest scales. This matrix equation describes
+the entire operation, and provided the scale $N$ has been chosen properly, the
+resulting function $g$ can be represented with the same accuracy as $f$. An
+adaptive representation of $g$ is obtained by performing a wavelet
+decomposition of $g^N$ into its multiresolution components, throwing away all
+wavelet terms that are sufficiently small.\\
+
+\noindent
+There is (at least) one problem with this matrix representation; the matrix 
+$^NT^N$ is dense, in the sense that it has generally only non-vanishing 
+entries. This is a numerical problem more that a mathematical one, and will 
+lead to algorithms that scale quadratically in the number of basis functions in
+the system, and one of the main prospects of wavelet theory is to arrive at 
+fast (linear scaling) algorithms.\\
+
+\noindent
+The way to approach this holy grail of 
+numerical mathematics is to realize that the matrices $A$, $B$ and $C$ will 
+\emph{not} be dense (at least for the type of operators treated in this work), 
+but rather have a band-like structure where their elements are rapidly
+decaying away from their diagonals. The reason for this bandedness of the 
+matrices can be found in \cite{Beylkin90} and will not be discussed here, it 
+suffices
+to say that it stems from the vanishing moments property of the wavelet
+functions.\\
+
+\noindent
+The way to achieve a banded strucure of the operator is thus to decompose it
+according to eq.(\ref{eq:MRoper})
+\begin{equation}
+	^NT^N =\ ^{N-1}T^{N-1} +\ ^{N-1}A^{N-1} +\ ^{N-1}B^{N-1} +\ ^{N-1}C^{N-1}
+\end{equation}
+The functions $f$ and $g$ can be decomposed to scale $N-1$ by simple filter
+operations eq.(\ref{eq:decomposition}). According to eq.(\ref{eq:defABCT}) $^nT^n$ 
+and $^nC^n$ produce the scaling part of $g$, acting on the scaling and wavelet 
+parts of $f$, respectively. Similarly, $^nA^n$ and $^nB^n$ produce the wavelet 
+part of $g$, by acting on the wavelet and scaling parts of $f$, 
+respectively. The matrix equation eq.(\ref{eq:Tmatrix}) can thus be decomposed as
+\begin{equation}
+\begin{split}
+	\label{eq:ABCTmatrix}
+	\left(
+	\begin{array}{c|c}
+		\begin{array}{ccc}
+			$\multirow{6}{*}{$\ \ \ \ \ \ ^{N-1}T^{N-1}\ \ \ \ $}$
+			\\ \\ \\ \\ \\ \\
+		\end{array} &
+		\begin{array}{c}
+			$\multirow{6}{*}{$\ \ \ \ \ ^{N-1}C^{N-1}\ \ \ \ $}$
+			\\ \\ \\ \\ \\ \\
+		\end{array}\\\hline
+		\begin{array}{ccc}
+			$\multirow{6}{*}{$\ \ \ \ \ \ ^{N-1}B^{N-1}\ \ \ \ $}$
+			\\ \\ \\ \\ \\ \\
+		\end{array} &
+		\begin{array}{ccc}
+			$\multirow{6}{*}{$\ \ \ \ \ ^{N-1}A^{N-1}\ \ \ \ $}$
+			\\ \\ \\ \\ \\ \\
+		\end{array}\\
+	\end{array}
+	\right)	\left(
+	\begin{array}{c}
+		$\multirow{6}{*}{$f^{N-1}$}$\\ \\ \\ \\ \\ \\\hline
+		$\multirow{6}{*}{$df^{N-1}$}$\\ \\ \\ \\ \\ \\
+	\end{array}
+	\right)	= \left(
+	\begin{array}{c}
+		$\multirow{6}{*}{$g^{N-1}$}$\\ \\ \\ \\ \\ \\\hline
+		$\multirow{6}{*}{$dg^{N-1}$}$\\ \\ \\ \\ \\ \\
+	\end{array}
+	\right)
+\end{split} 
+\end{equation}
+where the size of the total matrix is unchanged. What has been achieved by
+this decomposition is a banded structure in three of its four components,
+leaving only the $^{N-1}T^{N-1}$ part dense. We can now do the same
+decomposition of this $^{N-1}T^{N-1}$ into more banded submatrices. The
+function components $f^{N-1}$ and $g^{N-1}$ need to be decomposed as well. To
+keep everything consistent the $^{N-1}B^{N-1}$ and $^{N-1}C^{N-1}$ parts of the
+operator will have to be transformed accoringly. To proceed from here we need 
+the following relations
+\begin{align}
+	\nonumber
+	^nB^n 	&= Q^nTP^n\\
+	\nonumber
+			&= Q^nT(P^{n-1}+Q^{n-1})\\
+	\nonumber
+			&= Q^nTP^{n-1} + Q^nTQ^{n-1}\\
+			&=\ ^{n}B^{n-1} +\ ^nA^{n-1}
+	\label{eq:Bdecomp}
+\end{align}
+and similarly
+\begin{align}
+	\nonumber
+	^nC^n 	&= P^nTQ^n\\
+	\nonumber
+			&= (P^{n-1}+Q^{n-1})TQ^n\\
+	\nonumber
+			&= P^{n-1}TQ^n + Q^{n-1}TQ^n\\
+			&=\ ^{n-1}C^n +\ ^{n-1}A^n
+	\label{eq:Cdecomp}
+\end{align}
+which is the exact change in the operator that is taking place when we 
+decompose $f^n$ into $f^{n-1}+df^{n-1}$ and $g^n$ into $g^{n-1} + dg^{n-1}$.
+The matrix equation will now look like
+%\begin{equation}
+%\begin{split} 
+%    \scriptsize
+%\label{eq:Smatrix}
+%    \left(
+%    \begin{array}{c|c}
+%        \begin{array}{c|c}
+%            $\multirow{6}{*}{$^{N-2}T^{N-2}$}$&
+%            $\multirow{6}{*}{$^{N-2}C^{N-2}$}$\\ &\\ &\\ &\\ &\\ &\\
+%            \hline
+%            $\multirow{6}{*}{$^{N-2}B^{N-2}$}$&
+%            $\multirow{6}{*}{$^{N-2}A^{N-2}$}$\\ &\\ &\\ &\\ &\\ &\\
+%        \end{array} &
+%        \begin{array}{c}
+%            $\multirow{12}{*}{$\ \ \ \ ^{N-1}C^{N-1}\ \ \ \ $}$
+%            \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
+%        \end{array}\\\hline
+%        \begin{array}{c|c}
+%            $\multirow{12}{*}{$^{N-1}B^{N-2}$}$&
+%            $\multirow{12}{*}{$^{N-1}A^{N-2}$}$
+%            \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ 
+%        \end{array} &
+%        \begin{array}{c}
+%            $\multirow{12}{*}{$\ \ \ \ \ ^{N-1}A^{N-1}\ \ \ \ $}$
+%            \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
+%        \end{array}\\
+%    \end{array}
+%    \right) \left(
+%    \begin{array}{c}
+%        $\multirow{6}{*}{$f^{N-2}$}$\\ \\ \\ \\ \\ \\\hline
+%        $\multirow{6}{*}{$df^{N-2}$}$\\ \\ \\ \\ \\ \\\hline
+%        $\multirow{12}{*}{$df^{N-1}$}$\\ \\ \\ \\ \\ \\ \\ \\
+%        \\ \\ \\
+%    \end{array}
+%    \right) = \left(
+%    \begin{array}{c}
+%        $\multirow{6}{*}{$g^{N-2}$}$\\ \\ \\ \\ \\ \\\hline
+%        $\multirow{6}{*}{$dg^{N-2}$}$\\ \\ \\ \\ \\ \\\hline
+%        $\multirow{12}{*}{$dg^{N-1}$}$\\ \\ \\ \\ \\ \\ \\ \\
+%        \\ \\ \\
+%    \end{array}
+%    \right)
+%\large
+%\end{split}
+%\end{equation}
+%A bonusfeature of this decomposition is that we have introduced more 
+%$A$-character into the total matrix, making this part of the matrix even more
+%sparse than it was before. By doing a similar decomposition of the
+%$^{N-1}C^{N-1}$ block
+%\begin{align}
+%    \nonumber
+%    ^nC^n 	&= P^nTQ^n\\
+%    \nonumber
+%            &= (P^{n-1}+Q^{n-1})TQ^n\\
+%    \nonumber
+%            &= P^{n-1}TQ^n + Q^{n-1}TQ^n\\
+%            &=\ ^{n-1}C^n +\ ^{n-1}A^n
+%    \label{eq:Cdecomp}
+%\end{align}
+%we achieve the same thing in this part of the matrix
+\begin{equation}
+\begin{split} 
+	\scriptsize
+\label{eq:Smatrix}
+	\left(
+	\begin{array}{c|c}
+		\begin{array}{c|c}
+			$\multirow{6}{*}{$^{N-2}T^{N-2}$}$&
+			$\multirow{6}{*}{$^{N-2}C^{N-2}$}$\\ &\\ &\\ &\\ &\\ &\\
+			\hline
+			$\multirow{6}{*}{$^{N-2}B^{N-2}$}$&
+			$\multirow{6}{*}{$^{N-2}A^{N-2}$}$\\ &\\ &\\ &\\ &\\ &\\
+		\end{array} &
+		\begin{array}{c}
+			$\multirow{6}{*}{$\ \ \ \ ^{N-2}C^{N-1}\ \ \ \ $}$
+			\\ \\ \\ \\ \\ \\ \hline
+			$\multirow{6}{*}{$\ \ \ \ ^{N-2}A^{N-1}\ \ \ \ $}$
+			\\ \\ \\ \\ \\ \\
+		\end{array}\\\hline
+		\begin{array}{c|c}
+			$\multirow{12}{*}{$^{N-1}B^{N-2}$}$&
+			$\multirow{12}{*}{$^{N-1}A^{N-2}$}$
+			\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ 
+		\end{array} &
+		\begin{array}{c}
+			$\multirow{12}{*}{$\ \ \ \ \ ^{N-1}A^{N-1}\ \ \ \ $}$
+			\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
+		\end{array}\\
+	\end{array}
+	\right) \left(
+	\begin{array}{c}
+		$\multirow{6}{*}{$f^{N-2}$}$\\ \\ \\ \\ \\ \\\hline
+		$\multirow{6}{*}{$df^{N-2}$}$\\ \\ \\ \\ \\ \\\hline
+		$\multirow{12}{*}{$df^{N-1}$}$\\ \\ \\ \\ \\ \\ \\ \\
+		\\ \\ \\
+	\end{array}
+	\right) = \left(
+	\begin{array}{c}
+		$\multirow{6}{*}{$g^{N-2}$}$\\ \\ \\ \\ \\ \\\hline
+		$\multirow{6}{*}{$dg^{N-2}$}$\\ \\ \\ \\ \\ \\\hline
+		$\multirow{12}{*}{$dg^{N-1}$}$\\ \\ \\ \\ \\ \\ \\ \\
+		\\ \\ \\
+	\end{array}
+	\right)
+\large
+\end{split}
+\end{equation}
+We can develop this transformation recursively until we reach the coarsest 
+scale. This multiresolution matrix representation of the operator is called the
+standard representation. Symbolically, we can do this decomposition of
+eq.(\ref{eq:MRoper}) by recursive application of eq.(\ref{eq:Bdecomp}) and
+eq.(\ref{eq:Cdecomp}) where we shift more of the operator into extremely
+narrow banded $A$-character.
+\begin{eqnarray}
+	\nonumber
+	^{N}T^{N} 	&=\ ^0T^0 + 
+				&\sum_{n=0}^{N-1}\ ^nC^n + 
+				\sum_{n=0}^{N-1}\ ^nB^n + 
+				\sum_{n=0}^{N-1}\ ^nA^n\\
+	\nonumber
+				&=\ ^0T^0 +
+				&\sum_{n=0}^{N-1}\left(^0C^n + \sum_{n'<n}\ ^{n'}A^n\right) +\\
+	\nonumber
+				&&
+				\sum_{n=0}^{N-1}\left(^nB^0 + \sum_{n'>n}\ ^{n'}A^n\right) + 
+				\sum_{n=0}^{N-1}\ ^nA^n\\
+				&=\ ^0T^0 + 
+				&\sum_{n=0}^{N-1}\ ^0C^n + \sum_{n=0}^{N-1}\ ^nB^0 +
+				\sum_{n=0}^{N-1}\sum_{n'=0}^{N-1}\ ^nA^{n'}
+				\label{eq:MRoperS}
+\end{eqnarray}
+By decomposing the full operator into its multiresolution
+contributions we have obtained a sparse representation of the operator. The
+operator matrix will specifically have a "finger" structure, with a small
+number of bands of contributing terms, all emanating from the top-left corner,
+see figure \ref{fig:smatrix}.
+
+\begin{figure}
+	\centering
+	\includegraphics[bb = 100 30 400 340, clip, scale=0.9]{figures/smatrix.pdf}
+	\caption{Banded structure of the standard operator matrix.}
+	\label{fig:smatrix}
+\end{figure}
+
+%\noindent
+%There is, however, a major drawback of the S representation; it seems to
+%require a priori knowledge of the finest scale $N$ of the result. In order to
+%make an on-the-fly adaptive construction of the $g$ representation (without
+%having to construct the full $g^N$ representation first) we need to be able to 
+%calculate the result one scale at the time, starting with the coarsest and
+%refining only where it is needed. This construction will be awkward in the S
+%representation because it couples the operator and the function on different 
+%scales. Specifically we can see in (\ref{eq:Smatrix}) that the $B^{N-1}$ part 
+%of the operator is applied to the $f^{N-2}$ and $df^{N-2}$ parts of the 
+%function. It is thus desirable to make a representation of the operator that 
+%treat each scale separately, but that still shows the same banded structure as
+%the S representation. This is the purpose of introducing the non-standard (NS)
+%operator representation.
+
+%\subsection*{Non-Standard representation}
+%The coupling between scales did not occur until the (\ref{eq:Smatrix})
+%representation of the operator, and in (\ref{eq:ABCTmatrix}) the entire
+%operation is still carried out at the same scale. Now, there is nothing 
+%preventing us from applying the (\ref{eq:ABCTmatrix}) representation seperately
+%at each scale. This would in matrix notation be
+%\begin{align}
+%    \label{eq:NSmatrix}
+%    \begin{split}
+%    \left(
+%    \begin{array}{c|c}
+%        \begin{array}{c|c}
+%            $\multirow{3}{*}{$T^{N-2}$}$&
+%            $\multirow{3}{*}{$C^{N-2}$}$\\ &\\ &\\\hline
+%            $\multirow{3}{*}{$B^{N-2}$}$&
+%            $\multirow{3}{*}{$A^{N-2}$}$\\ &\\ &\\
+%        \end{array}
+%        &
+%        \begin{array}{cc}
+%            \begin{array}{cc}
+%                &
+%            \end{array}
+%            &
+%            \begin{array}{cc}
+%                &
+%            \end{array}\\
+%            \begin{array}{cc}
+%                &
+%            \end{array}
+%            &
+%            \begin{array}{cc}
+%                &
+%            \end{array}\\
+%        \end{array}\\\hline
+%        \begin{array}{c}
+%            \begin{array}{cc}
+%                &\\&
+%            \end{array}\\
+%            \begin{array}{cc}
+%                &\\&
+%            \end{array}\\
+%        \end{array}
+%        &
+%        \begin{array}{c|c}
+%            \begin{array}{ccc}
+%                \multicolumn{3}{c}{$\multirow{6}{*}{$\ \ \ \ T^{N-1}\ \ $}$}\\
+%                &&\\&&\\&&\\&&\\&&
+%            \end{array}
+%            &
+%            \begin{array}{ccc}
+%                \multicolumn{3}{c}{$\multirow{6}{*}{$\ \ \ C^{N-1}\ $}$}\\
+%                &&\\&&\\&&\\&&\\&&
+%            \end{array}\\\hline
+%            \begin{array}{ccc}
+%                \multicolumn{3}{c}{$\multirow{6}{*}{$\ \ \ \ B^{N-1}\ \ $}$}\\
+%                &&\\&&\\&&\\&&\\&&
+%            \end{array}
+%            &
+%            \begin{array}{ccc}
+%                \multicolumn{3}{c}{$\multirow{6}{*}{$\ \ \ A^{N-1}\ $}$}\\
+%                &&\\&&\\&&\\&&\\&&
+%            \end{array}\\
+%        \end{array}
+%    \end{array}
+%    \right)	\left(
+%    \begin{array}{c}
+%        $\multirow{3}{*}{$f^{N-2}$}$\\
+%        \\ \\\hline
+%        $\multirow{3}{*}{$df^{N-2}$}$\\
+%        \\ \\\hline
+%        $\multirow{6}{*}{$f^{N-1}$}$\\
+%        \\ \\ \\ \\ \\\hline
+%        $\multirow{6}{*}{$df^{N-1}$}$\\
+%        \\ \\ \\ \\ \\
+%    \end{array}
+%    \right)	&= \left(
+%    \begin{array}{c}
+%        $\multirow{3}{*}{$g^{N-2}$}$\\ \\ \\\hline
+%        $\multirow{3}{*}{$dg^{N-2}$}$\\ \\ \\\hline
+%        $\multirow{6}{*}{$g^{N-1}$}$\\ \\ \\ \\ \\ \\\hline
+%        $\multirow{6}{*}{$dg^{N-1}$}$\\ \\ \\ \\ \\ \\
+%    \end{array}
+%    \right)
+%    \end{split}
+%\end{align}
+%In this NS representation we can carry out the operation fully on scale $n$,
+%before moving on to scale $n+1$, which means that it will be possible to make
+%local refinement only where it is needed as we ascend through the scales.
+%However, looking at the NS matrix equation (\ref{eq:NSmatrix}) we see that one
+%key property of the S matrix is lost, in that we are keeping all the dense
+%$T^n$ matrices from coarsest to finest scale. This issue is taken care of by
+%the power of the wavelet transform.\\
+
+%\noindent
+
+
+\subsection{Integral operators}
+We now turn our attention to a specific type of operator; the one-dimensional 
+integral operator given in the form
+\begin{equation}
+	\label{eq:intop1d}
+	[Tf](x) = \int K(x,y)f(y)dy
+\end{equation}
+where $K$ is the two-dimensional operator kernel. The first step is to expand
+the kernel in the multiwavelet basis
+\begin{equation}
+	\label{eq:kernelexp}
+	K^N(x,y) = \sum_{l_x,l_y}\boldsymbol{\tau}^{N,N}_{l_xl_y} 
+	\boldsymbol{\phi}^N_{l_x}(x)\boldsymbol{\phi}^N_{l_y}(y)
+\end{equation}
+where the expansion coefficients are given by the integrals
+\begin{equation}
+	\label{eq:taudef}
+	\boldsymbol{\tau}^{n_x,n_y}_{l_xl_y} = \int\int
+	K(x,y)\boldsymbol{\phi}^{n_x}_{l_x}(x)\boldsymbol{\phi}^{n_y}_{l_y}(y)dxdy
+\end{equation}
+Inserting eq.(\ref{eq:kernelexp}) into eq.(\ref{eq:intop1d}) yields
+\begin{align}
+	\nonumber
+	^NT^Nf^N(x) &= \int\left(\sum_{l_x,l_y} \boldsymbol{\tau}^{N,N}_{l_xl_y}
+	\boldsymbol{\phi}^N_{l_x}(x)\boldsymbol{\phi}^N_{l_y}(y)\right)f(y)dy\\
+	&= \sum_{l_x,l_y} \boldsymbol{\tau}^{N,N}_{l_xl_y}
+	\boldsymbol{\phi}^N_{l_x}(x)\int f(y)\boldsymbol{\phi}^N_{l_y}(y)dy
+\end{align}
+where the last integral is recognized as the scaling coefficients of $f$
+\begin{equation}
+	\label{eq:Tmatrixsum}
+	^NT^Nf^N(x) = \sum_{l_x,l_y} \boldsymbol{\tau}^{N,N}_{l_xl_y}
+	\boldsymbol{\phi}^N_{l_x}(x)\boldsymbol{s}^{N,f}_{l_y}
+\end{equation}
+We can now identify $\boldsymbol{\tau}^{N,N}_{l_xl_y}$ as the matrix elements 
+of $^NT^N$ and eq.(\ref{eq:Tmatrixsum}) is the matrix equation 
+eq.(\ref{eq:Tmatrix}) written explicitly. As pointed out, the matrix $^NT^N$ is 
+dense and we would generally have to keep all the terms in 
+eq.(\ref{eq:Tmatrixsum}), therefore we want to decompose it to contributions on 
+coarser scales. We introduce the following definitions, eq.(\ref{eq:taudef}) is 
+repeated for clearity
+\begin{align}
+	\label{eq:tcbadef}
+	\begin{split}
+	\boldsymbol{\tau}^{n_x,n_y}_{l_xl_y} &= \int\int
+	K(x,y)\boldsymbol{\phi}^{n_x}_{l_x}(x)\boldsymbol{\phi}^{n_y}_{l_y}(y)dxdy\\
+	\boldsymbol{\gamma}^{n_x,n_y}_{l_xl_y} &= \int\int
+	K(x,y)\boldsymbol{\phi}^{n_x}_{l_x}(x)\boldsymbol{\psi}^{n_y}_{l_y}(y)dxdy\\
+	\boldsymbol{\beta}^{n_x,n_y}_{l_xl_y} &= \int\int
+	K(x,y)\boldsymbol{\psi}^{n_x}_{l_x}(x)\boldsymbol{\phi}^{n_y}_{l_y}(y)dxdy\\
+	\boldsymbol{\alpha}^{n_x,n_y}_{l_xl_y} &= \int\int
+	K(x,y)\boldsymbol{\psi}^{n_x}_{l_x}(x)\boldsymbol{\psi}^{n_y}_{l_y}(y)dxdy
+	\end{split}
+\end{align}
+Equation eq.(\ref{eq:Tmatrixsum}) can then be decomposed as
+\begin{align}
+	\label{eq:ABCTmatrixsum}
+	\begin{split}
+	[Tf]^N(x) &= \sum_{l_x,l_y}\boldsymbol{\tau}^{N-1,N-1}_{l_xl_y}
+	\boldsymbol{\phi}^{N-1}_{l_x}(x) \boldsymbol{s}^{N-1}_{l_y}\\
+	&+ \sum_{l_x,l_y}\boldsymbol{\gamma}^{N-1,N-1}_{l_xl_y}
+	\boldsymbol{\phi}^{N-1}_{l_x}(x) \boldsymbol{d}^{N-1}_{l_y}\\
+	&+ \sum_{l_x,l_y}\boldsymbol{\beta}^{N-1,N-1}_{l_xl_y}
+	\boldsymbol{\psi}^{N-1}_{l_x}(x) \boldsymbol{s}^{N-1}_{l_y}\\
+	&+ \sum_{l_x,l_y}\boldsymbol{\alpha}^{N-1,N-1}_{l_xl_y}
+	\boldsymbol{\psi}^{N-1}_{l_x}(x) \boldsymbol{d}^{N-1}_{l_y}
+	\end{split}
+\end{align}
+where we can identify $\boldsymbol{\alpha}_{l_xl_y}, 
+\boldsymbol{\beta}_{l_xl_y}$ and 
+$\boldsymbol{\gamma}_{l_xl_y}$ as the matrix elements of $A, B$ and
+$C$, respectively, and eq.(\ref{eq:ABCTmatrixsum}) is again the matrix equation
+eq.(\ref{eq:ABCTmatrix}) written explicitly. In this expression the last term
+involving the $\boldsymbol{\alpha}$ coefficients will be extremely sparse, and 
+this sum can be limited to $l_x,l_y$ values that differ by less than some 
+predetermined bandwidth $|l_x-l_y| < \Lambda^{N-1,N-1}$. The rest of the 
+expression eq.(\ref{eq:ABCTmatrixsum}) involves at least one scaling term, so
+we seek to decompose them further.\\
+
+\noindent
+The first term in eq.(\ref{eq:ABCTmatrixsum}) can be decomposed in the same
+manner as eq.(\ref{eq:Tmatrixsum}), and the $\boldsymbol{\gamma}$ and
+$\boldsymbol{\beta}$ terms can be partially decomposed, following the
+arguments of eq.(\ref{eq:Cdecomp}) and eq.(\ref{eq:Bdecomp}), respectively. If we do 
+this all the way to the coarsest scale, we obtain
+\begin{align}
+	\label{eq:Smatrixsum}
+	\begin{split}
+	[Tf]^N(x) &= \boldsymbol{\tau}^{0,0}_{00}
+	\boldsymbol{\phi}^{0}_{0}(x) \boldsymbol{s}^{0}_{0}\\
+	&+ \sum_{n_y=0}^{N-1}\sum_{l_y}
+	\boldsymbol{\gamma}^{0,n_y}_{0l_y}
+	\boldsymbol{\phi}^{0}_{0}(x) \boldsymbol{d}^{n_y}_{l_y}\\
+	&+ \sum_{n_x=0}^{N-1}\sum_{l_x}
+	\boldsymbol{\beta}^{n_x,0}_{l_x0}\boldsymbol{\psi}^{n_x}_{l_x}(x) 
+	\boldsymbol{s}^{0}_{0}\\
+	&+ \sum_{n_x=0}^{N-1}\sum_{n_y=0}^{N-1}\sum_{l_x,l_y}
+	\boldsymbol{\alpha}^{n_x,n_y}_{l_xl_y} \boldsymbol{\psi}^{n_x}_{l_x}(x) 
+	\boldsymbol{d}^{n_y}_{l_y}
+	\end{split}
+\end{align}
+This is the explicit expression for the standard representation of an operator
+in the multiwavelet basis eq.(\ref{eq:MRoperS}). In eq.(\ref{eq:Smatrixsum}) the 
+majority of terms are included in the last quadruple sum, which is limited to 
+include only terms $|l_x-l_y| < \Lambda^{n_x,n_y}$, making the total evaluation
+much more efficient than eq.(\ref{eq:Tmatrixsum}). 
+
+
+%or equivalently
+%\begin{align}
+%    \begin{split}
+%        K^N(x,y) =& \sum_{k,l} \boldsymbol{\tau}^{0,K}_{k,l} 
+%                \boldsymbol{\phi}^0_k(x)\boldsymbol{\phi}^0_l(y)\\
+%            &+ \sum_{n=0}^N \sum_{k,l} \boldsymbol{\gamma}^{n,K}_{k,l}
+%                \boldsymbol{\phi}^n_k(x)\boldsymbol{\psi}^n_l(y)\\
+%            &+ \sum_{n=0}^N \sum_{k,l} \boldsymbol{\beta}^{n,K}_{k,l}
+%                \boldsymbol{\psi}^n_k(x)\boldsymbol{\phi}^n_l(y)\\
+%            &+ \sum_{n=0}^N \sum_{k,l} \boldsymbol{\alpha}^{n,K}_{k,l}
+%                \boldsymbol{\psi}^n_k(x)\boldsymbol{\psi}^n_l(y)
+%    \end{split}
+%\end{align}
+%Where the expansion coefficients are given
+%\begin{align}
+%    \begin{split}
+%        \boldsymbol{\alpha}^n_{k,l} &= \int\int K(x,y)
+%                \boldsymbol{\psi}^n_k(x)\boldsymbol{\psi}^n_l(y)dxdy\\
+%        \boldsymbol{\beta}^n_{k,l} &= \int\int K(x,y)
+%                \boldsymbol{\psi}^n_k(x)\boldsymbol{\phi}^n_l(y)dxdy\\
+%        \boldsymbol{\gamma}^n_{k,l} &= \int\int K(x,y)
+%                \boldsymbol{\phi}^n_k(x)\boldsymbol{\psi}^n_l(y)dxdy\\
+%        \boldsymbol{\tau}^n_{k,l} &= \int\int K(x,y)
+%                \boldsymbol{\phi}^n_k(x)\boldsymbol{\phi}^n_l(y)dxdy
+%    \end{split}
+%\end{align}
+%Inserting the expansion into (\ref{eq:intop1d}) yields
+%\begin{align}
+%    \begin{split}
+%        [Tf]^N(x) =& \sum_{k,l} \boldsymbol{\tau}^{0,K}_{k,l} 
+%                \boldsymbol{\phi}^0_k(x)\int f(y)\boldsymbol{\phi}^0_l(y)dy\\
+%            &+ \sum_{n=0}^N \sum_{k,l} \boldsymbol{\gamma}^{n,K}_{k,l}
+%               \boldsymbol{\phi}^n_k(x)\int f(y)\boldsymbol{\psi}^n_l(y)dy\\
+%            &+ \sum_{n=0}^N \sum_{k,l}\boldsymbol{\beta}^{n,K}_{k,l}
+%               \boldsymbol{\psi}^n_k(x)\int f(y)\boldsymbol{\phi}^n_l(y)dy\\
+%            &+ \sum_{n=0}^N \sum_{k,l}\boldsymbol{\alpha}^{n,K}_{k,l}
+%               \boldsymbol{\psi}^n_k(x)\int f(y)\boldsymbol{\psi}^n_l(y)dy
+%    \end{split}
+%\end{align}
+%where the integrals are recognized as the scaling and wavelet coefficients of
+%$f$, and we obtain
+%\begin{align}
+%    \begin{split}
+%        [Tf]^N(x) =& \sum_k \boldsymbol{\phi}^0_k(x)
+%                     \sum_l \boldsymbol{\tau}^{0,K}_{k,l} 
+%                            \boldsymbol{s}_l^{0,f}\\
+%            &+ \sum_{n=0}^N \sum_k \boldsymbol{\phi}^n_k(x)
+%                            \sum_l \boldsymbol{\gamma}^{n,K}_{k,l}
+%                                   \boldsymbol{d}^{n,f}_l\\
+%            &+ \sum_{n=0}^N \sum_k \boldsymbol{\psi}^n_k(x)
+%                            \sum_l \boldsymbol{\beta}^{n,K}_{k,l}
+%                                   \boldsymbol{s}^{n,f}_l\\
+%            &+ \sum_{n=0}^N \sum_k \boldsymbol{\psi}^n_k(x)
+%                            \sum_l \boldsymbol{\alpha}^{n,K}_{k,l}
+%                                   \boldsymbol{d}^{n,f}_l
+%    \end{split}
+%    \label{eq:operatorexpansion}
+%\end{align}
+%We can now easily identify $\boldsymbol{\alpha}$, $\boldsymbol{\beta}$, 
+%$\boldsymbol{\gamma}$ and $\boldsymbol{\tau}$ as the matrix elements of 
+%$A$, $B$, $C$ and $T$, respectively, and (\ref{eq:operatorexpansion}) is
+%simply the NS matrix equation.
+
+\subsection{The Poisson operator}
+In order to solve the Poisson equation using the methods described above, we
+need to rewrite it to an integral form. The equation, in its differential
+form, is given as
+\begin{equation}
+	\nabla^2 V(\boldsymbol{x}) = 4\pi\rho(\boldsymbol{x})
+\end{equation}
+where $\rho(\boldsymbol{x})$ is the known (charge) distribution, and
+$V(\boldsymbol{x})$ is the unknown (electrostatic) potential. It is a standard
+textbook procedure to show that the solution can be written as the integral
+\begin{equation}
+	V(\boldsymbol{x}) = \int G(\boldsymbol{x},\boldsymbol{y})
+								\rho(\boldsymbol{y})d\boldsymbol{y}
+\end{equation}
+where $G(\boldsymbol{x},\boldsymbol{y})$ is the Green's function which
+is the solution to the \emph{fundamental} equation with \emph{homogeneous}
+(Dirichlet) boundary conditions
+\begin{eqnarray}
+	\label{eq:fundamental}
+	\begin{split}
+	\nabla^2 G(\boldsymbol{x},\boldsymbol{y}) &=
+								\delta(\boldsymbol{x}-\boldsymbol{y})&\\
+	G(\boldsymbol{x},\boldsymbol{y}) &= 0 &,\boldsymbol{x} \in boundary
+	\end{split}
+\end{eqnarray}
+This equation can be solved analytically and the Green's function is given
+(in three dimensions) simply as
+\begin{equation}
+	\label{eq:3DGreen}
+	G(\boldsymbol{x},\boldsymbol{y}) =
+						\frac{1}{||\boldsymbol{x}-\boldsymbol{y}||}
+\end{equation}
+This is the well known potential arising from a point charge located in the 
+position $\boldsymbol{y}$, which is exactly what eq.(\ref{eq:fundamental})
+describes.\\
+
+\subsection*{Numerical separation of the kernel}
+The Green's function kernel as it is given in eq.(\ref{eq:3DGreen}) is not 
+separable in the cartesian coordinates. However, since we are working with
+finite precision we can get by with an \emph{approximate} kernel as long as
+the error introduced with this approximation is less than our overall accuracy
+criterion. If we are able to obtain such a \emph{numerical} separation of the
+kernel, the operator can be applied in one direction at the time, allowing us 
+to use the expressions derived above for one-dimensional integral operators to 
+solve the three-dimensional Poisson equation. This is of great importance, not 
+only because we do not have to derive the $d$-dimensional operator equations, 
+which is at best notationally awkward, but also because it again reduces the 
+scaling behavior to become linear in the dimension of the system.\\
+
+\noindent
+The Poisson kernel can be made separable by expanding it as a
+sum of Gaussian functions, specifically
+\begin{equation}
+	\label{eq:poissonexp}
+	\frac{1}{||\boldsymbol{r}-\boldsymbol{s}||} \approx
+	\sum_{\kappa=1}^{M_\epsilon}a_\kappa e^{-b_\kappa
+	(\boldsymbol{r}-\boldsymbol{s})^2}
+\end{equation}
+where $a_\kappa$ and $b_\kappa$ are parameters that needs to be determined,
+and the number of terms $M_\epsilon$, called the separation rank, depends on 
+the accuracy requirement and on what interval this expansion needs to be
+valid. Details of how to obtain this expansion can be found in 
+\cite{Fossgaard}, and
+will not be treated here, but it should be mentioned that the separation rank
+is usually in the order of $100$, e.g. it requires $M_\epsilon = 70$ to
+reproduce $1/r$ on the interval $[10^{-5}, \sqrt{3}]$ in three dimensions with
+error less than $\epsilon = 10^{-8}$.\\
+\pagebreak
+

@@ -1,0 +1,57 @@
+\documentclass [a4paper]{report}
+\usepackage[english]{babel}
+\usepackage[OT1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{float}
+\usepackage[center]{subfigure}
+\usepackage{tabularx}
+\usepackage{booktabs}
+%\usepackage{algorithm}
+%\usepackage{algorithmic}
+%\usepackage{a4wide}
+%\usepackage[pdftex,colorlinks=true,
+%            pdfstartview=FitV,
+%            linkcolor=blue,
+%            citecolor=blue,
+%            urlcolor=blue]{hyperref}
+\usepackage[pdftex]{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{multirow}
+%\usepackage{fancyhdr}
+%\usepackage{multicol}
+%\usepackage{times}
+%\usepackage{index}
+%\usepackage{wrapfig}
+
+\newcommand{\mydef}{\stackrel{\text{def}}{\hbox{=}}} 
+
+\begin{document}
+\title{PhD Thesis}
+
+\author{Stig Rune Jensen}
+\date{\today}
+\maketitle
+
+\pagenumbering{roman}
+\pagebreak
+\ \\
+\pagebreak
+\tableofcontents
+\input{acknowledgments}
+\pagenumbering{arabic}
+\input{introduction}
+\input{mathematics}
+\input{implementation}
+\input{chemistry}
+\input{algorithms}
+\listoffigures
+\listoftables
+%\pagebreak
+%\ \\
+%\pagebreak
+%\bibliographystyle{jcp}
+%\bibliography{myrefs}
+
+\end{document}
+

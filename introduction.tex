@@ -1,0 +1,114 @@
+\chapter{Introduction}
+The work of this thesis has been contributing in the development of the 
+program package MRChem, which is a code developed at the University of Tromsø 
+\cite{Fossgaard} that is aiming at a fully numerical treatment of molecular 
+systems, based on 
+Density Functional Theory (DFT). There are currently a huge number of these
+program packages available, each with more or less distinct features, and
+what separates MRChem from all of these is the choice of basis functions.
+While traditional computational chemistry programs use Gaussian type basis sets
+for their efficient evaluation of two- and four-electron integrals, MRChem is
+based on the multiresolution wavelet basis.\\
+
+\noindent
+Wavelet theory is a rather young field of mathematics, first appearing in the
+late 1980s. The initial application was in signal theory \cite{Strang} but in
+the early 90s, wavelet-based methods started to appear for the solution of
+PDEs and integral equations \cite{Beylkin90}\cite{Alpert93}, and in recent 
+years for application in electronic structure calculations
+\cite{Harrison}\cite{Niklasson}\cite{Arias}.
+
+\subsection*{The Kohn-Sham equations}
+In the Kohn-Sham \cite{Kohn-Sham} formulation of DFT the eigenvalue equations 
+for the electronic structure can be written
+\begin{equation}
+	\label{eq:Kohn-Sham}
+	\lbrack
+	-\frac{1}{2}\nabla^2+V_{eff}(\boldsymbol{r})\rbrack\psi_i(\boldsymbol{r}) =
+	\epsilon_i\psi_i(\boldsymbol{r})
+\end{equation}
+where the effective potential is the collection of three terms
+\begin{equation}
+	\label{eq:Veff}
+	V_{eff}(\boldsymbol{r}) =
+	V_{ext}(\boldsymbol{r})+V_{coul}(\boldsymbol{r})+V_{xc}
+\end{equation}
+where the external potential $V_{ext}$ is usually just the electron-nuclear
+attraction, the Coulomb potential $V_{coul}$ is the electron-electron
+repulsion and $V_{xc}$ is the exchange-correlation potential which (in
+principle) includes all non-classical effects. The functional form of $V_{xc}$
+is not known.\\
+
+\noindent
+The nuclear charge distribution is a collection of point charges, and the 
+nuclear potential has the analytical form
+\begin{equation}
+	V_{nuc}(\boldsymbol{r}) = -\sum_{\alpha=1}^{N_{nuc}}
+	\frac{Z_{\alpha}}{|\boldsymbol{r}-\boldsymbol{r}_{\alpha}|}
+\end{equation}
+The electronic charge distribution is given by the Kohn-Sham orbitals
+\begin{equation}
+	\rho(\boldsymbol{r}) = 2\sum_{i=1}^{N_e/2} |\psi_i(\boldsymbol{r})|^2
+\end{equation}
+assuming a closed shell system with double occupancy. The electronic potential 
+is now given as the solution of the Poisson equation
+\begin{equation}
+	\nabla^2 V_{coul}(\boldsymbol{r}) = 4\pi\rho(\boldsymbol{r})
+\end{equation}
+where the orbital-dependence of the potential makes eq.(\ref{eq:Kohn-Sham}) a set
+of non-linear equations that is usually solved self-consistently. 
+The current work will not be concerned with the solution of the Kohn-Sham
+equations, but is rather a precursor to this where some building blocks
+required for the DFT calculations are prepared, in particular the solution of 
+the Poisson equation.
+
+\subsection*{The Poisson equation}
+Solving the Poisson equation for an arbitrary charge distribution is a 
+non-trivial task, and is of major importance in many fields of science, 
+especially in the field of computational chemistry. A huge effort has been put 
+into making efficient Poisson solvers, and usual real-space approaches includes
+finite difference (FD) and finite element (FE) methods. FD is a a grid-based
+method, which is solving the equations iteratively on a discrete grid of 
+pointvalues, while FE is expanding the solution in a basis set, usually by
+dividing space into cubic cells and allocate a polynomial basis to each cell.\\
+
+\noindent
+It is a well-known fact that the electronic density in molecular systems
+is rapidly varying in the vicinity of the atomic nuclei, and a usual problem
+with real-space methods is that an accurate treatment of the system requires
+high resolution of gridpoints (FD) or cells (FE) in the nuclear regions.
+Keeping this high resolution uniformly througout space would yield unnecessary
+high accuracy in the interatomic regions, and the solution of the Poisson
+equation for molecular systems is demanding a \emph{multiresolution} framework 
+in order to achieve numerical efficiency.\\
+
+\noindent
+There are ways of resolving these issues using multigrid techniques, and a nice
+overview of these methods is given by Beck \cite{Beck}, but this thesis is 
+concerned with a third way of doing real-space calculations, one where the
+multiresolution character is inherent in the theory, namely using wavelet
+bases.\\
+
+\noindent
+At this point MRChem is basically a Poisson solver. It has the capabilities of 
+representing arbitrary functions in the multiwavelet basis, and calculate the 
+potential originating from these functions. This is the result of the work by
+\cite{Fossgaard}. The current work includes the
+implementation of some basic arithmetic operations involving these function
+representations, where the space adaptivity of the grid and strict error
+control will be important topics. We will also look at some possible 
+optimizations of the existing code, where computational efficiency, memory
+requirements and linear scaling with respect to system size will be important.
+\\
+
+\noindent
+The thesis is split in two parts; theory and implementation. The theory part
+gives a brief overview of the mathematical theory of multiwavelets, from the
+basic concept of multiresolution analysis, to the representation of functions 
+and operators in the multiwavelet basis, and ultimately to the solution of the
+Poisson equation. The implementation part gives a short description of the
+data structures and algorithms used in the MRChem program, and some details of
+how the mathematical theory is implemented in practice. Some numerical results
+are given to show the capabilities and performances of the code.
+
+\pagebreak

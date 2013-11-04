@@ -1,0 +1,250 @@
+\chapter{Algorithms}
+\section{One-electron systems}
+\subsection{Power method}
+The simplest procedure to solve the fixed-point problem in Eq.~(\ref{eq:int_schrodinger}) 
+is perhaps the power method where the operator is applied iteratively
+\begin{align}
+    \label{eq:power_iter}
+    \tilde{\varphi}^{n} &= -2 \hat{H}^n\big[V\varphi^{n}\big]\\
+    \varphi^{n+1} &= \frac{\tilde{\varphi}^{n}}{\|\tilde{\varphi}^{n}\|}
+\end{align}
+The tilde on the new wavefunction denotes that it is no longer normalized, 
+as the operator $\hat{H}$ does not conserve the norm when the eigenvalue 
+is not exact.\cite{Kalos} The iteration label on the operator reflects the 
+fact that the operator depends on the energy through $\mu^n = \sqrt{-2E^n}$ 
+which needs to be updated in each iteration.
+
+Such an iteration sequence $\boldsymbol{x}^{n+1} = f(\boldsymbol{x}^n)$
+will converge to the lowest eigenfunction of $f$, provided that $f$ defines
+a so-called contraction map. Schneider\cite{Schneider} proves linear convergence
+of the wave function and quadratic convergence of the energy for a fixed operator
+$f$. 
+
+\subsection{Energy calculation}
+The energy of the wavefunction $\varphi$ is formally calculated as the 
+expectation value
+\begin{equation}
+    E = \frac{\langle \varphi| T + V | \varphi\rangle}{\langle \varphi|\varphi\rangle} 
+\end{equation}
+where $T=-\nabla^2/2$ is the kinetic energy operator. As pointed out 
+above, it is desirable to avoid the application of the kinetic operator, 
+so, following Harrison et al.\cite{Harrison}, we exploit the fact that 
+the operator $2\hat{H} = (T - E)^{-1}$ in Eq.~\ref{eq:int_schrodinger} 
+is basically the inverse of the kinetic operator, and extract the energy 
+through the application of this operator. Given a wavefunction $\varphi^{n}$ 
+and energy $E^{n}$ (this does not have to be the exact energy of $\varphi^{n}$, 
+but it must be the energy used in the construction of the operator $\hat{H}^{n}$) 
+at one iteration, we can calculate the (exact) energy $E^{n+1}$ of the 
+wavefunction $\varphi^{n+1}$ at the next iteration as follows
+\begin{align}
+    E^{n+1}
+    &=	\frac{\langle\tilde{\varphi}^{n+1}| T + V | \tilde{\varphi}^{n+1}\rangle}
+	{\langle\tilde{\varphi}^{n+1}|\tilde{\varphi}^{n+1}\rangle}\\
+    &=	\frac{\langle\tilde{\varphi}^{n+1}| T - E^{n} | \tilde{\varphi}^{n+1}\rangle}
+	{\langle\tilde{\varphi}^{n+1}|\tilde{\varphi}^{n+1}\rangle}
+    +	\frac{\langle\tilde{\varphi}^{n+1}| E^{n} + V | \tilde{\varphi}^{n+1}\rangle}
+	{\langle\tilde{\varphi}^{n+1}|\tilde{\varphi}^{n+1}\rangle}\\
+    &=	\frac{\langle\tilde{\varphi}^{n+1}| T - E^{n} | -2\hat{H}^{n}\big[V\varphi^{n}\big]\rangle}
+	{\langle\tilde{\varphi}^{n+1}|\tilde{\varphi}^{n+1}\rangle}
+    +	\frac{\langle\tilde{\varphi}^{n+1}| E^{n} + V |\tilde{\varphi}^{n+1}\rangle}
+	{\langle\tilde{\varphi}^{n+1}|\tilde{\varphi}^{n+1}\rangle}\\
+    &= -\frac{\langle\tilde{\varphi}^{n+1}| V |\varphi^{n}\rangle}
+	{\langle\tilde{\varphi}^{n+1}|\tilde{\varphi}^{n+1}\rangle}
+    +	E^{n}
+    +	\frac{\langle\tilde{\varphi}^{n+1}| V |\tilde{\varphi}^{n+1}\rangle}
+	{\langle\tilde{\varphi}^{n+1}|\tilde{\varphi}^{n+1}\rangle}\\
+    &= E^{n} + 
+	\frac{\langle\tilde{\varphi}^{n+1}| V |\Delta\tilde{\varphi}^{n}\rangle}
+	{\langle\tilde{\varphi}^{n+1}|\tilde{\varphi}^{n+1}\rangle}\\
+    &= E^{n} + \Delta E^{n}
+\end{align}
+where $\Delta \tilde{\varphi}^{n} \mydef \tilde{\varphi}^{n+1} - \varphi^{n}$. 
+This means that we can calculate the energy update $\Delta E^{n}$ directly from 
+the wavefunction update without having to apply the kinetic energy operator, 
+provided that the update comes directly from the application of the Helmholtz 
+operator $\Delta\tilde{\varphi}^n = -2 \hat{H}^n\big[V\varphi^n\big] - \varphi^n$.
+
+\section{Many-electron systems}
+\subsection{Orbital orthogonalization}
+As pointed out above it is necessary to enforce orthonormality between the 
+occupied orbitals in order to arrive at a true Aufbau solution of the Kohn-Sham 
+equations. The naive approach would be to perform one iteration for each orbital 
+and then do a Gram-Schmidt orthogonalization of the resulting orbitals, in order 
+of increasing energy. This however, will lead to very slow convergence, especially 
+for the higher energy orbitals, as the convergence of each orbital is bounded by 
+the level of convergence of all lower lying orbitals, whose convergence is again 
+dependent on the accuracy of \emph{all} orbitals through the non-linearity of the 
+problem. Harrison et al. \cite{Harrison} describes how to use deflation to extract 
+multiple eigenfunctions to the Kohn-Sham operator, by recasting the equation for 
+each orbital as a ground state problem. Our approach, which was also suggested by 
+Harrison et al., is to always make sure that the orbitals diagonalizes the Kohn-Sham 
+matrix. In this way the off-diagonal elements of the Kohn-Sham matrix is removed not 
+by projection, but rather by rotation within the orbital space, which means that no 
+off-diagonal information is thrown away in each iteration, leading to much faster 
+convergence. Since we are only working with occupied orbitals, the matix 
+diagonalization is considerably cheaper than the corresponding diagonalization 
+using high-quality Gaussian basis sets, where the number of virtual orbitals can 
+be much larger than the number of occupied. 
+
+The orbital orthonormalization and Kohn-Sham matrix diagonalization can be 
+collected into a single orbital transformation. We define the overlap matrix
+\begin{equation}
+    \tilde{S}_{ij} = \langle \tilde{\varphi}_i | \tilde{\varphi}_j \rangle
+\end{equation}
+that orthonormalizes the orbitals through the transformation
+\begin{equation}
+    \bar{\varphi}_i = \sum_{j=1}^N \tilde{S}^{-1/2}_{ij}\tilde{\varphi_j}
+\end{equation}
+the Kohn-Sham matrix $\tilde{F}$ in the non-orthogonal basis
+\begin{equation}
+    \label{eq:KS-matrix}
+    \tilde{F} = \langle\tilde{\varphi}_i | T + V_{eff} | \tilde{\varphi}_j\rangle
+\end{equation}
+and the matrix $M$ that diagonalizes the Kohn-Sham matrix $\bar{F} = \tilde{S}^{-1/2}\tilde{F}\tilde{S}^{1/2}$
+in the orthonormal basis $\bar{\varphi}_i$
+\begin{equation}
+    F = M^T\bar{F}M
+\end{equation}
+where $F$ is a diagonal matrix with the orbital energies on the diagonal. We get the 
+total transformation matrix $U = M^T\tilde{S}^{-1/2}$ that orthonormalizes the orbitals 
+and diagonalizes the Kohn-Sham matrix
+\begin{equation}
+    \varphi_i = \sum_{j=1}^N U_{ij} \tilde{\varphi}_j
+\end{equation}
+with corresponding orbital energies $\epsilon_i = F_{ii}$.
+
+\subsection{Kohn-Sham matrix calculation}
+The Kohn-Sham matrix of Eq.~(\ref{eq:KS-matrix}) can be calculated without having to
+apply the kinetic energy operator, provided that the orbitals $\tilde{\varphi}_i$ comes 
+directly from the application of the Helmholtz operator in Eq.~(\ref{eq:KS-iter}).
+We assume that the Kohn-Sham matrix is diagonal at iteration $n$, and that the diagonal
+elements $\epsilon_i$ are used as energies in the corresponding Helmholtz operators.
+\begin{align}
+    \tilde{F}_{ij}^{n+1}
+    &=	\langle\tilde{\phi}_i^{n+1} | T + V_{eff}^{n+1}              | \tilde{\phi}_j^{n+1}\rangle\\
+    &=	\langle\tilde{\phi}_i^{n+1} | T - \epsilon_j^{n}             | \tilde{\phi}_j^{n+1}\rangle
+    +	\langle\tilde{\phi}_i^{n+1} | \epsilon_j^{n} + V_{eff}^{n+1} | \tilde{\phi}_j^{n+1}\rangle\\
+    &=	\langle\tilde{\phi}_i^{n+1} | T - \epsilon_j^{n}             | -2\hat{H}^{n}\big[V_{eff}^{n} 
+	\phi_j^{n}\big]\rangle
+    +	\langle\tilde{\phi}_i^{n+1} | \epsilon_j^{n} + V_{eff}^{n+1} | \tilde{\phi}_j^{n+1}\rangle\\
+    &= -\langle\tilde{\phi}_i^{n+1} | V_{eff}^{n}                    | \phi_j^{n}\rangle
+    +	\epsilon_j^{n}
+	\langle\tilde{\phi}_i^{n+1} | \tilde{\phi}_j^{n+1}\rangle
+    +	\langle\tilde{\phi}_i^{n+1} | V_{eff}^{n}+\Delta V_{eff}^{n} | \tilde{\phi}_j^{n+1}\rangle\\
+    &=	\epsilon_j^{n}
+	\langle\tilde{\phi}_i^{n+1} | \tilde{\phi}_j^{n+1}\rangle
+    +	\langle\tilde{\phi}_i^{n+1} | \Delta V_{eff}^{n}             | \tilde{\phi}_j^{n+1}\rangle
+    +	\langle\tilde{\phi}_i^{n+1} | V_{eff}^{n+1}                  | \Delta \tilde{\phi}_j^{n}\rangle\\
+    \tilde{F}^{n+1}
+    &=  \tilde{S}^{n+1}F^{n} + \Delta \tilde{F}^{n}
+\end{align}
+We see that there are two contributions to the update of the Kohn-Sham matrix, 
+one from the orbital update and one from the potential update, and it is important
+to include both to speed up convergence.
+
+\subsection{Krylov Accelerated Inexact Newton (KAIN)}
+The fixed-point problem in Eq.~(\ref{eq:int_schrodinger}) can be viewed as finding 
+the roots of the the following residual function
+\begin{equation}
+    f(\varphi) =  -2 \hat{H}\big[V\varphi\big] - \varphi
+\end{equation}
+which can be done using Newton's method
+\begin{align}
+    \varphi^{n+1}	&= \varphi^n - \big[J(\varphi^n)\big]^{-1}f(\varphi^n)\\
+    \label{eq:newton}
+		&= \varphi^n - \big[J(\varphi^n)\big]^{-1}\big(-2 \hat{H^n}\big[V\varphi^n\big] - \varphi^n\big)
+\end{align}
+where $J(\varphi^n)$ is the Jacobian. Comparing Eq.~(\ref{eq:newton}) with 
+Eq.~(\ref{eq:power_iter}), we can identify the power method as an inexact 
+Newton method where the Jacobian is approximated by $J(\varphi) \approx -1$.
+This approximation, however suboptimal, will work as long as $f$ is a strictly 
+decaying function (justification?), at least in the vicinity of its root. 
+Harrison \cite{KAIN} describes how to make use of the information in the
+iterative history (Krylov subspace) to improve the approximation of the 
+Jacobian in his Krylov Accelerated Inexact Newton (KAIN) method. The method 
+is similar to the more commonly used Direct Inversion of Iterative Subspace 
+(DIIS) method of Pulay \cite{DIIS}, but while DIIS is looking for the best 
+step within the iterative subspace, KAIN is using the same information to 
+extrapolate to a step outside the iterative subspace and is thus considered 
+superior to DIIS.
+\\
+\\
+In the KAIN method, the new orbital update is calculated in terms of the $m$ 
+latest orbitals and orbital updates
+\begin{equation}
+    \label{eq:KAIN_update}
+    \delta \tilde{\varphi}^n = \Delta\varphi^n + \sum_{j=1}^m c_j \big[(\varphi^{j}-\varphi^{n}) + 
+    (\Delta\varphi^{j}-\Delta\varphi^{n})\big] 
+\end{equation}
+where the coefficients $c_j$ are obtained by solving the following linear 
+system $Ac=b$ 
+\begin{align}
+    A_{i,j} &= \langle \varphi^n -\varphi^i | \Delta\varphi^n - \Delta\varphi^j\rangle\\
+    b_{i}   &= \langle \varphi^n -\varphi^i | \Delta\varphi^n\rangle
+\end{align}
+The size $m$ of the Krylov subspace is without constraints. The larger it is, 
+the better is the Krylov update, but also the larger is the linear system. In 
+general, the Krylov update will not conserve the norm of the orbital, so an 
+additional normalization step should be added at this point.
+
+\subsection{Algorithms}
+%\begin{algorithm}
+\begin{alltt}
+01 Given initial orbital \(\varphi\sp{0}\) and energy \(E\sp{0}\)
+02 loop1: while \(\varepsilon > \) threshold
+02     Construct Helmholtz operator \(\hat{H}\sp{n}\sb{\mu}\) using \(\mu = \sqrt{-2E\sp{n}}\)
+03     Multiply orbital \(\varphi\sp{n}\) with potential
+04     Apply Helmholtz operator Eq.(\ref{eq:helmholtz})
+05     Calculate orbital update \(\Delta\tilde{\varphi}\sp{n} = \tilde{\varphi}\sp{n+1}-\varphi\sp{n}\)
+11     Calculate orbtial error \(\varepsilon^2 = \|\Delta\tilde{\varphi}\sp{n}\|\) 
+06     Calculate energy update \(\Delta{E}\sp{n}\) from Eq.(\ref{eq:energy_update})
+07     Calculate KAIN updates \(\delta\tilde{\varphi}\sp{n}\) and \(\delta{E}\sp{n}\) from Eq.(\ref{KAIN_update}) 
+08     Update orbital \(\tilde{\varphi}\sp{n+1} = \varphi\sp{n} + \delta\tilde{\varphi}\sp{n}\)
+09     Update energy \(E\sp{n+1} = E\sp{n}+\delta{E}\sp{n}\)
+10     Normalize orbital \(\varphi\sp{n+1} = \tilde{\varphi}\sp{n+1}/\|\tilde{\varphi}\sp{n+1}\|\)
+11 end loop
+\end{alltt}
+
+There are two important things to note with the KAIN solver when there is more 
+than one orbital. Firstly, as the orbital energies are updated in each iteration, 
+it might occur that orbitals switch place during the optimization process, if 
+ordered by increasing energy. This means that one must make sure that each 
+orbital is linked to the correct orbital in the iterative history. Secondly, 
+in the case of degeneracies, the matrix diagonalization will not result in a 
+unique set of orbitals, as any basis for the eigenspace of the degenerate 
+eigenfunctions can orbtained. It is thus important to keep a consistent 
+definition of all orbitals as the iteration proceeds. Both of these issues 
+can be treated simultaneously by always applying the same orbital rotation 
+that diagonalized the Kohn-Sham matrix to the entire iterative history.
+
+The KAIN updates do not conserve the orthogonality between the orbitals, 
+and a second orthogonalization process can be added at the end of the cycle, 
+although this is not strictly necessary to achieve convergence.
+ 
+With these extensions, the optimization algorithm for many-electron systems 
+are as follows 
+\begin{alltt}
+01 Given initial orbitals \(\varphi\sb{i}\sp{0}\) and energies \(\epsilon\sb{i}\sp{0}\) (assuming diagonal KS matrix)
+02 loop1: while \(\varepsilon > \) threshold
+03     Calculate electron density Eq.(\ref{eq:molDens})
+04     Calculate effective potential Eq.(\ref{eq:effPot})
+05     loop2: for each orbital \(i = 1,...,N\)
+06         Construct Helmholtz operator \(\hat{H}\sp{n}\sb{\mu}\) using \(\mu = \sqrt{-2\epsilon\sb{i}\sp{n}}\)
+07         Multiply orbital \(\varphi\sb{i}\sp{n}\) with effective potential
+08         Apply Helmholtz operator Eq.(\ref{eq:helmholtz})
+09         Calculate orbital update \(\Delta\tilde{\varphi}\sb{i}\sp{n} = \tilde{\varphi}\sb{i}\sp{n+1}-\varphi\sb{i}\sp{n}\)
+10     end loop2
+11     Calculate orbtial error \(\varepsilon\sp{2} = \sum\sb{i} \|\Delta\tilde{\varphi}\sb{i}\sp{n+1}\|\) 
+12     Calculate effective potential update
+13     Calculate KS matrix update from Eq.(\ref{eq:KS_update})
+14     Diagonalize KS matrix
+15     Rotate KAIN history
+16     Calculate KAIN updates \(\delta\tilde{\varphi}\sb{i}\sp{n+1}\) and \(\delta{\epsilon}\sb{i}\sp{n+1}\) from Eq.(\ref{KAIN_update}) 
+17     Update orbitals \(\tilde{\varphi}\sb{i}\sp{n+1} = \varphi\sb{i}\sp{n} + \delta\tilde{\varphi}\sb{i}\sp{n}\)
+18     Update energies \(\epsilon\sb{i}\sp{n+1} = \epsilon\sb{i}\sp{n} + \delta{\epsilon}\sb{i}\sp{n}\)
+19     Orthonormalize orbitals (Gram-Schmidt)
+20 end loop1
+\end{alltt}
+
+\pagebreak
+
