@@ -1,0 +1,131 @@
+\floatstyle{plaintop}
+\restylefloat{table}
+
+\renewcommand{\baselinestretch}{1.5}
+\newcommand{\error} { {e}}
+\newcommand{\errwav}{ {e}_d}
+\newcommand{\errkern}{{e}_s}
+\newcommand{\erroper}{{e}_o}
+\newcommand{\errband}{{e}_b}
+
+\newcommand{\etaerror} { {\eta}^{\text{obs}}}
+\newcommand{\etaerrwav}{ {\eta}^{\text{obs}}_d}
+\newcommand{\etaerrkern}{{\eta}^{\text{obs}}_s}
+\newcommand{\etaerroper}{{\eta}^{\text{obs}}_o}
+\newcommand{\etaerrband}{{\eta}^{\text{obs}}_b}
+
+\newcommand{\epskern}{\epsilon_s}
+\newcommand{\epsband}{\epsilon_b}
+\newcommand{\epsoper}{\epsilon_o}
+\newcommand{\epswav}{\epsilon_d}
+
+\newcommand{\etakern}{\eta_s}
+\newcommand{\etaband}{\eta_b}
+\newcommand{\etaoper}{\eta_o}
+\newcommand{\etawav}{\eta_d}
+
+\newcommand{\gammakern}{\gamma_s}
+\newcommand{\gammaband}{\gamma_b}
+\newcommand{\gammaoper}{\gamma_o}
+\newcommand{\gammawav} {\gamma_d}
+\newcommand{\gammamax} {\gamma_M}
+
+\psfrag{na=3} [r][r]{ \tiny $\eta = 3$}
+\psfrag{na=4} [r][r]{ \tiny $\eta = 4$}
+\psfrag{na=5} [r][r]{ \tiny $\eta = 5$}
+\psfrag{na=6} [r][r]{ \tiny $\eta = 6$}
+\psfrag{na=7} [r][r]{ \tiny $\eta = 7$}
+\psfrag{na=8} [r][r]{ \tiny $\eta = 8$}
+\psfrag{na=9} [r][r]{ \tiny $\eta = 9$}
+\psfrag{na=10}[r][r]{\tiny $\eta = 10$}
+
+
+\psfrag{no=na+1}{\tiny $\eta_o\! =\! \eta\! +\! 1$}
+\psfrag{+2}{\tiny $+ 2$}
+\psfrag{+3}{\tiny $+ 3$}
+\psfrag{+4}{\tiny $+ 4$}
+
+\psfrag{nk=na}{\tiny $\etakern = \eta$}
+\psfrag{nk=na+1}{\tiny $\etakern = \eta + 1$}
+\psfrag{nk=na+2}{\tiny $\etakern = \eta + 2$}
+\psfrag{nk=na+3}{\tiny $\etakern = \eta + 3$}
+\psfrag{no}{\tiny $\etaoper$}
+\psfrag{Accuracy}[c][c]{\scriptsize Accuracy ratio $\gamma$}
+
+\renewcommand{\thefigure}{\arabic{figure}}
+\newcommand{\Exp}[1]{\ensuremath{\cdot 10^{#1}}}
+\newcommand{\etal}{{\emph{et al.}\ }}
+\newcommand{\mycomment}[1]{{\large \bf #1}}
+\newlength{\dch}
+\newlength{\sch}
+\newcommand{\ud}{\ensuremath{\,\mathrm{d}}}
+\newcommand{\mydef}{\stackrel{\text{def}}{\hbox{=}}}
+\newcommand{\setdch}{\settoheight{\dch}{\nscu{d}}}
+\newcommand{\setsch}{\settoheight{\sch}{\nscucd{s}}}
+\newcommand{\filter}[2]{\ensuremath{F_{(#1,#2)}}}
+\newcommand{\ndfilter}[2]{\ensuremath{\mathcal{F}_{(#1,#2)}}}
+\newcommand{\dsvec}[2]{\ensuremath{\begin{pmatrix} \rule{0mm}{\dch} d \\ \rule{0mm}{\sch} s \end{pmatrix}^{#1}_{#2}}}
+\newcommand{\dsvbu}[2]{\ensuremath{\begin{pmatrix} \rule{0mm}{\dch} \nsbu{d} \\ \rule{0mm}{\sch} \nsbu{s} \end{pmatrix}^{#1}_{#2}}}
+\newcommand{\dsvcu}[2]{\ensuremath{\begin{pmatrix} \rule{0mm}{\dch} \nscu{d} \\ \rule{0mm}{\sch} \nscu{s} \end{pmatrix}^{#1}_{#2}}}
+\newcommand{\dsvcucd}[2]{\ensuremath{\begin{pmatrix} \rule{0mm}{\dch} \nscu{d} \\ \rule{0mm}{\sch} \nscucd{s} \end{pmatrix}^{#1}_{#2}}}
+\newcommand{\nsopABCT}[2][]{\ensuremath{\begin{pmatrix} \rule{0mm}{\dch} A & B \\ \rule{0mm}{\sch} C & T\end{pmatrix}^{#2}_{#1}}}
+\newcommand{\nsopABC}[1]{\ensuremath{\begin{pmatrix} \rule{0mm}{\dch} A & B \\ \rule{0mm}{\sch} C & 0\end{pmatrix}^{#1}}}
+\newcommand{\mwtrans}[2]{\ensuremath{W_{#1\leftarrow #2}}}
+
+\newcommand{\nscf}[1]{\ensuremath{\tilde{#1}}}
+\newcommand{\nsabf}[1]{\ensuremath{\ud \tilde{#1}}}
+\newcommand{\nstf}[1]{\ensuremath{\hat{#1}}}
+
+\newcommand{\bs}[1]{\ensuremath{\boldsymbol #1}}
+
+\newcommand{\nscucd}[1]{\ensuremath{\underset{\circ}{\overset{\circ}{#1}}}}
+\newcommand{\nsbubd}[1]{\ensuremath{\underset{\bullet}{\overset{\bullet}{#1}}}}
+\newcommand{\nscu}[1]{\ensuremath{\overset{\circ}{#1}}}
+\newcommand{\nscd}[1]{\ensuremath{\underset{\circ}{#1}}}
+\newcommand{\nsbu}[1]{\ensuremath{\overset{\bullet}{#1}}}
+\newcommand{\nsbd}[1]{\ensuremath{\underset{\bullet}{#1}}}
+
+\newcommand{\bds}[1]{\ensuremath{\boldsymbol{#1}}}
+\newcommand{\wcoef}[3]{\ensuremath{\bds{#1}_{#2}^{#3}}}
+\newcommand{\wcoefu}[3]{\ensuremath{\hat{\bds{#1}}_{#2}^{#3}}}
+\newcommand{\wcoefd}[3]{\ensuremath{\check{\bds{#1}}_{#2}^{#3}}}
+\newcommand{\wcoefud}[3]{\ensuremath{\tilde{\bds{#1}}_{#2}^{#3}}}
+\newcommand{\wtrans}[2]{\ensuremath{W_{{\left[#1\right]}\leftarrow {\left[#2\right]}}}}
+\newcommand{\scaling}{\phi}
+\newcommand{\wavelet}{\psi}
+\newcommand{\scalingcoef}{s}
+\newcommand{\waveletcoef}{w}
+\newcommand{\scalingvec}{\boldsymbol{\phi}}
+\newcommand{\waveletvec}{\boldsymbol{\psi}}
+\newcommand{\scalwav}{\varphi}
+\newcommand{\scalingnd}{\Phi}
+\newcommand{\waveletnd}{\Psi}
+\newcommand{\scalewave}{\varphi}
+\newcommand{\scalingrep}[2]{\ensuremath{{#1}^{#2}}}
+\newcommand{\waveletrep}[2]{\ensuremath{\ud {#1}^{#2}}}
+
+\newcommand{\scalingspace}[2][k]{\ensuremath{{V}_{#1}^{#2}}}
+\newcommand{\waveletspace}[2][k]{\ensuremath{{W}_{#1}^{#2}}}
+\newcommand{\scalingproj}[2][k]{\ensuremath{{P}_{#1}^{#2}}}
+\newcommand{\waveletproj}[2][k]{\ensuremath{{Q}_{#1}^{#2}}}
+
+\newcommand{\PTP}[2]{\ensuremath{\scalingproj{#1} T\scalingproj{#2}}}
+\newcommand{\PTQ}[2]{\ensuremath{\scalingproj{#1} T\waveletproj{#2}}}
+\newcommand{\QTP}[2]{\ensuremath{\waveletproj{#1} T\scalingproj{#2}}}
+\newcommand{\QTQ}[2]{\ensuremath{\waveletproj{#1} T\waveletproj{#2}}}
+
+\newcommand{\ssoper}[2][k]{\ensuremath{\scalingproj[#1]{#2} T\scalingproj[#1]{#2}}}
+\newcommand{\swoper}[2][k]{\ensuremath{\scalingproj[#1]{#2} T\waveletproj[#1]{#2}}}
+\newcommand{\wsoper}[2][k]{\ensuremath{\waveletproj[#1]{#2} T\scalingproj[#1]{#2}}}
+\newcommand{\wwoper}[2][k]{\ensuremath{\waveletproj[#1]{#2} T\waveletproj[#1]{#2}}}
+
+\newcommand{\A}[2]{\ensuremath{^{#1}A^{#2}}}
+\newcommand{\B}[2]{\ensuremath{^{#1}B^{#2}}}
+\newcommand{\C}[2]{\ensuremath{^{#1}C^{#2}}}
+\newcommand{\T}[2]{\ensuremath{^{#1}T^{#2}}}
+
+\newtheorem{algorithm1}{\newpage\vspace{3mm}\noindent {\sc \bf Algorithm}}[section]
+
+\floatstyle{ruled}
+\newfloat{Algorithm}{t}{alg}
+
