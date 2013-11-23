@@ -111,4 +111,62 @@ data structures and algorithms used in the MRChem program, and some details of
 how the mathematical theory is implemented in practice. Some numerical results
 are given to show the capabilities and performances of the code.
 
+
+\subsection{Multiwavelets}
+In the construction of the multiwavelet basis we start with a simple set of 
+orthogonal polynomials $\lbrace\phi_j\rbrace_{j=0}^k$ of order $k$ on the unit 
+interval. This can be e.g. the Legendre polynomials shifted to the unit interval. 
+If this basis turns out to be too crude to accurately describe the function, we 
+split the interval and double the number of basis functions by dilating and 
+translating the original basis to both subintervals
+\begin{equation}
+    \phi_{j,l}^1(x) = 2^{1/2}\phi_j(2x - l), \qquad l = 0,1
+\end{equation}
+The polynomials are defined only on their respective intervals, so basis functions 
+at different translations are by construction orthogonal. The splitting procedure 
+can be continued until we have reached a scale $n$ where we are satisfied with the 
+accuracy of the representation. At this level of refinement the unit interval has 
+been split in $2^n$ intervals, each of size $2^{-n}$ containing a dilated and 
+translated version of the original $k$-order basis
+\begin{equation}
+    \label{eq:two_scale}
+    \phi_{j,l}^n(x) = 2^{n/2}\phi_j(2^nx - l), \qquad l = 0,\dots,2^n-1
+\end{equation}
+These are the so-called scaling functions, and they span the scaling space 
+$\scalingspace{n}$. This basis can be used to represent any square integrable 
+function to any finite accuracy by adjusting the polynomial order $k$ and/or the 
+level of refinement $n$. With this construction, it is easy to verify that each 
+scaling space is fully contained in all scaling spaces of higher resolution, and 
+we have the following relation
+\begin{equation}
+    \label{eq:MRA}
+    \scalingspace{0} \subset \scalingspace{1} \subset \ldots
+    \subset \scalingspace{n} \subset \ldots
+\end{equation}
+In addition to scaling functions, the multiwavelet basis consists of another set 
+of piecewise polynomials, the wavelet functions $\psi_{j,l}^n$, that span the 
+wavelet space $\waveletspace{n}$. This space is defined as the orthogonal 
+complement of $\scalingspace{n}$ in $\scalingspace{n+1}$
+\begin{equation}
+    \label{eq:wavelet-def}
+    \waveletspace{n} \oplus \scalingspace{n} = \scalingspace{n+1}
+\end{equation}
+The wavelet functions satisfy the same two-scale relation as the scaling functions 
+in Eq.~(\ref{eq:two_scale}).
+\\
+\\
+\noindent
+The extension to three dimensions is done using a standard tensor-product structure, 
+where we get a basis of $(k+1)^3$ pure scaling functions on each cubic cell 
+\begin{equation}
+    \label{eq:tensor_basis}
+    \Phi^n_{ijk}(x,y,z) = \phi^n_i(x)\phi^n_j(y)\phi^n_k(z)
+\end{equation}
+and we note that from the definition of the wavelet space in Eq.~(\ref{eq:wavelet-def}) 
+we get a total of $(2^3-1)(k+1)^3$ wavelet functions on each cell (all combinations in 
+Eq.~(\ref{eq:tensor_basis}) that contain at least one wavelet function), and it becomes 
+apparent that the treatment of more than three dimensions is problematic as the size of 
+the basis grows exponentially in the dimension.
+
+
 \pagebreak
