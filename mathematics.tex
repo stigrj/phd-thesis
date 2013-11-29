@@ -447,11 +447,11 @@ application.
 A necessary assumption for an efficient implementation of a multi-dimensional operator
 is that it is separable in the Cartesian coordinates. This, combined with the tensor
 structure of the multiwavelet basis, ensures that the multi-dimensional operator 
-application can be performed using mono-dimensional algorithms, and that the scaling
-becomes linear rather than exponential in the dimension. This assumption does not
+application can be performed using mono-dimensional algorithms, and that the exponential
+scaling in the dimension is significantly reducecd. This assumption does not
 limit the applicability of the method on real-world problems, as many important 
 non-separable operators in physics can be made separable to a finite, but arbitrary
-precision. This is discussed further in section \ref{sec:sep_rep}.
+precision.
 
 \subsection{Operator projection}
 Working in the multiresolution analysis, the operator is applied to the projection 
@@ -811,91 +811,165 @@ at the time, starting from the coarsest (usually $n=0$). As pointed out above,
 this does not directly account for the interaction between scales, but this can
 be included by a series of wavelet transforms on parts of the result. This is 
 described fully in the implementation part in chapter \ref{chap:implementation}. 
-The post-processing wavelet transforms requires $O(N)$ operations, and provided
+The post-processing wavelet transforms require $O(N)$ operations, and provided
 sparse $A$, $B$ and $C$ parts of the operator, the complete non-standard 
 application scales as $O(N)$, in contrast to the standard form, where 
 scale-to-scale interactions are treated explicitly, which has a formal 
 $O(N log N)$ scaling \cite{something}.
 
 \subsection{Integral operators}
-Calderon-Zygmund operators\\
-Vanishing moments -> sparsity\\
-
-\section{Separated representation of operators}
-In the discussion of multi-dimensional operators in the previous section it
-was assumed that we have an operator that is separable in the Cartesian
-coordinates. This assumption is necessary to in order to make calculations
-feasable in higher dimensions, as the straightforward generalization of a
-one-dimensional approach will scale exponentially in the dimension. It is,
-however, not necessary that the operator separates exactly, and it has been
-shown that a lot of physically interresting operators can be approximated
-
-
-\subsection{Poisson kernel}
-In order to solve the Poisson equation using the methods described above, we
-need to rewrite it to an integral form. The equation, in its differential
-form, is given as
+Multiwavelets were originally introduced for their effectively sparse 
+representation of certain integral operators, in particular operators with 
+non-oscillatory kernels that are analytic except along a finite set of 
+curves \cite{Alpert}. To be more specific, we consider one-dimensional operators
+on the form
 \begin{equation}
-	\nabla^2 V(\bs{x}) = -\rho(\bs{x})
+    \label{eq:intop1d}
+    [Tf](x) = \int K(x,y) f(y) \ud y
 \end{equation}
-where $\rho(\bs{x})$ is the known (charge) distribution, and
-$V(\bs{x})$ is the unknown (electrostatic) potential. It is a standard
-textbook procedure to show that the solution can be written as the integral
+The sparsity of the operator representation follows under certain conditions 
+on the integral kernel $K$, which is discussed below. We start, however, by 
+expanding the kernel in the multiwavelet basis
 \begin{equation}
-	V(\bs{x}) = \int G(\bs{x},\bs{y})\rho(\bs{y})d\bs{y}
+    \label{eq:kernelexp}
+    K^N(x,y) = \sum_{l_x,l_y}\bs{\tau}^{N,N}_{l_xl_y} 
+	\scalingvec^N(x)\scalingvec^N(y)
 \end{equation}
-where $G(\bs{x},\bs{y})$ is the Green's function which
-is the solution to the \emph{fundamental} equation with \emph{homogeneous}
-(Dirichlet) boundary conditions
-\begin{eqnarray}
-	\label{eq:fundamental}
+where the expansion coefficients are given by the integrals
+\begin{equation}
+    \label{eq:taudef}
+    \bs{\tau}^{n_x,n_y}_{l_xl_y} = \int\int
+	K(x,y)\scalingvec^{n_x}_{l_x}(x)\scalingvec^{n_y}_{l_y}(y)\ud x \ud y
+\end{equation}
+Inserting Eq.~(\ref{eq:kernelexp}) into Eq.~(\ref{eq:intop1d}) yields
+\begin{align}
+    \nonumber
+    \T{N}{N}\scalingrep{f}{N}(x) &= \int\left(\sum_{l_x,l_y} \bs{\tau}^{N,N}_{l_xl_y}
+	\scalingvec^N_{l_x}(x)\scalingvec^N_{l_y}(y)\right)f(y)\ud y\\
+	&= \sum_{l_x,l_y} \bs{\tau}^{N,N}_{l_xl_y}
+	\scalingvec^N_{l_x}(x)\int f(y)\scalingvec^N_{l_y}(y)\ud y
+\end{align}
+where the last integral is recognized as the scaling coefficients of $f$ from 
+Eq.~(\ref{eq:scaling_coef})
+\begin{equation}
+    \label{eq:Tmatrixsum}
+    \T{N}{N}\scalingrep{f}{N}(x) = \sum_{l_x,l_y} \bs{\tau}^{N,N}_{l_xl_y}
+	\scalingvec^N_{l_x}(x)\scalingcoef^{N,f}_{l_y}
+\end{equation}
+We can now identify $\bs{\tau}^{N,N}_{l_xl_y}$ as the matrix elements of \T{N}{N} 
+and Eq.~(\ref{eq:Tmatrixsum}) is Eq.~(\ref{eq:Tmatrix}) written explicitly. 
+Similarly, we define $\bs{\alpha}$, $\bs{\beta}$ and $\bs{\gamma}$ as the matrix 
+elements of $A$, $B$ and $C$, respectively
+\begin{align}
+	\label{eq:tcbadef}
 	\begin{split}
-	\nabla^2 G(\bs{x},\bs{y}) &= \delta(\bs{x}-\bs{y})&\\
-	G(\bs{x},\bs{y}) &= 0 &,\bs{x} \in boundary
+	\bs{\alpha}^{n_x,n_y}_{l_xl_y} &= \int\int
+	K(x,y)\waveletvec^{n_x}_{l_x}(x)\waveletvec^{n_y}_{l_y}(y)\ud x \ud y\\
+	\bs{\beta}^{n_x,n_y}_{l_xl_y} &= \int\int
+	K(x,y)\waveletvec^{n_x}_{l_x}(x)\scalingvec^{n_y}_{l_y}(y)\ud x \ud y\\
+	\bs{\gamma}^{n_x,n_y}_{l_xl_y} &= \int\int
+	K(x,y)\scalingvec^{n_x}_{l_x}(x)\waveletvec^{n_y}_{l_y}(y)\ud x \ud y
 	\end{split}
-\end{eqnarray}
-This equation can be solved analytically and the Green's function is given
-(in three dimensions) simply as
+\end{align}
+and Eq.~(\ref{eq:Tmatrixsum}) can then be decomposed according to Eq.~(\ref{eq:ABCT}) as
+\begin{align}
+	\label{eq:ABCTmatrixsum}
+	\begin{split}
+	[Tf]^N(x) &= \sum_{l_x,l_y}\bs{\tau}^{N-1,N-1}_{l_xl_y}
+	\scalingvec^{N-1}_{l_x}(x) \bs{\scalingcoef}^{N-1}_{l_y}\\
+	&+ \sum_{l_x,l_y}\bs{\gamma}^{N-1,N-1}_{l_xl_y}
+	\scalingvec^{N-1}_{l_x}(x) \bs{\waveletcoef}^{N-1}_{l_y}\\
+	&+ \sum_{l_x,l_y}\bs{\beta}^{N-1,N-1}_{l_xl_y}
+	\waveletvec^{N-1}_{l_x}(x) \bs{\scalingcoef}^{N-1}_{l_y}\\
+	&+ \sum_{l_x,l_y}\bs{\alpha}^{N-1,N-1}_{l_xl_y}
+	\waveletvec^{N-1}_{l_x}(x) \bs{\waveletcoef}^{N-1}_{l_y}
+	\end{split}
+\end{align}
+which is Eq.~(\ref{eq:ABCTmatrix}) written explicitly. 
+
+Suppose that the integral kernel satisfy the estimates
+\begin{align}
+    |K(x,y)| &\leq \frac{1}{|x-y|}\\
+    |\partial_x^M K(x,y)|+ |\partial_y^M K(x,y)| &\leq \frac{C_M}{|x-y|^{M+1}}
+\end{align}
+for some $M\geq1$. Such operators are called Calderon-Zygmund operators, and
+include both the Poisson and bound-state Helmholtz operators which is discussed 
+in detail below. Beylkin \etal\cite{Beylkin} shows that in a basis with
+$M$ vanishing moments, the coefficients $\bs{\alpha}$, $\bs{\beta}$ and 
+$\bs{\gamma}$ are bounded as
 \begin{equation}
-	\label{eq:3DGreen}
-	G(\bs{x},\bs{y}) = \frac{1}{||\bs{x}-\bs{y}||}
+    |\bs{\alpha}_{l_x,l_y}| + |\bs{\beta}_{l_x,l_y}| + |\bs{\gamma}_{l_x,l_y}| 
+	\leq \frac{C_M}{1+|l_x-l_y|^{M+1}}
 \end{equation}
-This is the well known potential arising from a point charge located in the 
-position $\bs{y}$, which is exactly what eq.(\ref{eq:fundamental})
-describes.
-
-\subsection{Helmholtz kernel}
-
-\subsection*{Numerical separation of the kernel}
-The Green's function kernel as it is given in eq.(\ref{eq:3DGreen}) is not 
-separable in the cartesian coordinates. However, since we are working with
-finite precision we can get by with an \emph{approximate} kernel as long as
-the error introduced with this approximation is less than our overall accuracy
-criterion. If we are able to obtain such a \emph{numerical} separation of the
-kernel, the operator can be applied in one direction at the time, allowing us 
-to use the expressions derived above for one-dimensional integral operators to 
-solve the three-dimensional Poisson equation. This is of great importance, not 
-only because we do not have to derive the $d$-dimensional operator equations, 
-which is at best notationally awkward, but also because it again reduces the 
-scaling behavior to become linear in the dimension of the system.\\
-
-\noindent
-The Poisson kernel can be made separable by expanding it as a
-sum of Gaussian functions, specifically
+for all
 \begin{equation}
-	\label{eq:poissonexp}
-	\frac{1}{||\bs{r}-\bs{s}||} \approx
-	\sum_{\kappa=1}^{M_\epsilon}a_\kappa e^{-b_{\kappa}(\bs{r}-\bs{s})^2}
+    |l_x-l_y| \geq 2M
 \end{equation}
-where $a_\kappa$ and $b_\kappa$ are parameters that needs to be determined,
-and the number of terms $M_\epsilon$, called the separation rank, depends on 
-the accuracy requirement and on what interval this expansion needs to be
-valid. Details of how to obtain this expansion can be found in 
-\cite{Fossgaard}, and
-will not be treated here, but it should be mentioned that the separation rank
-is usually in the order of $100$, e.g. it requires $M_\epsilon = 70$ to
-reproduce $1/r$ on the interval $[10^{-5}, \sqrt{3}]$ in three dimensions with
-error less than $\epsilon = 10^{-8}$.\\
+This means that within a given accuracy, all contributions beyond a certain spatial 
+separation $|l_x-l_y|$ can be set to zero, leading to operators that are banded 
+along the diagonal.
+
+\subsection{Derivative operator}\label{sec:diff_oper}
+Alpert \etal described in \cite{Alpert} how to construct derivative operators in
+the multiwavelet basis. Since the basis is discontinous, there does not exist a
+unique representation of the derivative operator. In \cite{Alpert} this non-uniqueness
+appears as two adjustable parameters that handles boundary conditions at the
+discontinous merging point between basis functions. The representation can be
+viewed as the straightforward differentiation of the basis functions at the 
+\emph{interior} of each interval, combined with a finite difference representation
+\emph{across} intervals.
+
+The matrix representation of the operator $T=d/dx$ is formally given as
+\begin{equation}
+    \bs{\tau}_{lm}^{n,n} = \int_{2^{-n}l}^{2^{-n}(l+1)} \scalingvec_{l}^n(x) T \scalingvec_m^n(x) \ud x
+	= 2^n \int_0^1 \scalingvec_0^0(x) T \scalingvec_{l-m}^0(x) \ud x
+\end{equation}
+however, for derivative operators, this integral is not absolutely convergent. 
+Because of the disjoint support of the basis functions, it is immidiately clear that
+there will be no interaction beyond the neighboring interval, and $\tau_{lm} = 0$ for
+$|l-m| > 1$. The case $|l-m| = 1$ needs to be treated with care, since there are
+boundary effects to consider even if the basis functions are non-overlapping. This
+becomes apparent if we look at the scaling coefficients of the derivative \scalingrep{f'}{n} of
+a function \scalingrep{f}{n} represented in the scaling basis at scale $n$
+\begin{equation}
+    \bs{\scalingcoef}_{l}^{n,f'} = \int_{2^{-n}l}^{2^{-n}(l+1)} 
+	\scalingvec_l^n(x) \frac{\ud}{\ud x} \scalingrep{f}{n}(x) \ud x 
+\end{equation}
+Integration by parts now introduces a boundary term
+\begin{align}
+    \bs{\scalingcoef}_{l}^{n,f'} 
+    &= \scalingrep{f}{n}(x)\scalingvec_l^n(x)|_{2^{-n}}^{2^{-n}(l+1)}
+	- \int_{2^{-n}l}^{2^{-n}(l+1)} \scalingrep{f}{n}(x) \frac{\ud}{\ud x} \scalingvec_l^n(x) \ud x \\
+    \label{eq:diff_boundary}
+    &= 2^{n/2} [\scalingrep{f}{n}(2^{-n}l)\scalingvec_0^0(1) - 
+	\scalingrep{f}{n}(2^{-n}(l+1))\scalingvec_0^0(0)] - 2^n\sum_{j=0}^{k} K_{ij}\bs{\scalingcoef}_l^n
+\end{align}
+where the matrix $K$ is defined
+\begin{equation}
+    K = \int_0^1 \scalingvec(x) \frac{\ud}{\ud x} \scalingvec^T(x) \ud x
+\end{equation}
+We see in Eq.~(\ref{eq:diff_boundary}) that the function representation \scalingrep{f}{n} 
+needs to be evaluated precisely at the discontinuities of the
+basis where the function value is not well defined. This problem is circumvented
+by interpolating between the function values obtained at both sides of the boundary
+\begin{align}
+    \scalingrep{f}{n} &= a\scalingrep{f}{n}_{-} + (1-a) \scalingrep{f}{n}_{+}\\
+    \scalingrep{f}{n} &= b\scalingrep{f}{n}_{-} + (1-b) \scalingrep{f}{n}_{+}
+\end{align}
+where $a$ and $b$ are adjustable parameters. In the Haar basis (piecewise constants)
+this reduces to a finite difference definition of the derivative, with the choice 
+$a=b=1/2$ corresponding to central difference, and $a=1,b=0$ and $a=0,b=1$ 
+corresponding to forward and backward differences, respectively. With the choice
+$a=b=0$ no boundary effects are treated, and the derivative is obtained by a 
+straightforward piecewise derivative of the polynomial basis. This inevitably leads
+to a reduction of the approximation order as the basis is effectively reduced from
+order $k$ to order $k-1$. The way to maintain the high approximation order is then
+to use the boundary information ($a=b=1/2$) whenever the approximation order of
+the finite differences ($O((2^{-n})^2)$) is at least as high as the approximation of the 
+basis ($O(2^{-n(k-1)})$). This is important to consider in adaptive function representations,
+where parts of the function can be represented at relatively coarse scales, where
+the inclusion of the boundary term can severly limit the approximation order of
+the differentiated function.
 
 \subsection{Multiresolution operators in $d$ dimensions}
 We assume that we have a separable representation of a $d$-dimensional
@@ -956,3 +1030,130 @@ then becomes very complicated, and, as we will see in the later in the
 implementation part in section \ref{sec:implementation}, this is not needed
 in the so-called non-standard representation of the operator.
 
+\section{Separated representation of operators}
+In the discussion of multi-dimensional operators in the previous section it
+was assumed that we have an operator that is separable in the Cartesian
+coordinates. This assumption is necessary in order to make calculations
+feasable in higher dimensions, as the straightforward generalization of a
+one-dimensional approach leads to a prohibitive exponential scaling in the 
+dimension. It is,
+however, not necessary that the operator separates exactly, and Beylkin 
+\etal~\cite{Beylkin} shows that the integral kernel of many physically 
+interresting operators can be approximated as a linear combination of 
+products of one-dimensional kernels
+\begin{equation}
+    \label{eq:sep_rep}
+    K(\bs{x},\bs{y}) \approx \hat{K}(\bs{x},\bs{y}) \mydef 
+	\sum_{\kappa=1}^{M}\alpha_\kappa \prod_{p=1}^d K_p^\kappa(x_p,y_p)
+\end{equation}
+The accuracy of this separated representation can be controlled by adapting
+the functions $K_p^\kappa$, the expansion coefficients $\alpha_\kappa$ and the 
+separation rank $M$, and any precision can in principle be achieved. Such
+a representation allows the multi-dimensional operator to be applied one 
+dimension at the time, reducing the computational complexity from
+$k^{2d}$ per grid cell of the full non-separable operator, to $Mdk^{d+1}$ 
+per grid cell of the separated representation in Eq.~(\ref{eq:sep_rep}),
+where $k$ is the order of the polynomial basis. While the scaling is still 
+exponential in the dimension, the exponent is sufficiently reduced for the 
+approach to be applicable for $d=2,3$. 
+
+\subsection{Poisson kernel}
+The Poisson equation is usually written in its differential form
+\begin{equation}
+    \nabla^2 g(\bs{x}) = -f(\bs{x})
+\end{equation}
+and the solution of can be expressed in terms of the convolution integral
+\begin{equation}
+    g(\bs{x}) = \int P(\bs{x}-\bs{y})f(\bs{y})\ud\bs{y}
+\end{equation}
+where $P(\bs{x}-\bs{y})$ is the Green's function satisfying the fundamental 
+equation with free boundary conditions (zero at infinity)
+\begin{equation}
+    \label{eq:fundamental_poisson}
+    \nabla^2 P(\bs{x}-\bs{y}) = -\delta(\bs{x}-\bs{y})
+\end{equation}
+This equation can be solved analytically and the Green's function for
+the Poisson equation for $d=3$ is given as
+\begin{equation}
+    \label{eq:poisson_kern}
+    P(\bs{x}-\bs{y}) = \frac{1}{4\pi||\bs{x}-\bs{y}||}
+\end{equation}
+
+\subsection{Helmholtz kernel}
+The inhomogeneous Helmholtz equation is a generalization of the Poisson equation,
+and is given in differential form
+\begin{equation}
+    \big(\nabla^2 + \mu^2\big) g(\bs{x}) = -f(\bs{x})
+\end{equation}
+The solution can again be expressed as an integral
+\begin{equation}
+    g(\bs{x}) = \int H^\mu(\bs{x}-\bs{y})f(\bs{y})\ud\bs{y}
+\end{equation}
+using the Helmholtz kernel $H^\mu(\bs{x}-\bs{y})$, which is the Greeen's function 
+satisfying the fundamental equation
+\begin{equation}
+    \label{eq:fundamental_helmholtz}
+    \big(\nabla^2 + \mu^2\big) H^\mu(\bs{x}-\bs{y}) = -\delta(\bs{x}-\bs{y})
+\end{equation}
+with zero boundary conditions at infinity. The Green's function for the Helmholtz 
+equation for $d=3$ is known analytically as
+\begin{equation}
+    \label{eq:helmholtz_kern}
+    H^\mu(\bs{x}-\bs{y}) = \frac{e^{-\mu\|\bs{x}-\bs{y}\|}}{4\pi||\bs{x}-\bs{y}||}
+\end{equation}
+
+\subsection{Separation using Gaussians}
+Neither the Poisson nor Helmholtz kernels are separable in the Cartesian coordinates, 
+but it is possible to obtain a separated representation as in Eq.~(\ref{eq:sep_rep}) 
+of low rank using Gaussian functions
+\begin{equation}
+    \label{eq:gaussian_exp}
+    K(\bs{x}-\bs{y}) \approx \hat{K}(\bs{x}-\bs{y}) = 
+	\sum_{\kappa=1}^M \alpha_\kappa e^{-\beta_\kappa \|\bs{x}-\bs{y}\|^2}
+\end{equation}
+This representation is motivated by the well known integral representation of the 
+Poisson kernel\cite{something}
+\begin{equation}
+    \label{eq:poisson_int_rep}
+    P(r) = \frac{1}{r} = \frac{4}{\sqrt{\pi}}\int_0^\infty e^{-4r^2t^2}\ud t, 
+	\quad r \mydef \|\bs{x}-\bs{y}\|
+\end{equation}
+and the parameters in Eq.~(\ref{eq:gaussian_exp}) are obtained in the case of the Poisson 
+kernel by transforming Eq.~(\ref{eq:poisson_int_rep}) into an integral of super-exponential 
+decay, and discretizing using the trapezoidal rule\cite{Harrison,Frediani}. In this way, 
+and similarly in the case of the Helmholtz kernel, it is possible to obtain a separated 
+representation $\hat{K}$ of Eq.(\ref{eq:gaussian_exp}) with accuracy $\epsilon_s$ over a 
+finite interval
+\begin{equation}
+    sup_{r>0}\Big|\frac{K(r)-\hat{K}(r)}{K(r)}\Big| < \epsilon_s, \quad r\in[r_0,r_1]
+\end{equation}
+where the upper bound $r_1$ should be chosen as the longest possible distance
+in the computational domain ($r_1=\sqrt{3}$ for the unit cube), and the lower
+bound $r_0$ should be chosen so that the contribution due to the integration
+at the singularity can be neglected\cite{Frediani}.
+
+\subsection{Derivative kernel}
+As a final note we show how we can obtain approximate representations of the derivative 
+operator using the same framework as presented above. The derivative operator can be
+expressed as
+\begin{equation}
+    \frac{\ud}{\ud x} f(x) = \int \frac{\ud}{\ud x} \delta(x-y) f(y) \ud y
+\end{equation}
+where the delta function can be approximated by a high-exponent Gaussian
+\begin{equation}
+    \label{eq:delta_approx}
+    \delta(x-y) \approx \sqrt{\frac{\pi}{\beta}} e^{-\beta (x-y)^2}
+\end{equation}
+which is normalized so that it integrates to unity. This approximation can be 
+differentiated, and the derivative operator can be expressed as the integral
+\begin{equation}
+    \frac{\ud}{\ud x} f(x) = \int D(x-y)f(y) \ud y
+\end{equation}
+using the derivative kernel
+\begin{equation}
+    D(x-y)  = \frac{\ud}{\ud x} \sqrt{\frac{\pi}{\beta}}e^{-\beta (x-y)^2} 
+	    = -2 \sqrt{\beta\pi}(x-y)e^{-\beta (x-y)^2}
+\end{equation}
+This representation approaches the exact derivative as defined by Alpert 
+\etal~\cite{Alpert} and presented in section \ref{sec:diff_oper} as the Gaussian 
+in Eq.~(\ref{eq:delta_approx}) approaches the delta function ($\beta \rightarrow \infty$).
