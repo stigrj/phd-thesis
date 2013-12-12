@@ -1,21 +1,13 @@
 \chapter{Mathematical Theory}
-Wavelet theory is a rather young field of mathematics, first appearing in the
-late 1980s. The initial application was in signal theory \cite{Strang} but in
-the early 90s, wavelet-based methods started to appear for the solution of
-PDEs and integral equations \cite{Beylkin90}\cite{Alpert93}, and in recent 
-years for application in electronic structure calculations
-\cite{Harrison}\cite{Niklasson}\cite{Arias}. The presented work is based on the
-generalization called multiwavelets, which was introduced by Alpert\cite{Alpert}.
-
 In this chapter a general introduction to multiwavelet theory will be given through 
-the concept of multiresolution analysis (MRA)\footnote{Keinert\cite{Keinert} uses 
-the term multiresolution \emph{approximation}, but in this work we will use
-multiresolution \emph{analysis}, as it is more commonly used in the literature.}.
-A detailed description of MRAs can be found in Keinert\cite{Keinert}, from which a 
-brief summary of the key issues are given in the following, with the difference that 
-we limit our discussion to the unit interval instead of the real line. This work is 
-concerned with orthogonal MRA only, and for a description of the general bi-orthogonal 
-MRA the reader is referred to Keinerts book. 
+the concept of multiresolution analysis (MRA), that was developed by 
+Mallat\cite{Mallat:1989}\footnote{Mallat uses the term multiresolution 
+\emph{approximation}, but in this work we will use multiresolution \emph{analysis}, as 
+it is more commonly used in the literature.} and Daubechies\cite{Daubechies:1988} in
+the late 1980s. A detailed description of MRAs can be found in 
+Keinert\cite{Keinert:2004}, from which a brief summary of the key issues are given in 
+the following, with the difference that we limit our discussion to the unit interval 
+instead of the real line.
 
 \section{Multiresolution Analysis}
 A multiresolution analysis of $L^2([0,1])$ is an infinite nested sequence of subspaces
@@ -29,31 +21,32 @@ with the following properties
     \item $\scalingspace{\infty}\ is\ dense\ in\ L^2([0,1])$.
     \item $f(x) \in \scalingspace{n} \Longleftrightarrow f(2x) \in \scalingspace{n+1}
     	\ ,\ \forall n \in \mathbb{N}$.
-    \item $f(x) \in \scalingspace{n} \Longleftrightarrow f(x-2^{-n}l) \in \scalingspace{n}
-	\ ,\ \forall n \in \mathbb{N},\ 0 \leq l \leq 2^n - 1.$
-    \item There exists a function vector $\scalingvec$ of length $k+1$ in 
-	$L^2([0,1])$ so that \[\lbrace \scaling_j(x):\  0\leq j\leq k \rbrace\] 
-	forms a basis for \scalingspace{0}. 
+    \item $f(x) \in \scalingspace{n} \Longleftrightarrow f(x-2^{-n}l) \in 
+	\scalingspace{n}\ ,\ \forall n \in \mathbb{N},\ 0 \leq l \leq 2^n - 1.$
+    \item There exists a function vector $\scalingvec$ in $L^2([0,1])$ of length
+	$k+1$ such that the vector components $\scaling_i$ forms a basis of 
+	\scalingspace{0}. 
 \end{enumerate}
-This means that if we can construct a basis of \scalingspace{0}, which consists of only
-$k+1$ functions, we can construct a basis of \emph{any} space \scalingspace{n}, by
-simple compression (by a factor of $2^n$), and translations (to all dyadic
-grid points at scale $n$), of the original $k+1$ functions, and by increasing
-the scale $n$, we are approaching a complete basis of $L^2([0,1])$. Since $\scalingspace{n}
-\subset \scalingspace{n+1}$ the basis functions of \scalingspace{n} can be expanded in the 
-basis of \scalingspace{n+1}
+This means that if we can construct a basis of \scalingspace{0}, which consists of 
+only $k+1$ functions, we can construct a basis of \emph{any} space \scalingspace{n}, 
+by simple compression (by a factor of $2^n$, property 2), and translations (to all 
+dyadic grid points at scale $n$, property 3), of the original $k+1$ functions, and 
+by increasing the scale $n$, we are approaching a complete basis of $L^2([0,1])$. 
+Since $\scalingspace{n} \subset \scalingspace{n+1}$ the basis functions of 
+\scalingspace{n} can be expanded in the basis of \scalingspace{n+1}
 \begin{equation}
     \label{eq:twoscalescaling}
     \scalingvec^n_l(x) \mydef 2^{n/2}\scalingvec(2^nx-l) = 
 	\sum_{l'=0}^{2^n-1} H^{(l')} \scalingvec^{n+1}_{l'}(x)
 \end{equation}
 where the $H^{(l')}$s are the so-called filter matrices that describes the 
-transformation between different spaces \scalingspace{n}. The MRA is called orthogonal if 
+transformation between different spaces \scalingspace{n}. The MRA is called 
+orthogonal if 
 \begin{equation}
     \label{eq:orthogonality}
-    \langle \scalingvec_l^n(x), \scalingvec_{l'}^n(x) \rangle = \delta_{l,l'}I_{k+1}
+    \langle \scalingvec_l^n, \scalingvec_{l'}^n \rangle = \delta_{l,l'}I_{k+1}
 \end{equation}
-where $I_{k+1}$ is the $(k+1) \times (k+1)$ unit matrix, and $k+1$ is the 
+where $I_{k+1}$ is the unit matrix of size $k+1$, and $k+1$ is the 
 length of the function vector. This orthogonality condition means that the 
 functions are orthogonal both within one function vector and through all 
 possible translations on one scale, but \emph{not} through the different scales.
@@ -79,7 +72,7 @@ the same othogonality condition as Eq.~(\ref{eq:orthogonality}), and if we combi
 Eq.~(\ref{eq:MRA}) and Eq.~(\ref{eq:MRAcomplement}) we see that they must also be 
 orthogonal with respect to different scales
 \begin{equation}
-    \langle \waveletvec_l^n(x), \waveletvec_{l'}^{n'}(x) \rangle = 
+    \langle \waveletvec_l^n, \waveletvec_{l'}^{n'} \rangle = 
 	\delta_{l,l'}\delta_{n,n'}I_{k+1}
 \end{equation}
 Recursive application of Eq.~(\ref{eq:MRAcomplement}) yields the important relation
@@ -96,14 +89,17 @@ leading to different wavelet families. There is a one-to-one correspondence betw
 the basis functions $\scalingvec$ and $\waveletvec$, and the filter matrices $H^{(l)}$ 
 and $G^{(l)}$ used in the two-scale relations Eq.~(\ref{eq:twoscalescaling}) and 
 Eq.~(\ref{eq:twoscalewavelet}), and most well known wavelet families are defined 
-only through their filter coefficients.
+only through their filter coefficients, such as Daubechies' family of compactly
+supported wavelets\cite{Daubechies:1988}.
 
 In the following we are taking a different approach, which follows the original 
-construction of multiwavelets by Alpert\cite{Alpert93}. We define the \emph{scaling 
-space} \scalingspace{n} as the space of piecewise polynomials
+construction of multiwavelets by Alpert\cite{Alpert:1993p5460}. We define the 
+\emph{scaling space} \scalingspace{n} as the space of piecewise polynomials
 \begin{equation}
+    \label{eq:scaling_space_def}
     \begin{array}{rl}
-        \displaystyle \scalingspace{n} \mydef & \lbrace f:\ all\ polynomials\ of\ degree\ \leq\ k\\ 
+        \displaystyle \scalingspace{n} \mydef & 
+	    \lbrace f:\ all\ polynomials\ of\ degree\ \leq\ k\\ 
 	\displaystyle &\ on\ the\ interval\ (2^{-n}l,2^{-n}(l+1))\\
 	\displaystyle &\ for\ 0 \leq l < 2^n,\ f\ vanishes\ elsewhere \rbrace
     \end{array}
@@ -120,37 +116,46 @@ standard basis $\lbrace 1,x,x^2,\dots,x^k\rbrace$ and orthonormalize with respec
 the $L^2$ inner product on the unit interval.
 
 \subsection{The wavelet basis}
-The \emph{wavelet space} \waveletspace{n} is defined, according to Eq.~(\ref{eq:MRAcomplement}), 
-as the orthogonal complement of \scalingspace{n} in \scalingspace{n+1}. The wavelet basis functions 
-of \waveletspace{n} are hence piecewise polynomials of degree $\leq k$ on \emph{each} of the two 
-intervals on scale n+1 that overlaps with \emph{one} interval on scale n (but may be 
-discontinous in the merging point). In the construction of the wavelet basis these 
-piecewise polynomials are made orthogonal to the basis of \scalingspace{n} and to each other, 
-and, following Alpert\cite{Alpert93}, a standard Gram-Schmidt orthogonalization is 
-employed to construct a basis that meet the necessary orthogonality conditions.
+The \emph{wavelet space} \waveletspace{n} is defined, according to 
+Eq.~(\ref{eq:MRAcomplement}), as the orthogonal complement of \scalingspace{n} 
+in \scalingspace{n+1}. The wavelet basis functions of \waveletspace{n} are hence 
+piecewise polynomials of degree $\leq k$ on \emph{each} of the two intervals on 
+scale n+1 that overlaps with \emph{one} interval on scale n (but may be 
+discontinous in the merging point). In the construction of the wavelet basis 
+these piecewise polynomials should be made orthogonal both to the scaling basis 
+of \scalingspace{n} and to each other.
 
 One important property of the wavelet basis is its number of vanishing moments. 
-The k-th continuous moment of a function $\wavelet$ is defined as the integral
+The m-th continuous moment of a function $\wavelet$ is defined as the integral
 \begin{equation}
-	\mu_k \mydef \int_0^1 x^k\wavelet(x)dx 	
+    \mu_m \mydef \int_0^1 x^m \wavelet(x)dx 	
 \end{equation}
-and the function $\wavelet$ has $M$ vanishing moments if \[\mu_k = 0,\qquad k=0,\dots, M-1 \]
-The vanishing moments of the wavelet functions gives information on the
-approximation order of the scaling functions. If the wavelet function
-$\wavelet$ has $M$ vanishing moments, any polynomial of order $\leq M-1$ can be 
-exactly reproduced in the scaling space, and the error in
-representing an arbitrary function in the scaling basis is of $M$-th order. 
-By construction, $x^i$ is in the space \scalingspace{0} for $0\leq i \leq k$, and since
-$\waveletspace{0} \perp \scalingspace{0}$, the first $k+1$ moments of $\wavelet^0_j$ must vanish.
+and the function $\wavelet$ is said to have $M$ vanishing moments if 
+\begin{equation}
+    \mu_m = 0, \qquad m=0,\dots, M-1
+\end{equation}
+The vanishing moments of the wavelet functions gives information on the 
+approximation order of the scaling functions. If the wavelet function $\wavelet$ 
+has $M$ vanishing moments, any polynomial of order $\leq M-1$ can be exactly 
+reproduced in the scaling space, and the error in representing an arbitrary 
+function in the scaling basis is of $M$-th order. By construction, $x^m$ is in 
+the space \scalingspace{0} for $0\leq m \leq k$, and since $\waveletspace{0} 
+\perp \scalingspace{0}$, the first $k+1$ moments of $\wavelet^0_j$ must vanish.
 
 \subsection{Filter relations}
-With the multiwavelet basis defined, we can construct the filter
-matrices that fulfill the two-scale relations in Eq.(\ref{eq:twoscalescaling}) and
-Eq.(\ref{eq:twoscalewavelet}). The details of this construction can be found in
-Alpert \etal\cite{Alpert02}, and will not be presented here, but we specifically 
-end up with four matrices $H^{(0)}, H^{(1)}, G^{(0)}$ and $G^{(1)}$, whose size and 
-content are dependent on the order and type of the chosen scaling functions. 
-Eq.~(\ref{eq:twoscalescaling}) and Eq.~(\ref{eq:twoscalewavelet}) thus reduces to
+With the multiwavelet basis defined, we can construct the filter matrices that 
+fulfill the two-scale relations in Eq.(\ref{eq:twoscalescaling}) and
+Eq.(\ref{eq:twoscalewavelet}). The exact construction will depend on the choice
+of scaling and wavelet polynomials, and will not be treated here, but some 
+important properties of the filter matrices are already apparent from the
+definition of the scaling spaces given in Eq.~(\ref{eq:scaling_space_def}). 
+
+Because of the disjoint support of the basis polynomials it is clear that
+a basis vector at scale $n$ will overlap with two basis vectors at scale $n+1$,
+and we end up with four matrices $H^{(0)}, H^{(1)}, G^{(0)}$ and $G^{(1)}$, 
+each of size $(k+1) \times (k+1)$. Eq.~(\ref{eq:twoscalescaling}) and 
+Eq.~(\ref{eq:twoscalewavelet}) thus reduces to
+
 \begin{equation}
     \label{eq:twoscalerelations}
     \begin{pmatrix}
@@ -166,6 +171,13 @@ Eq.~(\ref{eq:twoscalescaling}) and Eq.~(\ref{eq:twoscalewavelet}) thus reduces t
 	\scaling_{2l}^{n+1}\\
     \end{pmatrix}
 \end{equation}
+\\
+\noindent
+The locality of this transformation is important for numerical implementations,
+as it leads to efficient, linear scaling algorithms. The transformation in 
+Eq.~(\ref{eq:twoscalerelations}) is called forward wavelet transform or 
+wavelet decomposition, while its inverse is called backward wavelet transform
+or wavelet reconstruction.
 
 \subsection{Multiwavelets in $d$ dimensions}
 Multidimensional wavelets are usually constructed by tensor products, where the
@@ -174,16 +186,16 @@ scaling space is defined as
     \scalingspace{n,d} \mydef \bigotimes^d \scalingspace{n}
 \end{equation}
 The basis for this $d$-dimensional space is given as tensor products of the
-one-dimensional bases.
+one-dimensional bases
 \begin{equation}
     \label{eq:multidimscaling}
     \scalingnd^n_{\bs{j},\bs{l}}(\bs{x}) = 
     \scalingnd^n_{j_1 j_2\dots j_d,l_1 l_2\dots l_d} (x_1,x_2,\dots,x_d) \mydef
-    \prod_{i=1}^d \scaling^n_{j_i,l_i}(x_i)
+    \prod_{p=1}^d \scaling^n_{j_p,l_p}(x_p)
 \end{equation}
 The number of basis functions on each hypercube $\bs{l}=(l_1,l_2,\dots,l_d)$ 
 becomes $(k+1)^d$, while the number of such hypercubes on scale $n$ becomes $2^{dn}$, 
-which again means that the total number of basis functions is growing exponentially 
+which means that the total number of basis functions is growing exponentially 
 with the number of dimensions.
 
 The wavelet space can be defined using Eq.~(\ref{eq:MRAcomplement})
@@ -197,32 +209,29 @@ hand side of Eq.~(\ref{eq:multidimW}) is recognized as \scalingspace{n,d}, makin
 wavelet space \waveletspace{n,d} consist of all the remaining terms of the product, 
 which are terms that contain at least one wavelet space.
 
-To achieve a uniform notation, we can introduce a "generalized" one-dimensional
+To achieve a uniform notation, we can introduce a ``generalized'' one-dimensional
 wavelet function $\lbrace\scalewave_{j,l}^{\alpha,n}\rbrace$ that, depending on 
 the index $\alpha$ can be either the scaling or the wavelet function
 \begin{equation}
-    \scalewave^{\alpha_i,n}_{j_i,l_i} \mydef 
+    \scalewave^{\alpha_p,n}_{j_p,l_p} \mydef 
     \left\{
 	\begin{array}{lll}
-	    \scaling^n_{j_i,l_i}	&\mbox{ if }\alpha_i = 0\\
-	    \wavelet^n_{j_i,l_i}	&\mbox{ if }\alpha_i = 1
+	    \scaling^n_{j_p,l_p}	&\mbox{ if }\alpha_p = 0\\
+	    \wavelet^n_{j_p,l_p}	&\mbox{ if }\alpha_p = 1
 	\end{array}
     \right.
 \end{equation}
 The wavelet functions for the $d$-dimensional space can thus be expressed as
 \begin{equation}
     \waveletnd^{\alpha,n}_{\bs{j}, \bs{l}}(\bs{x}) =
-    \prod_{i=1}^d\scalewave^{\alpha_i,n}_{j_i,l_i}(x_i)
+    \prod_{p=1}^d\scalewave^{\alpha_p,n}_{j_p,l_p}(x_p)
 \end{equation}
 Where the total $\alpha$ index on $\waveletnd$ separates the $2^d$ different
 possibilities of combining scaling/wavelet functions with the same index
 combination $\bs{j} = (j_0,j_1,\dots,j_k)$. $\alpha$ is given by the 
-binary expansion
-\begin{equation}
-    \alpha = \sum_{i=1}^d 2^{i-1}\alpha_i
-\end{equation}
-and thus runs from $0$ to $2^d-1$. By closer inspection we see that $\alpha=0$
-recovers the pure scaling function
+binary expansion ($\alpha_d\cdots\alpha_1\alpha_0$) and thus runs from $0$ 
+to $2^d-1$. By closer inspection we see that $\alpha=0$ recovers the pure 
+scaling function
 \begin{equation}
     \waveletnd^{0,n}_{\bs{j},\bs{l}}(\bs{x}) \equiv
     \scalingnd^n_{\bs{j},\bs{l}}(\bs{x})
@@ -240,13 +249,17 @@ dimensionality through the equation
 \end{equation}
 since $dim(\scalingspace{n+1,d}) = 2^d dim(\scalingspace{n,d})$.
 
-As for the monodimensional case we can define filter matrices that transform
-the scaling functions at scale $n+1$,
-$\lbrace\scalingnd^{n+1}_{\bs{j},\bs{l}}\rbrace$, into scaling and 
-wavelet functions at scale $n$, $\lbrace\waveletnd^{\alpha,n}_{\bs{j},
-\bs{l}}\rbrace_{\alpha=0}^{2^d-1}$. Details of this construction can be
-found in \cite{Fossgaard}, where the corresponding matrices are shown to be 
-tensor products of the monodimensional matrices. 
+As for the mono-dimensional case we can define filter matrices that transform
+the scaling functions at scale $n+1$, 
+$\lbrace\scalingnd^{n+1}_{\bs{j},\bs{l}}\rbrace$, 
+into scaling and wavelet functions at scale $n$, 
+$\lbrace\waveletnd^{\alpha,n}_{\bs{j},\bs{l}}\rbrace_{\alpha=0}^{2^d-1}$. 
+Details of this construction can be found in the supporting information of
+Frediani \etal\cite{Frediani:2013p1143}, where the corresponding matrices are 
+shown to be tensor products of the mono-dimensional matrices. This means that 
+the multi-dimensional wavelet transform can be done by consecutive application 
+of $d$ mono-dimensional filters. Much more is said on multi-dimensional MRAs
+and wavelet transforms in Tymczak \etal\cite{Tymczak:2002}.
 
 \section{Function representation}
 In this section we will describe how to represent functions in the multiwavelet
@@ -260,8 +273,8 @@ $\lbrace\scaling^n_{j,l}\rbrace$ that span the scaling space \scalingspace{n}
     f(x) \approx \scalingproj{n}f(x) \mydef \scalingrep{f}{n}(x) =
 	\sum_{l=0}^{2^n-1}\sum_{j=0}^k\scalingcoef^{n,f}_{j,l}\scaling^n_{j,l}(x)
 \end{equation}
-where the expansion coefficients $\scalingcoef^{n,f}_{j,l}$, the so-called \emph{scaling}
-coefficients, are obtained by the projection integral
+where the expansion coefficients $\scalingcoef^{n,f}_{j,l}$, the so-called 
+\emph{scaling} coefficients, are obtained by the projection integral
 \begin{equation}
     \label{eq:scaling_coef}
     \scalingcoef^{n,f}_{j,l} \mydef \int_0^1f(x)\scaling^n_{j,l}(x)\ud x
@@ -271,7 +284,8 @@ projection is performed: the higher the scale, the better the approximation.
 
 \subsection{Multiresolution functions}
 We can also introduce the projection operator \waveletproj{n} that projects
-onto the wavelet basis $\lbrace\wavelet^n_{j,l}\rbrace$ of the space \waveletspace{n}
+onto the wavelet basis $\lbrace\wavelet^n_{j,l}\rbrace$ of the space 
+\waveletspace{n}
 \begin{equation}
     \label{eq:wavelet_exp}
     \waveletproj{n}f(x) \mydef \waveletrep{f}{n}(x) =
@@ -291,14 +305,15 @@ between the projection operators
 which means that the wavelet projection should not be regarded as an approximation 
 of the function $f$, but rather the difference between two approximations
 \begin{equation}
-    \waveletrep{f}{n} = \waveletproj{n} f = (\scalingproj{n+1} - \scalingproj{n}) f = 
+    \waveletrep{f}{n} = \waveletproj{n} f = (\scalingproj{n+1}-\scalingproj{n})f = 
 	\scalingrep{f}{n+1} - \scalingrep{f}{n}
 \end{equation}
-This means that the wavelet projection \waveletrep{f}{n} can be used as a measure of the accuracy 
-of the scaling projection \scalingrep{f}{n}, provided that the projection sequence is converging,
-$\lim_{n\rightarrow\infty} \scalingrep{f}{n} = f$, which is the case for square integrable functions.
-A given approximation $f^N$ can then be expressed as the much coarser approximation \scalingrep{f}{0}
-with a number of wavelet corrections
+This means that the wavelet projection \waveletrep{f}{n} can be used as a measure 
+of the accuracy of the scaling projection \scalingrep{f}{n}, provided that the 
+projection sequence is converging, $\lim_{n\rightarrow\infty} \scalingrep{f}{n} = f$, 
+which will be the case for square integrable functions\cite{Alpert:1993p5460}.
+A given approximation $f^N$ can then be expressed as the much coarser 
+approximation \scalingrep{f}{0} with a number of wavelet corrections
 \begin{align}
     \label{eq:highres}
     f(x)    &\approx \scalingrep{f}{N}(x)\\
@@ -308,9 +323,31 @@ with a number of wavelet corrections
 These equivalent representations are the high-resolution and multi-resolution 
 approximations, respectively, of the function $f$. The filter matrices $H^{(0)}, 
 H^{(1)}, G^{(0)}$ and $G^{(1)}$ of Eq.~(\ref{eq:twoscalerelations}) allow us to 
-change between the representations of Eq.~(\ref{eq:highres}) and 
-Eq.~(\ref{eq:multires}), and the disjoint support of the basis functions ensures 
-that this is a local transformation.
+change between the representations of Eq.~(\ref{eq:highres}).
+
+In principle it is possible to perform wavelet reconstructions \emph{beyond} the
+finest scale $N$ in the function representation \scalingrep{f}{N}. In this case
+the wavelet contributions $\wavelet_l^n$ in the inverse of 
+Eq.~(\ref{eq:twoscalerelations}) are zero, and no additional information is
+given to the scaling representation. However, the size of the scaling basis is 
+doubled when the scale is increased by one, and the effect of such a wavelet 
+reconstruction is that we get an \emph{oversampled} representation of the 
+function. This upsampling, usually denoted by the operator 
+$\uparrow(\scalingrep{f}{N})$, is often necessary in practical implementations, 
+as it is usually convenient to relate different function representations at a 
+\emph{common} scale that might be beyond the finest scale of one of the individual 
+representations.
+
+We also have the downsampling operator $\downarrow(\scalingrep{f}{N})$ that reduces
+the size of the basis, which means that information is thrown away in the process.
+In particular, a downsampling correspond to a projection onto the next coarser
+scaling space, and we have $\downarrow(\scalingrep{f}{N}) \equiv \scalingrep{f}{N-1}$.
+Note that the upsampling and downsampling operators do not commute, as
+\begin{align}
+    \downarrow(\uparrow(\scalingrep{f}{N})) &= \scalingrep{f}{N}\\ 
+    \uparrow(\downarrow(\scalingrep{f}{N})) &= \uparrow(\scalingrep{f}{N-1}) 
+	\neq \scalingrep{f}{N}
+\end{align}
 
 \subsection{Multiresolution functions in $d$ dimensions}
 The multi-dimensional function representation is obtained similarly to
@@ -323,9 +360,9 @@ Eq.~(\ref{eq:multidimscaling})
     \scalingnd^n_{\bs{j},\bs{l}}(\bs{x})
 \end{equation}
 where the sums are over all possible translation vectors 
-$\bs{l} = (l_1,\dots,l_d)$ for $0\leq l_i\leq 2^n-1$, and all possible 
+$\bs{l} = (l_1,\dots,l_d)$ for $0\leq l_p\leq 2^n-1$, and all possible 
 scaling function combinations $\bs{j} = (j_1,\dots,j_d)$ for 
-$0\leq j_i\leq k$. The scaling coefficients are obtained by the
+$0\leq j_p\leq k$. The scaling coefficients are obtained by the
 multi-dimensional integral
 \begin{equation}
     \label{eq:waveletproj_nd}
@@ -354,18 +391,10 @@ decompose it into its multiresolution components
     f(\bs{x}) \approx \scalingrep{f}{N}(\bs{x}) = 
     \scalingrep{f}{0}(\bs{x}) + \sum_{n=0}^{N-1} \waveletrep{f}{n}(\bs{x})
 \end{equation}
-The $d$-dimensional filter matrices are obtained by tensor products of the
-mono-dimensional filters. This means that by the tensor structure of
-the multi-dimensional basis, we can perform the wavelet transform one dimension 
-at the time, and the work done scales linearly in the dimension. If the full
-$d$-dimensional filter matrix had been applied, the work would have scaled
-as the power of the dimension, hence limiting the practical use in higher
-dimensions. A more rigorous treatment of the multi-dimensional wavelet
-transforms can be found in Tymczak\cite{Tymczak}.
 
-\subsection{Addition of functions}
+\subsection{Addition of functions}\label{sec:addition}
 The addition of functions in the multiwavelet basis is quite straightforward, 
-since it is represented by the mappings
+as it is represented by the mappings
 \begin{align}
     \label{eq:addmap}
     \begin{split}
@@ -377,17 +406,18 @@ This basically means that the projection of the sum equals the sum of the
 projections. In the polynomial basis this is simply the fact that the sum of
 two $k$-order polynomials is still a $k$-order polynomial.
 
-\subsection{Multiplication of functions}
+\subsection{Multiplication of functions}\label{sec:multiplication}
 Multiplication of functions in the multiwavelet basis is somewhat more
 involved than addition. The reason for this is that, in contrast to
-Eq.~(\ref{eq:addmap}), the product is represented by the mapping \cite{Beylkin92}
+Eq.~(\ref{eq:addmap}), the product is represented by the mapping
 \begin{equation}
     \label{eq:multmap}
     \scalingspace{n} \times \scalingspace{n} \rightarrow V^n_{2k}
 \end{equation}
 This means that the product of two functions falls outside of the MRA and needs 
-to be projected back onto the scaling space sequence. In particular this means that 
-the product of two functions on a given scale ''spills over'' into the finer scales
+to be projected back onto the scaling space sequence. Following 
+Beylkin~\cite{Beylkin:1992} we can say that the product of two functions on a given 
+scale ''spills over'' into the finer scales
 \begin{equation}
     \label{eq:multmapinf}
     \scalingspace{n} \times \scalingspace{n} \rightarrow \scalingspace{n} \oplus 
@@ -395,34 +425,18 @@ the product of two functions on a given scale ''spills over'' into the finer sca
 \end{equation}
 Working with a finite precision it is desirable to make the product as accurate
 as each of the multiplicands. This is done by terminating the sum in
-Eq.~(\ref{eq:multmapinf}) at some sufficiently large scale $N$
+Eq.~(\ref{eq:multmapinf}) at some sufficiently large scale $N>n$
 \begin{align}
     \label{eq:multmapN}
     \scalingspace{n} \times \scalingspace{n} \rightarrow \scalingspace{n} \oplus 
 	\bigoplus_{n'=n}^{N-1} \waveletspace{n'} &= \scalingspace{N}
 \end{align}
-Assume now that $n$ is the finest scale present in either of the multiplicands,
-and $N>n$ is the finest scale present in the product. An algorithm to determine 
-the maximum scale $N$ needed in the result will be presented in section 
-\ref{sec:implementation}, and in the following it is simply assumed that $N$ is 
-known a priori. We know that
-\begin{equation}
-    \scalingspace{n} \subset \scalingspace{n+1} \subset \cdots \subset \scalingspace{N}
-\end{equation}
-which means that the multiplication could just as well have been written 
-\begin{equation}
-    \scalingspace{N} \times \scalingspace{N} \rightarrow \scalingspace{N}
-\end{equation}
-where the representations of the multiplicands on scale $N$ is obtained by a
-series of backward wavelet transforms. This will result in an \emph{oversampling} 
-of the multiplicands which allows us to relate the scaling projections of the product
-on scale $N$ to the projections of the multiplicands on the same scale.
+As the finest scale $N$ required in the product in general will be higher than the
+finest scale $n$ in each of the multiplicands, it is convenient to perform the
+multiplication on oversampled representations of the multiplicands obtained by
+$N-n$ upsamplings.
 
-Finally, when we have obtained the scaling projection of the product on scale
-$N$ we do a wavelet decomposition to obtain wavelet projections on 
-the coarser scales. 
-
-\section{Operator representation}
+\section{Operator representation}\label{sec:operator}
 In this section we discuss the multiresolution analysis of a general operator $T$
 \begin{equation}
     g(x) = [Tf](x)
