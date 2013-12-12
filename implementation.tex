@@ -1,1032 +1,604 @@
 \chapter{Implementation}\label{chap:implementation}
-\section{Data structures}
 In the following a brief introduction is given to the important data structures
-that are used in the MRChem program. This will introduce the nomenclature used 
-in the rest of the thesis. 
+and algorithms that are used in the MRChem program. This will introduce the 
+nomenclature used in the rest of the thesis. The code is written in C++, utilizing the 
+consepts of object-orientation and generic programming, where for instance the 
+dimension appears as a template parameter, which means that the code is immediately 
+applicable to any dimension, although some algorithms are specialized and optimized 
+for $d=3$.
 
-\subsection*{\texttt{Node}}
-The \texttt{node} is the multidimensional box on which the set of
+Due to the inherent high demands on memory and computational resources that comes
+with all real-space numerical methods, the code relies heavily on 
+parallel algorithms and data distribution. In the current code data distribution is
+handled by the Message-Passing Interface (MPI) protocol, and further work load
+distribution is provided by an additional shared memory (OpenMP) parallelization 
+on top. The parallel implementation and the performance of the code is discussed 
+fully in publication 1.
+
+\section{Data structures}
+\subsection{\Node}
+The \node is the multidimensional box on which the set of
 scaling and wavelet functions that share the same support are defined. The 
-\texttt{node} is specified by its scale $n$, which gives its size 
-($[0,2^{-n}]^d$) and translation vector 
-$\boldsymbol{l} = (l_1,l_2,\dots,l_d)$, which gives its position. 
-The \texttt{node} holds the $(k+1)^d$ scaling coefficients \emph{and}
-$(2^d-1)(k+1)^d$ wavelet coefficients that share the same scale and
-translation. It will also keep track of its parent and all $2^d$ children
-\texttt{nodes}, giving the \texttt{nodes} a tree-like structure.
+\node is specified by its scale $n$, which gives its size 
+($[0,2^{-n}]^d$) and translation vector $\bs{l} = (l_1,l_2,\dots,l_d)$, 
+which gives its position. The \node holds the $(k+1)^d$ scaling 
+coefficients and $(2^d-1)(k+1)^d$ wavelet coefficients that share the same 
+scale and translation. It will also keep track of its parent and all $2^d$ 
+children \nodes, giving the \nodes a tree-like structure. 
 
-\subsection*{\texttt{Tree}}
-The \texttt{tree} data structure is basically the multiwavelet representation 
-of a function. The name originates from the fact that a one-dimensional 
-function is represented as a binary tree of \texttt{nodes} (octal tree in 
-three dimesions) emanating from the single root \texttt{node} at scale zero.
-The \texttt{tree} keeps the entire tree of \texttt{nodes}, from root to leaf,
-and each \texttt{node} keeps both the scaling and wavelet coefficients. This
-means that there is a redundancy in the function representation (a
-non-redundant representation would be either to keep the scaling coefficients 
-at the root and the wavelet coefficients of all the \texttt{nodes} from root to
-leaf, \emph{or} just keep the scaling and wavelet coefficients of the leaf
-\texttt{nodes} only), but it proves easier just to keep all these coefficients
-in memory, rather than having to obtain the missing coefficients by filter
-operations (because they will all be needed when we start manipulating these
-function \texttt{trees} by addition, multiplication and operators).
+\subsection{\Tree}
+The \tree data structure is a collection of \nodes that makes up a function.
+In order to minimize the memory requirements, all variables that are common to
+all \nodes (like polynomial order, number of coefficients, type of scaling 
+functions, etc) are stored in the \tree structure. The \tree keeps the entire 
+set of \nodes, from root to leaf, and each \node keeps both the scaling and 
+wavelet coefficients. This means that there is a redundancy in the function 
+representation as the multiresolution representation in Eq.~(\ref{eq:multires})
+requires scaling coefficients only at the coarsest scale. However, it proves 
+more efficient to keep all scaling coefficients in memory rather than obtaining
+them by the filter operations of Eq.~(\ref{eq:twoscalerelations}), as they are 
+needed e.g. in the non-standard operator application.
+
+\subsection{Parallel data distribution}
+As the data storage requirements of real-space methods quickly exceeds the 
+available memory on a single computational device, it eventually becomes 
+necessary to distribute the data that is contained in the full \tree 
+representation of a function among the memory of several computers (hosts). 
+In the multiwavelet basis the function representations are conveniently 
+partitioned into equally sized portions (equal in terms of memory, not 
+spatial extension), and data distribution is achieved by dividing these
+\nodes among the available hosts.
+
+There are several possible strategies for how the \nodes could be distributed
+and we have chosen one that leads to strictly connected domains, in the sense 
+that all \nodes belonging to a given host is connected (share a common vertice,
+not necessarily on the same scale) to at least one other \node owned by the same 
+host. This ensures that the real-space domain of a given host will be localized 
+in space, with the motivation that the interaction between hosts could be limited
+to involve only near neighbors, and thus hopefully reduce the need for communication
+between hosts.
+
+In order to achieve this localization we traverse the \tree following a space-filling
+path, assigning \nodes to hosts as we go. By following a so-called Hilbert 
+path~\cite{Griebel}, we obtain a continuous curve with good locality properties, that
+can be partitioned among the hosts. The construction of the curve is done recursively,
+going through the $2^d$ children of each \node in a specific order. Using bit notation
+(one bit for each dimension), the natural ordering (Lebesgue) will lead to a 
+discontinuous path. For $d=2$ this is shown as the Z shape of the bit sequence 
+(00, 01, 10, 11) in figure \ref{fig:lebesgue}. A corresponding (there are several 
+possebilities) Hilbert path through the four children in two dimensions could be the 
+bit sequence (00, 10, 11, 01) shown in the first panel in figure \ref{fig:hilbert}. 
+In order to keep the continuouity as the path is recursively refined, the order in 
+which the children are traversed needs to be adapted, and will depend on the position 
+of the parent among its siblings, as shown in figure \ref{fig:hilbert}.
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=1.0, viewport = 150 350 500 435, clip]{figures/lebesgue.pdf}
+    \caption{\footnotesize{Three refinement levels in the construction of the Lebesgue 
+	curve in 2D.}}
+    \label{fig:lebesgue}
+\end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[scale=1.0, viewport = 150 350 500 435, clip]{figures/hilbert.pdf}
+    \caption{\footnotesize{Three refinement levels in the construction of the Hilbert 
+	curve in 2D.}}
+    \label{fig:hilbert}
+\end{figure}
 
 \section{Adaptive algorithm}
-The algorithm used to obtain adaptive representations of functions was 
-presented in \cite{Fossgaard}. This is a fully on-the-fly algorithm in
-the sense that one sets out from the coarsest scale and refine the
-representation scale by scale locally only where it is needed. This in oppose
-to the originally proposed algorithm where one calculates the uniform 
-representation eq.(\ref{eq:funcprojection}) on some finest scale and then do a 
-forward wavelet transform and discards all wavelet terms below some threshold 
-to obtain the adaptive representation eq.(\ref{eq:MRfunc}). One obvious
-advantage of this adaptive algorithm is that we do not need any a priori
-knowlegde of the global finest scale.
-
 \begin{algorithm}
-	\caption{Generation of adaptive Multiwavelet representation of a function}
-	\label{alg:function}
-	\begin{algorithmic}[1]
-	\WHILE{number of nodes on current scale $N_s>0$}
-		\FOR{each node at current scale}
-			\STATE compute scaling and wavelet coefficients
-			\IF{node needs to be refined}
-				\STATE mark node as non-terminal
-				\STATE allocate children nodes
-				\STATE update list of nodes at the next scale
-			\ELSE
-				\STATE mark node as terminal
-			\ENDIF
-		\ENDFOR
-		\STATE increment scale
+    \footnotesize
+    \caption{Generation of adaptive multiwavelet representation of a function}
+    \label{alg:function}
+    \begin{algorithmic}[1]
+	\STATE create \tree skeleton of empty \nodes
+	\STATE MPI: distribute leaf \nodes among hosts through Hilbert path
+	\STATE MPI: create list of local \nodes owned by \emph{this} host
+	\WHILE{number of local \nodes on current iteration $N_i>0$}
+	    \STATE OpenMP: divide local \nodes among available processors
+	    \FOR{each \node at current iteration}
+		\STATE compute scaling and wavelet coefficients
+		\IF{\node needs to be refined}
+		    \STATE mark \node as non-terminal
+		    \STATE allocate children \nodes
+		    \STATE update list of local \nodes for next iteration
+		\ELSE
+		    \STATE mark \node as terminal
+		\ENDIF
+	    \ENDFOR
+	    \STATE increment iteration
 	\ENDWHILE
-	\end{algorithmic}
+    \end{algorithmic}
 \end{algorithm}
 
 \noindent
-The algorithm consists of two loops, the first runs over the ladder of scales,
-from coarsest to finest, while the second is over the \texttt{nodes} present at
-the current scale. Once the expansion coeffients of the current \texttt{node} 
-are known, a split check is performed based on the desired precision. If the
-\texttt{node} does not satisfy the accuracy criterion, the \texttt{node} is 
-marked as non-terminal and its children \texttt{nodes} are allocated and added 
-to the list of \texttt{nodes} needed at the next scale. If the \texttt{node} 
-does not need to be split, the \texttt{node} is marked as terminal and no 
-children \texttt{nodes} are allocated. In this way, once the loop over 
-\texttt{nodes} on one scale is terminated, the complete list of \texttt{nodes}
-needed on the \emph{next} scale has been obtained. Now the scale counter is 
-incremented and the loop over \texttt{nodes} on the next scale is started. The 
-\texttt{tree} is grown until no \texttt{nodes} are needed at the next finer 
-scale.\\
+Algorithm \ref{alg:function} used to obtain adaptive representations of functions 
+was originally presented in \cite{Frediani}, but is here extended to include 
+parallelization. The first lines in this algorithm are very important in order to 
+ensure a good
+load balancing among MPI hosts. By utilizing some a priori knowledge of the
+function that is about to be buildt, we try to estimate the final tree structure
+as closely as possible before calculating any coefficients. In this way we have
+a lot more flexibility when it comes to parallel distribution of data and work load 
+in all iterations. Without this preprocessing step, the first three iterations would 
+contain one, eight and 64 \texttt{nodes}, respectively, allowing little freedom in
+parallel computations. It is important in this step to capture the global structure
+of the function (where in space is high level of refinement needed), as this initial
+tree skeleton is used in the data distribution among MPI hosts and all subsequent
+additional refinent is done locally on each host (although some load balancing can
+be preformed by redistribution of data if needed). How to construct this skeleton
+depends on the function, and will be discussed in the following sections.
 
-\noindent
-There are of course two points in this algorithm that need to be treated
-further, the first being the actual computation of the expansion coefficients 
-(line 3). This can be done in one of four ways (projection, addition,
-multiplication or operator application) and will be treated in the
-subsequent sections. The second point is how to perform the split check 
-(line 4).\\
+The algorithm consists of two loops, the first iteration will add levels of 
+refinement on top of the initial skeleton wherever necessary in order to guarantee
+the overall accuracy of the representation. This loop terminates when no further
+refinement is needed. The second loop runs over the \nodes present at the current 
+iteration (only local nodes that belong to the given MPI host), and these are 
+distributed among the available processors (OpenMP) at the given host. Once the 
+scaling/wavelet coefficients of a given \node are known, a split check is performed 
+based on the desired precision. If the \node does not satisfy the accuracy criterion, 
+it is marked as non-terminal and its children \nodes are allocated and added to the 
+list of \nodes needed in the next iteration. If the \node does not need to be split, 
+it is marked as terminal and no children \nodes are allocated. In this way, once the 
+loop over \nodes on one iteration is terminated, the complete list of \nodes needed 
+in the next iteration has been obtained. The \tree is grown until no \nodes are 
+needed at the next iteration.
 
-\noindent
-The split check is performed to decide whether or not the function is 
-represented accurately enough on the current \texttt{node}, based on a 
-predefined relative precision $\epsilon$. Formally, this relative precision 
-requires that 
+There are two points in the algorithm that need to be elaborated further, the first 
+being the actual computation of the coefficients (line 7). This can be done in 
+many ways, e.g. projection or by operator application, and will be treated in 
+the subsequent sections. 
+
+The second point is how to perform the split check (line 8), which is used to decide 
+whether or not the function is represented accurately enough on the current 
+\texttt{node}, based on a predefined relative precision $\epsilon$. Formally, this 
+relative precision requires that 
 \begin{equation}
-	||f-f_\epsilon||<\epsilon ||f||_2
+    \|f-\scalingrep{f}{n}\| < \epsilon \|f\|
 \end{equation}
-where $f_\epsilon$ is our approximation of $f$. However, this check cannot 
-be performed since the \emph{true} function $f$ is generally not known. 
-The check that will be performed is based on the fact that the scaling 
-projections will approach the exact function with increasing scale. 
-Consequently, the wavelet projections, which is the difference between two 
-consecutive scaling projections, must approach zero. This means that we can use
-the norm of the wavelet coefficients on one \texttt{node} as a measure for the 
-accuracy of the function represented by this \texttt{node}, and we will use the
-following threshold for the wavelet coefficients on the terminal \texttt{nodes}
+However, this check cannot be performed since the \emph{true} function $f$ is 
+generally not known. Instead we will use the norm of the wavelet projections as a
+measure of the accuracy of the representation. Specifically, the norm of the wavelet 
+coefficients on one \node is used as a measure for the accuracy of the part of the
+function represented by this \texttt{node}, and we require that
 \begin{equation}
-	||\boldsymbol{d}^n_{\boldsymbol{l}}|| < 2^{-n/2}\epsilon ||f_\epsilon||_2
+    \|\bs{\waveletcoef}^n_{\bs{l}}\| < \frac{\epsilon}{2^{n/2}} \|\scalingrep{f}{n}\|
 \end{equation}
-A justification for this choice of thresholding can be found in
-\cite{Fossgaard} and
-references therein. This algorithm is very general, and as pointed out it can 
-be used to build adaptive representations of functions regardless of how the 
-expansion coefficients are obtained, and in the following sections we will look
-at four different ways of doing this.
+The local, disjoint support of the wavelet basis ensures that the global error of
+the representation can be controlled by locally truncating the wavelet expansion,
+allowing a fully on-the-fly adaptive algorithm. This reduces the number of expansion 
+coefficients needed to represent the function to the given accuracy dramatically 
+compared to the uniform high-resolution representation in Eq.~(\ref{eq:highres}).
+In practical calculations one can easily get significant contribution over a range
+of ten length scales, and a uniform grid in three dimensions at scale $n=10$ would
+require $(2^d)^n = 8^{10} \sim 10^9$ \nodes, while a typical multi-resolution
+representation requires in the order of $10^2-10^4$ \nodes per scale.
+
+The presented algorithm is very general, and is used to build adaptive 
+representations of functions regardless of how the expansion coefficients are 
+obtained, and later in the chapter we will look at different ways of doing this.
+
+\section{Choice of basis functions}
+Before we can describe how to calculate expansion coefficients we need to specify
+the type of scaling and wavelet functions that is used in the multiresolution 
+analysis. In principal, any polynomial basis that span the appropriate scaling
+\scalingspace{n} and wavelet \waveletspace{n} spaces can be used, and in the original 
+construction Alpert \cite{Alpert} used Legendre polynomials as scaling basis, but in 
+a later work, Alpert \etal \cite{Alpert} introduced an alternative basis with 
+interpolating properties. Both scaling bases have been implemented, but in practice
+only the latter is used, because of its superior numerical efficiency. The choice of
+wavelet basis follows that of Alpert\cite{Alpert}.
+
+\subsection{Legendre scaling functions}
+The Legendre polynomials $\lbrace L_j(x)\rbrace_{j\in \mathbb{N}}$ are a family of 
+functions, defined on the interval $[-1,1]$. The functions are orthogonal with 
+respect to the $L^2([-1,1])$ inner product
+\begin{equation}
+    \int_{-1}^{1} L_i(x)L_j(x) \ud x = 0, \qquad i \neq j
+\end{equation}
+but they are usually normalized such that $L_j(1) = 1$. The polynomials can be 
+constructed by induction
+\begin{align}
+    L_0(x) &= 1\\
+    L_1(x) &= x\\
+    L_{j+1}(x) &= \frac{2j+1}{j+1}xL_j(x) - \frac{j}{j+1}L_{j-1}
+\end{align}
+and the \emph{Legendre scaling functions} $\scaling_j^L$ are obtained by dilation 
+and translation to the unit interval, followed by $L^2$ normalization
+\begin{equation}
+    \scaling_j^L(x) = \sqrt{2j+1}L_j(2x-1),\qquad x \in [0,1]
+\end{equation}
+This is the original construction of scaling functions by Alpert\cite{Alpert}.
+
+\subsection{Interpolating scaling functions}
+Alpert \etal\cite{Alpert} presented an alternative set of scaling functions 
+with interpolating properties. These \emph{Interpolating scaling functions} 
+$\scaling_j^I$ are based on the Legendre scaling functions $\lbrace \scaling_j^L
+\rbrace_{j=0}^k$, and the roots $\lbrace x_j\rbrace_{j=0}^k$ and weights
+$\lbrace \omega_j \rbrace_{j=0}^k$ of the Gauss-Legendre quadrature of order 
+$k+1$, and are constructed as the linear combinations
+\begin{equation}
+    \label{eq:interpolating}
+    \scaling_j^I(x) = \sqrt{\omega_j}\sum_{i=0}^{k} 
+	\scaling_i^L(x_j)\scaling_i^L(x),\qquad x \in [0,1]
+\end{equation}
+This construction leads to orthogonality on the unit interval, as well as the 
+interpolating property
+\begin{equation}
+    \label{eq:interprop}
+    \scaling_j^I(x_i) = \frac{\delta_{j,i}}{\sqrt{\omega_i}}
+\end{equation}
+which will prove important for numerical efficiency. A detailed discussion on 
+the properties of Interpolating wavelets can be found in Donoho \cite{Donoho}.
+
+\subsection{Wavelet basis}
+There are two necessary constraints in the construction of the wavelet functions
+$\wavelet_j$: they must be orthogonal to the scaling functions and orthogonal among 
+themselves. It turns out that this is not sufficient to determine the wavelet functions
+uniquely, so Alpert~\cite{Alpert} posed additional conditions in terms of vanishing 
+moments. The exact construction is done iteratively, starting with the following set 
+of functions $\lbrace f_j(x) \rbrace_{j=0}^k$ defined on the interval $(-1,1)$
+\begin{equation}
+    f_j(x) = 
+    \left\{
+	\begin{array}{lll}
+	    x^j,	& x \in (0,1)\\
+	    -x^j,	& x \in (-1,0)\\
+	    0,		& otherwise
+	\end{array}
+    \right.
+\end{equation}
+followed by a Gram-Schmidt orthogonalization with respect to the low-order polynomials
+$1,x,x^2,\dots,x^k$ that span the corresponding scaling space. Furthermore, we require
+that the function $f_j$ has $j+1$ additional vanishing moments by orthogonalization 
+with respect to the polynomials $x^{k+1},\dots,x^{j+k+1}$, and finally, the functions
+$f_j$ are orthogonalized among themselves in order of increasing $j$. The wavelet basis 
+$\wavelet_j$ of the space \waveletspace{0} is then constructed by dilation and 
+translation to the unit interval, followed by $L^2$ normalization.
 
 \section{Function projection}
-The first step into the multiresolution world will always have to be taken by
-projection of some analytical function onto the multiwavelet basis. Only then
-can we start manipulating these representations by additions, multiplications
-and operators.
-
-\subsection*{Legendre scaling functions}
-In a perfect world, the projection in eq.(\ref{eq:scalingint}) could be done 
-exactly, and the accuracy of the projection 
-would be independent of the choice of polynomial basis. In the real world the
-projections are done with Gauss-Legendre quadrature and the expansion
-coefficients $s_{j,l}^{n,f}$ of $f(x)$ are obtained as
-\begin{eqnarray}
-	\nonumber
-	s_{j,l}^{n,f} &=& \int_{2^{-n}l}^{2^{-n}(l+1)} f(x)\phi_{j,l}^n(x)dx\\
-	\nonumber
-			&=& 2^{-n/2}\int_0^1 f(2^{-n}(x+l)) \phi_{j,0}^0(x)dx\\
+In order to obtain the expansion coefficients of a general function $f$ in the 
+scaling basis we need to evaluate the projection integral in 
+Eq.~(\ref{eq:scaling_exp}). This is done numerically using Gauss-Legendre quadrature
+\begin{align}
+    \scalingcoef_{j,l}^{n,f} 
+	&= \int_{2^{-n}l}^{2^{-n}(l+1)} f(x)\scaling_{j,l}^n(x)\ud x\\
+	&= 2^{-n/2}\int_0^1 f(2^{-n}(x+l)) \scaling_{j,0}^0(x)\ud x\\
 	\label{eq:quadrature}
-			&\approx& 2^{-n/2}\sum_{q=0}^{k_q-1} w_q f(2^{-n}(y_q+l)) 
-			\phi_{j,0}^0(y_q)
-\end{eqnarray}
-where $\lbrace w_q\rbrace_{q=0}^{k_q-1}$ are the weights and
-$\lbrace y_q\rbrace_{q=0}^{k_q-1}$ the roots of the Legendre
-polynomial $L_{k_q}$ used in $k_q$-th order quadrature.\\
+	&\approx 2^{-n/2}\sum_{q=0}^{k_q-1} \omega_q f(2^{-n}(x_q+l)) 
+			\scaling_{j,0}^0(x_q)
+\end{align}
+where $\lbrace \omega_q\rbrace_{q=0}^{k_q-1}$ are the weights and
+$\lbrace x_q\rbrace_{q=0}^{k_q-1}$ the roots of the Legendre polynomial $L_{k_q}$ 
+used in $k_q$-th order quadrature. The Legendre quadrature holds a $(2k-1)$-rule 
+which states that the $k$-order quadrature is exact whenever the integrand is a 
+polynomial of order $2k-1$. By choosing $k_q = k+1$ order quadrature, where $k$ is
+the order of the polynomial basis, we will obtain the exact coefficient
+whenever $f(x)$ is a polynomial of degree $\leq (k+1)$, and we will use quadrature 
+order $k+1$ throughout.
 
-\noindent
-By approximating this integral by quadrature we will of course not obtain the
-exact expansion coefficients. However, it would be nice if we could obtain the
-\emph{exact} coefficients whenever our basis is flexible enough to reproduce
-the function exactly, that is if $f(x)$ is a polynomial of degree $\leq k$.
-The Legendre quadrature holds a $(2k-1)$-rule which states that the $k$-order
-quadrature is exact whenever the integrand is a polynomial of order $2k-1$.
-By choosing $k_q = k+1$ order quadrature we will obtain the exact coefficient
-whenever $f(x)$ is a polynomial of degree $\leq (k+1)$ when projecting on the
-basis of $k$-order Legendre polynomials, and we will use quadrature order
-$k+1$ througout.\\
-
-\noindent
-In the multidimensional case the expansion coefficients are given by
-multidimensional quadrature
+\subsection{Projection in $d$ dimensions}
+In the multi-dimensional case the expansion coefficients are given by
+multi-dimensional quadrature
 \begin{equation}
-	\label{eq:multidimprojection}
-	s^{n,f}_{\boldsymbol{j},\boldsymbol{l}} = 2^{-dn/2}
-%    \sum_{\boldsymbol{q}}w_{\boldsymbol{q}}
+    \label{eq:multidimprojection}
+    \scalingcoef^{n,f}_{\bs{j},\bs{l}} = 2^{-dn/2}
 	\sum_{q_1=0}^{k}\sum_{q_2=0}^{k}\cdots\sum_{q_d=0}^{k}
-	f(2^{-n}(\boldsymbol{y_q}+\boldsymbol{l}))
-%    \Phi^0_{\boldsymbol{j},\boldsymbol{0}}(\boldsymbol{y_q})
-	\prod_{i=1}^d w_{q_i}\phi_{j_p,0}^0(y_{q_i})
+        f(2^{-n}(\bs{x_q}+\bs{l}))
+	\prod_{i=1}^d \omega_{q_i}\scaling_{j_p,0}^0(x_{q_i})
 \end{equation}
 using the following notation for the vector of quadrature roots
 \begin{align}
-		\boldsymbol{y_q} &\mydef (y_{q_1},y_{q_2},\dots,y_{q_d})
+    \bs{x_q} &\mydef (x_{q_1},x_{q_2},\dots,x_{q_d})
 \end{align}
-This quadrature is
-not very efficient in multiple dimensions since the
-number of terms scales as $(k+1)^d$. However, if the function $f$ is 
-separable and can be written $f(x_1,x_2,\dots,x_d) = 
-f_1(x_1)f_2(x_2)\cdots f_d(x_d)$, eq.(\ref{eq:multidimprojection}) can be 
-simplified to
+This multi-dimensional quadrature is not very efficient in a general polynomial 
+basis, as the number of terms scales as $(k+1)^d$. This can be avoided if the 
+function $f$ is separable and can be written $f(x_1,x_2,\dots,x_d) = 
+f_1(x_1)f_2(x_2)\cdots f_d(x_d)$, in which Eq.~(\ref{eq:multidimprojection}) can be 
+reduced to a product of mono-dimensional summations with a scaling of $d(k+1)$.
+
+However, working in the Interpolating basis, no assumption needs to be made on
+the function to obtain numerical efficiency. By choosing a quadrature order of $k+1$, 
+a very important property of the Interpolating scaling functions emerges, that
+follows from the specific construction of these functions in 
+Eq.~(\ref{eq:interpolating}). 
+The interpolating property in Eq.~(\ref{eq:interprop}) inserts a Kronecker delta 
+whenever the scaling function is evaluated in a quadrature root, which is exactly the 
+case in the quadrature sum. This reduces Eq.~(\ref{eq:multidimprojection}) to
 \begin{equation}
-	s^{n,f}_{\boldsymbol{j},\boldsymbol{l}} = 2^{-dn/2}\prod_{i=1}^d
-	\sum_{q_i=0}^{k}f_i(2^{-n}(y_{q_i}+l_i))
-	w_{q_i}\phi^0_{j_i,0}(y_{q_i})
+    \label{eq:inter_quad}
+    \scalingcoef^{n,f}_{\bs{j},\bs{l}} = 
+	f(2^{-n}(\bs{x_j}+\bs{l}))\prod_{i=1}^d \frac{2^{-n/2}}{\sqrt{\omega_{j_i}}}
 \end{equation}
-which is a product of small summations and scales only as $d(k+1)$.\\
+which means that the scaling coefficients are related by simple constant factors to 
+the function values on the quadrature grid, leading to very efficient evaluation.
 
-\noindent
-The Legendre polynomials show very good 
-convergence for \emph{polynomial} functions $f(x)$, and are likely to give more
-accurate projections. However, most interesting functions $f(x)$ are \emph{not}
-simple polynomials, and the accuracy of the Legendre scaling functions versus a 
-general polynomial basis might not be very different.\\
-
-\subsection*{Interpolating scaling functions}
-By choosing the quadrature order to be $k+1$ a very important property of the
-Interpolating scaling functions emerges, stemming from the specific 
-construction of these functions eq.(\ref{eq:interpolating}), and the use of the 
-$k+1$ order quadrature roots and weights. The interpolating property
-eq.(\ref{eq:interprop}) inserts a Kronecker delta whenever the scaling function
-is evaluated in a quadrature root, which is exactly the case in the quadrature
-sum. This reduces eq.(\ref{eq:quadrature}) to
-\begin{equation}
-	s_{jl}^{n,f} = \frac{2^{-n/2}}{\sqrt{w_j}}f(2^{-n}(x_j+l))
-\end{equation}
-which obviously makes the projection $k+1$ times more efficient.\\
-
-\noindent
-In multiple dimensions this property becomes even more important, since it 
-effectively removes all the nested summations in
-eq.(\ref{eq:multidimprojection}) and leaves only one term in the projection
-\begin{equation}
-	s^{n,f}_{\boldsymbol{j},\boldsymbol{l}} = 
-	f(2^{-n}(\boldsymbol{y_j}+\boldsymbol{l}))\prod_{i=1}^d \frac{2^{-n/2}}
-	{\sqrt{w_{j_i}}}
-\end{equation}
-This means that in the Interpolating basis the projection is equally effective 
-regardless of the separability of the function $f$.
-
-\subsection*{Obtaining the wavelet coefficients}
+\subsection{Obtaining the wavelet coefficients}
 The wavelet coefficients are formally obtained by the projection of the
 function onto the wavelet basis, and we could derive expressions similar to
 the scaling expressions based on quadrature. There are however some accuracy
 issues connected to this wavelet quadrature, so we will take another approach 
 that utilizes the wavelet transform. We know that we can obtain the scaling and
 wavelet coefficients on scale $n$ by doing a wavelet decomposition of the
-scaling coefficients on scale $n+1$ according to eq.(\ref{eq:decomposition}).
-Line 3 of the algorithm is thus performed by computing the scaling
-coefficients of the $2^d$ children of the current \texttt{node} by the
-appropriate expression (Legendre or Interpolating), followed by a wavelet
-decomposition. In this way, wavelet projections are not required.
+scaling coefficients on scale $n+1$ according to Eq.~(\ref{eq:twoscalerelation}).
+Line 7 of algorithm \ref{alg:function} is thus performed by computing the scaling
+coefficients of the $2^d$ children of the current \node by the appropriate 
+expression (Legendre or Interpolating) followed by a wavelet decomposition. 
 
-\subsection*{Quadrature accuracy}
-We know that by using quadrature in the projection, we are only getting
-approximate scaling coefficients, and some remarks should be given on 
-this matter. Consider the quadrature performed at scale zero. In $d$
-dimensions this gives a total number of $(k+1)^d$ quadrature points
-distributed in the unit hypercube $[0,1]^d$, while the quadrature on scale one
-will give $(k+1)^d$ quadrature points on \emph{each} of the $2^d$ children
-cubes contained in the same unit hypercube. This will obviousy increase the 
-accuracy of the quadrature, and the scaling coefficients obtained at scale one 
-must be considered more accurate than the ones obtained at scale zero. This 
-means that by improving our representation of $f$ by increasing the scale, we 
-are not only increasing the basis set, we are also increasing the accuracy of 
-every single expansion coefficient.\\
+\subsection{Estimating the \tree structure}
+In projection of analytic functions it is quite straightforward to predict the
+final adaptive tree structure of the representation without any actual calculation
+of coefficients. E.g. in the case of Gaussian ($e^{-\alpha (x-x_0)^2)}$) and Slater 
+($e^{-\alpha |x-x_0|}$) type functions, the position $x_0$ and exponent $\alpha$
+tells you where and approximately how much the grid needs to be refined. Furthermore, 
+in the case of very narrow, high-exponent functions this "forced" refinement is
+essential, as the quadrature at the coarsest scale would probably not pick up
+any signal at all, leaving you with a zero-representation of the function.
 
-\noindent
-If we look back to the computation of wavelet coefficients above, we see that
-we are gaining accuracy by doing the projection at scale $n+1$ followed
-by a wavelet transform, compared to a projection of the scaling and wavelet
-terms separately at scale $n$. This also means that once the adaptive
-algorithm has terminated and we have a representation of satisfactory accuracy
-at some local finest scale, we should perform a complete wavelet transform all
-the way from finest to coarsest scale, which will update the expansion
-coefficients on the coarser scales to be of the same \emph{quadrature}
-accuracy as the coefficients at the finest scale.
-
-\section{Addition of functions}
-The recipe for the addition of two function \texttt{trees} is given quite
-intuitively by eq.(\ref{eq:scalingadd}) and eq.(\ref{eq:waveletadd}) as a simple 
-vector addition of the scaling and wavelet coefficients on corresponding 
-\texttt{nodes}
+\section{Arithmetic operations}
+\subsection{Addition}
+The recipe for the addition of two function \trees follows straightforwardly
+from the mappings in Eq.~(\ref{addmap}). Consider the equation $h(x) = f(x)+g(x)$. 
+Projecting $h$ onto the scaling space \scalingspace{n} yields
 \begin{align}
-	\begin{split}
-	s^{n,h}_{\boldsymbol{j},\boldsymbol{l}}
-	&= s^{n,f}_{\boldsymbol{j},\boldsymbol{l}}+
-	   s^{n,g}_{\boldsymbol{j},\boldsymbol{l}}\\
-	d^{n,h}_{\boldsymbol{j},\boldsymbol{l}}
-	&= d^{n,f}_{\boldsymbol{j},\boldsymbol{l}}+
-	   d^{n,g}_{\boldsymbol{j},\boldsymbol{l}}
+    \nonumber
+    h^n(x)  &= \scalingproj{n}h(x)\\
+    \nonumber
+    	    &= \scalingproj{n}\left(f(x)+g(x)\right)\\
+    \nonumber
+	    &= \scalingproj{n}f(x)+\scalingproj{n}g(x)\\
+    \label{eq:scalingadd}
+	    &= \scalingrep{f}{n}(x)+\scalingrep{g}{n}(x)
+\end{align}
+and similarly for the wavelet projections
+\begin{equation}
+    \label{eq:waveletadd}
+    \waveletrep{h}{n}(x) = \waveletrep{f}{n}(x)+\waveletrep{g}{n}(x)
+\end{equation}
+At a deeper level it means adding scaling and wavelet coefficients on 
+corresponding \nodes
+\begin{align}
+    \begin{split}
+	\scalingcoef^{n,h}_{j,l} 
+	    &= \scalingcoef^{n,f}_{j,l}+\scalingcoef^{n,g}_{j,l}\\
+	\waveletcoef^{n,h}_{j,l}
+	    &= \waveletcoef^{n,f}_{j,l}+\waveletcoef^{n,g}_{j,l}
    \end{split}
 \end{align}
-These expressions are independent of the type of scaling functions used. We
-see that by applying the adaptive algorithm to build this addition
-\texttt{tree}, we automatically end up with the correct \texttt{nodal}
-structure (refinement), \emph{and} the correct coefficients, and no 
-\texttt{tree}parsing is required afterward to remove unneccesary
-\texttt{nodes}, or update non-terminal coefficients as for the projection.\\
+If the given \node does not exist in either \scalingrep{f}{n} or \scalingrep{g}{n},
+it is obtained by oversampling using the wavelet transform 
+Eq.~(\ref{eq:twoscalerelation}). No absolute accuracy will be lost during an 
+addition, however, \emph{relative} accuracy might be lost if the additon reduces 
+the norm of the function. The generalization to $d$ dimensions is trivial.
 
-\noindent
-If the situation arise where the algorithm tells us that a \texttt{node} is
-required in the result that is not present in one of the \texttt{trees}
-representing $f$ and $g$, this \texttt{node} will have to be generated by 
-wavelet transform before the addition can be carried out. These \emph{generated}
-\texttt{nodes} will only contain scaling coefficients because the information
-about its wavelet coefficients is simply not available in the current
-\texttt{tree} representation, and further projections would have to be carried
-out to obtain this information. This will of course not be done, because once
-the projections of the functions $f$ and $g$ are done, these representatons
-are considered independent functions and are no longer related to any
-analytical functions (this relation will be lost anyway once you start
-manipulating the function by operators).\\
-
-\noindent
-It can also be noted that if it occurs that \emph{both} the $f$ and
-$g$ \texttt{nodes} are missing, there is no need to generate these
-\texttt{nodes} since no new information will be obtained in their addition that
-is not already available at a coarser scale in the result \texttt{tree}. The
-sum of these \texttt{nodes} will of course only have zero-valued wavelet
-coefficients, and is by definition not needed in the result.
-
-\subsection*{Addition accuracy}
-No absolute accuracy will be lost during an addition. The reason for this is 
-given by the relations eq.(\ref{eq:addmap}), which simply states that the 
-projection of the sum equals the sum of the projections. However, 
-\emph{relative} accuracy might be lost if the additon \emph{reduces} the norm
-of the function. If this is the case, each of the functions $f$ and $g$ 
-would have been projected with a higher wavelet norm threshold
-compared to a direct projection of the analytical sum (this will lead to the
-situation mentioned above where both the $f$ and $g$ \texttt{nodes} are 
-missing).
-
-\section{Multiplication of functions}
-As it was presented in chapter three, the multiplication was a
-"leaf-to-root" algorithm that would start by doing the multiplication at some
-predetermined finest scale, followed by a wavelet transform to obtain the
-\texttt{nodes} at coarser scales, throwing away all \texttt{nodes} that are not
-needed. By doing the multiplication this way there is no accuracy problems 
-related to the multiplication, provided that the finest scale $N$ in 
-eq.(\ref{eq:multmapN}) is chosen properly. Since we now are doing the 
-multiplication on a finer scale than either $f$ or $g$ were originally 
-represented, no information from these functions is lost in the 
-multiplication.\\
-
-\noindent
-The projection integral in eq.(\ref{eq:multexpansion}) is again done by
-Gauss-Legendre quadrature and we end up with two double summation
+\subsection{Multiplication}
+Consider the equation $h(x) = f(x)\times g(x)$. In practice this means to
+multiply the representations \scalingrep{f}{n} and \scalingrep{g}{n}
 \begin{equation}
-	s^{N,h}_{j^h,l} \approx
-	2^{N/2}\sum_{q=0}^k w_q 
-	\left(\sum_{j^f=0}^ks^{N,f}_{j^f,l}\phi^0_{j^f,0}(y_q)\right)
-	\left(\sum_{j^g=0}^ks^{N,g}_{j^g,l}\phi^0_{j^g,0}(y_q)\right)
-	\phi^0_{j^h,0}(y_q)
-	\label{eq:Nmult}
+    h(x) \approx \hat{h}(x) \mydef \scalingrep{f}{n}(x) 
+	    \times \scalingrep{g}{n}(x)\\
 \end{equation}
-But what is a proper choice of finest scale $N$ in the product? To avoid this
-question it is desireable to incorporate the multiplication in the previous
-adaptive algorithm. To do this we need to be able to calculate the result
-at an arbitrary scale $n$, that is not necessarily beyond the finest scales of
-$f$ and $g$.  Using quadrature, all the information we need from the
-multiplicands is their pointvalues in the quadrature roots $\lbrace
-y_q\rbrace_{q=0}^k$ at scale $n$.
+However, as we have seen in section \ref{sec:multiplication}, the product of the
+scaling representations at scale $n$ will give wavelet contributions at higher
+scales, and Beylkin \cite{Beylkin} suggests to perform the multiplication of 
+\emph{oversampled} function representations of $f$ and $g$, obtained 
+by locally refining the \tree structures one or two levels, to allow enough
+flexibility in the basis to represent the product. In our implementation the 
+adaptive algorithm will take care of the extra refinement in the product only
+if and where it is necessary. We will thus perform the multiplication in 
+Eq.~(\ref{multprojection}) purely on the given scale $n$, which means that we
+project the product of the representations back onto the scaling space 
+\scalingspace{n}
 \begin{equation}
-	s^{n,h}_{j^h,l} \approx \sum_{q=0}^k w_q\left(f(y_q)\times g(y_q)\right)
-	\phi^n_{j^h,l}(y_q)
+    \scalingrep{\hat{h}}{n} = \scalingproj{n} \hat{h}
+	= \scalingproj{n}\big(\scalingrep{f}{n} \times \scalingrep{g}{n}\big)
 \end{equation}
-But now the question arises of what scale the functions $f$ and $g$ shall be 
-evaluated. The best we can do is 
-to evaluate $f$ and $g$ at their respective finest scales. If we do this
-throughout the algorithm, there are still no accuracy issues, since we are
-using our best approximations available for the $f$ and $g$ pointvalues, which
-is simply the best we can achieve.\\
-
-\noindent
-The problem with this approach is that we will now get expressions that couple
-different scales of $h$, $f$ and $g$. This will specifically mean that we can
-no longer exploit the characteristic property of Interpolating wavelets for
-the evaluation of the $f$ and $g$ pointvalues, since the quadrature roots on
-different scales do not coincide. This means that in order to get a
-numerically efficient multiplication, we need to relate the product on one
-scale to the multiplicants on the same scale. 
-
-\subsection*{Legendre scaling functions}
-This uncoupling is easily done by using the expression in
-eq.(\ref{eq:Nmult}) at an arbitrary scale $n$
-\begin{equation}
-	s^{n,h}_{j^h,l} \approx
-	2^{n/2}\sum_{q=0}^k w_q 
-	\left(\sum_{j^f=0}^ks^{n,f}_{j^f,l}\phi^0_{j^f,0}(y_q)\right)
-	\left(\sum_{j^g=0}^ks^{n,g}_{j^g,l}\phi^0_{j^g,0}(y_q)\right)
-	\phi^0_{j^h,0}(y_q)
+and the scaling coefficients of the product are approximated by the projection 
+integral
+\begin{align}
+    \scalingcoef^{n,h}_{j^h,l} 
+	&\approx \int_{2^{-n}l}^{2^{-n}(l+1)}
+	    \hat{h}(x)\scaling_{j^h,l}^n(x)\ud x\\
+	&= \int_{2^{-n}l}^{2^{-n}(l+1)}
+	    \scalingrep{f}{n}(x)\scalingrep{g}{n}(x)\scaling^n_{j^h,l}(x)\ud x\\
+	&= 2^{n/2} \int_0^1
+	    \scalingrep{f}{n}(2^{-n}(x+l))
+	    \scalingrep{g}{n}(2^{-n}(x+l))\scaling^0_{j^h,0}(x)\ud x
+    \label{eq:multexpansion}
+\end{align}
+The projection integral is again done by Gauss-Legendre quadrature and all the 
+information we need from the multiplicands are their pointvalues in the quadrature 
+roots $\lbrace x_q\rbrace_{q=0}^k$ at scale $n$, which can be obtained from their
+respective scaling coefficients
+\begin{align}
+    \scalingcoef^{n,h}_{j^h,l} &\approx 2^{n/2}
+	\sum_{q=0}^k \omega_q\left(\scalingrep{f}{n}(2^{-n}(x_q+l))\times 
+        \scalingrep{g}{n}(2^{-n}(x_q+l))\right) \scaling^0_{j^h,0}(x_q)\\
+	&= 2^{3n/2}\sum_{q=0}^k \omega_q 
+	\left(\sum_{j^f=0}^k\scalingcoef^{n,f}_{j^f,l}\scaling^0_{j^f,0}(x_q)\right)
+	\left(\sum_{j^g=0}^k\scalingcoef^{n,g}_{j^g,l}\scaling^0_{j^g,0}(x_q)\right)
+	\scaling^0_{j^h,0}(x_q)
 	\label{eq:nmult}
-\end{equation}
+\end{align}
+
+\subsection{Multiplication in $d$ dimensions}
 The generalization to multiple dimensions gives no surprises, but by expanding
 the vector notation in $d$ dimensions it becomes clear that multiplication
-will become a time consuming process in the Legendre basis.
+will become a time consuming process in a general polynomial basis
 \begin{align}
-	\nonumber
-	s^{n,h}_{\boldsymbol{j}^h,\boldsymbol{l}} 
-	\approx&\ 2^{dn/2} 
+    \nonumber
+    \scalingcoef^{n,h}_{\bs{j}^h,\bs{l}} 
+	\approx&\ \big(2^{3n/2}\big)^d 
 	\sum_{q_1=0}^k\sum_{q_2=0}^k\cdots\sum_{q_d=0}^k\Bigg(
-	\bigg(\prod_{i=1}^dw_{q_i}\bigg)\\
+	\bigg(\prod_{i=1}^d\omega_{q_i}\bigg)\\
 	\nonumber
 	&\ \ \times\Bigg(\sum_{j^f_1=0}^k\sum_{j^f_2=0}^k\cdots\sum_{j^f_d=0}^k
-	s^{n,f}_{\boldsymbol{j}^f\boldsymbol{l}} \bigg(
-%    \phi^0_{j^f_1l_1}(y_{q_1})
-%    \phi^0_{j^f_2l_2}(y_{q_2})\cdots 
-%    \phi^0_{j^f_dl_d}(y_{q_d})\bigg)\Bigg)\times\\
-	\prod_{i=1}^d\phi^0_{j^f_il_i}(y_{q_i})\bigg)\Bigg)\\
+	\scalingcoef^{n,f}_{\bs{j}^f\bs{l}} \bigg(
+	\prod_{i=1}^d\scaling^0_{j^f_i,0}(x_{q_i})\bigg)\Bigg)\\
 	\nonumber
 	&\ \ \times\Bigg(\sum_{j^g_1=0}^k\sum_{j^g_2=0}^k\cdots\sum_{j^g_d=0}^k
-	s^{n,g}_{\boldsymbol{j}^g\boldsymbol{l}} \bigg(
-%    \phi^0_{j^g_1l_1}(y_{q_1})
-%    \phi^0_{j^g_2l_2}(y_{q_2})\cdots
-	\prod_{i=1}^d\phi^0_{j^g_il_i}(y_{q_i})\bigg)\Bigg)\\
+	\scalingcoef^{n,g}_{\bs{j}^g\bs{l}} \bigg(
+	\prod_{i=1}^d\scaling^0_{j^g_i,0}(x_{q_i})\bigg)\Bigg)\\
 	&\ \ \times \ \ \ 
-%    \left(
-%    \phi^0_{j^h_1l_1}(y_{q_1})
-%    \phi^0_{j^h_2l_2}(y_{1_2})\cdots
-%    \phi^0_{j^h_dl_d}(y_{q_d})\right)\Bigg)
-	\prod_{i=1}^d\phi^0_{j^h_il_i}(y_{q_i})\Bigg)
+	\prod_{i=1}^d\scaling^0_{j^h_i,0}(x_{q_i})\Bigg)
 	\label{eq:legmultND}
 \end{align}
-The scaling behavior of this expression is $(k+1)^{2d}$. From
-eq.(\ref{eq:legmultND}) we can see that the only function evaluations that are
-actually taking place concern the $k+1$ different scaling functions evaluated 
-in the $k+1$ different quadrature roots. These $(k+1)^2$ function
-values need to be evaluated only once, and fetched from memory whenever
-needed in the expression eq.(\ref{eq:legmultND}), which will speed up the
-process.
+The scaling behavior of this expression is $(k+1)^{2d}$, however, the only function 
+evaluations that are actually taking place are again the $k+1$ different scaling 
+functions evaluated in the $k+1$ different quadrature roots. These $(k+1)^2$ function
+values need to be evaluated only once, and fetched from memory whenever needed in 
+the expression Eq.~(\ref{eq:legmultND}), which will speed up the process.
 
-\subsection*{Interpolating scaling functions}
-Multiplication in the Interpolating basis in $d$ dimensions follows exactly the
-expression for the Legendre basis eq.(\ref{eq:legmultND}), and now the true power 
-of the Interpolating scaling functions is revealed, in that it is specifically
-designed to return Kronecker deltas when evaluated in the quadrature roots.
-Inserting this property in eq.(\ref{eq:legmultND}) we get
-\begin{align}
-	\nonumber
-	s^{n,h}_{\boldsymbol{j}^h\boldsymbol{l}} 
-	\approx&\ 2^{dn/2} 
-	\sum_{q_1=0}^k\sum_{q_2=0}^k\cdots\sum_{q_d=0}^k\Bigg(
-	\bigg(\prod_{i=1}^dw_{q_i}\bigg)\\
-	\nonumber
-	&\ \ \times\Bigg(\sum_{j^f_1=0}^k\sum_{j^f_2=0}^k\cdots\sum_{j^f_d=0}^k
-	s^{n,f}_{\boldsymbol{j}^f\boldsymbol{l}} \bigg(
-	\prod_{i=1}^d\frac{\delta_{j^f_i,q_i}}{\sqrt{w_{q_i}}}\bigg)\Bigg)\\
-	\nonumber
-	&\ \ \times\Bigg(\sum_{j^g_1=0}^k\sum_{j^g_2=0}^k\cdots\sum_{j^g_d=0}^k
-	s^{n,g}_{\boldsymbol{j}^g\boldsymbol{l}} \bigg(
-	\prod_{i=1}^d\frac{\delta_{j^g_i,q_i}}{\sqrt{w_{q_i}}}\bigg)\Bigg)\\
-	\nonumber
-	&\ \ \times\ 
-	\bigg(\prod_{i=1}^d\frac{\delta_{j^h_i,q_i}}{\sqrt{w_{q_i}}}\bigg)\Bigg)\\
-	=&\ 2^{dn/2} 
-	s^{n,f}_{\boldsymbol{j}^h\boldsymbol{l}}
-	s^{n,g}_{\boldsymbol{j}^h\boldsymbol{l}}
-	\bigg(\prod_{i=1}^d\sqrt{w_{j^h_i}}\bigg)	
+Working in the Interpolating basis, the multiplication complexity is significantly 
+reduced, as the basis is specifically designed to return Kronecker deltas when 
+evaluated in the quadrature roots. Inserting this property in 
+Eq.~(\ref{eq:legmultND}), all summations are removed and we are left with a single
+term in the evaluation of the coefficient of the product 
+\begin{equation}
+    \scalingcoef^{n,h}_{\bs{j}^h\bs{l}} =\ \big(2^{3n/2}\big)^d 
+	\scalingcoef^{n,f}_{\bs{j}^h\bs{l}}
+	\scalingcoef^{n,g}_{\bs{j}^h\bs{l}}
+	\bigg(\prod_{i=1}^d\sqrt{\omega_{j^h_i}}\bigg)	
 	\label{eq:intmultND}
-\end{align}
-which leaves only \emph{one} term in the evaluation of each coefficient of the
-product, making the Interpolating basis vastly superior to the Legendre basis
-when it comes to multiplication efficiency.
+\end{equation}
 
-\subsection*{Obtaining wavelet coefficients}
-The calculation of the wavelet coefficients is done in the same way as for the
+\subsection{Obtaining the wavelet coefficients}
+In the case of multiplication, the calculation of the wavelet coefficients on
+a given scale $n$ is done in the same way as for the
 projection, by wavelet transform of the scaling coefficients at scale $n+1$.
-Line 3 of algorithm 1 is again obtained by calculation of the scaling
-coefficients of the $2^d$ children of the current \texttt{node} by the
+Line 7 of algorithm \ref{alg:function} is again obtained by calculation of the 
+scaling coefficients of the $2^d$ children of the current \node by the
 appropriate expression (Legendre or Interpolating), followed by a wavelet
 decomposition.
 
-\subsection*{Multiplication accuracy}
-Now we can see that some accuracy issues will arise. As before we are making
-approximations of the coefficients based on the quadrature projection, but
-more importantly, we are making this approximation based on point values of
-$f$ and $g$ obtained at scale $n$, which may not resemble the true function at 
-all. Formally, however, this is not a
-problem, since we know that by increasing the scale we are both improving the
-quadrature accuracy \emph{and} improving the quality of the $f$ and $g$
-pointvalues, and we will approach the exact product in the limit of high $n$. 
-Obviously, by
-following this algorithm the accuracy of each coefficient will improve as we
-ascend the ladder of scales, and just as for the projection, we will need to do
-a complete wavelet transform, from finest to coarsest scale in order to 
-update all non-terminal coefficients.\\
-
-\noindent
-As for the addition the situation may arise where some \texttt{nodes} in $f$
-or $g$ needs to be generated by wavelet transform, but unlike the addition,
-we need to do this also when the \texttt{nodes} are missing in \emph{both} $f$
-and $g$. The reason for this is that we are only dealing with scaling
-coefficients, which will be non-zero also for "generated" \texttt{nodes}.
+\subsection{Estimating the \tree structure}
+In both addition and multiplication we use the union of the \tree structures of
+the input functions as the starting guess for the \tree structure of the result.
+In the case of addition, there is no need for further refinement, as there will 
+be no wavelet contribution beyond this level of refinement in the result. In 
+multiplications, however, it might be necessary to refine a scale or two locally,
+and this is taken care of by the adaptive algorithm.
 
 \section{Operator application}
-Applying the operator is a two-step procedure. First we need to set up the
-operator by projecting it onto the multiwavelet basis. The application of the 
-operator is then obtained by performing the matrix-vector multiplication
-given by eq.(\ref{eq:Smatrix}) to obtain the full multiresolution result.\\
-
-\noindent
-For integral operators the projection of the operator reduces to a projection
-of the $2d$-dimensional kernel $K(\boldsymbol{x},\boldsymbol{y})$ onto the
-multiwavelet basis. This is a function projection as good as any, and follows
-the projection algorithm described previously in this chapter. In the case of
-the Poisson operator, we make separate projections for each of the terms in
-the separable kernel expansion eq.(\ref{eq:poissonexp}), and in a sense we get
-$M_{\epsilon}$ different operators will be applied.\\
-
-\noindent
-As was pointed out in chapter 4, by separating the Poisson kernel
-numerically, we will be able to apply a one-dimensional operator three
-times to obtain the full three-dimensional result, and in the following only a
-one-dimensional algorithm for the operator application is presented.
-Applying this one-dimensional algorithm to the correct terms in the
-$d$-dimensional case becomes a technical issue, and more is said on this
-matter in \cite{Fossgaard}.\\
-
-\noindent
-The way to build the
-result \texttt{tree} adaptively would be to apply the operator piece by piece,
-specifically one row at the time, to obtain the result scale by scale,
-refining only where needed. The standard (S) way of doing this is to apply the
-entire row, that is, applying all blocks on one row, to obtain the
-coefficients on one \texttt{node} of the result based on the \emph{full}
-multiresolution operator
+In the non-standard operator application given in the matrix 
+equation~(\ref{eq:NSmatrix}), the length scales of the problem have been
+explicitly separated. In this way it is possible to use 
+algorithm~\ref{alg:function} to adaptively build the resulting function \tree, 
+also in several dimensions. For a \node at a given scale $n$ we need to calculate 
+the scaling and wavelet representations of the resulting function $g$
+\begin{equation}
+    \label{eq:oper_n}
+    \scalingrep{g}{n} + \waveletrep{g}{n} = 
+	\big(\ \A{n}{n}\ +\ \B{n}{n}\ +\ \C{n}{n}\ +\ \T{n}{n}\ \big)
+	\big(\scalingrep{f}{n} + \waveletrep{f}{n}\big)
+\end{equation}
+but as was pointed out in the theory part in section~\ref{sec:operator}, the
+$T$ part of the operator is only applied at the coarsest scale, and thus, no
+interaction with the coarser scales are taken into account for $n>0$. However,
+when the operator is applied scale by scale, the effect of the missing $T$ part
+at scale $n$ has already been calculated at scale $n-1$, and this information
+can be retrieved by making use of the wavelet transform in 
+Eq.~(\ref{eq:twoscalerelations}). We define the following auxiliary functions
 \begin{align}
-	\label{eq:Sadapoper}
-	\begin{split}
-	g^0  &=\ ^0T^0f^0 + \sum_{n'=0}^{N-1}\ ^0C^{n'}df^{n'}\\
-	dg^n &=\ ^nB^0f^0 + \sum_{n'=0}^{N-1}\ ^nA^{n'}df^{n'}
-	\end{split}
+    \scalingrep{\hat{g}}{n} &\mydef\ \T{n}{n} \scalingrep{f}{n}\\
+    \scalingrep{\tilde{g}}{n} &\mydef\ \C{n}{n} \waveletrep{f}{n}\\
+    \waveletrep{\tilde{g}}{n} &\mydef\ \big(\ \A{n}{n}\ +\ \B{n}{n}\big) 
+	\big(\scalingrep{f}{n} + \waveletrep{f}{n}\big)
 \end{align}
-and based on this make the decision of whether to split the \texttt{node}, 
-before moving on to the next \texttt{node} and ultimately to the next scale.
-Note that if we are moving beyond the finest scale of $f$, only the $^nB^0$
-term of the operator need to be considered, since $df^n$ is then zero by
-definition, and the function representation of $f$ will never have to be 
-extended beyond its finest scale in the S operator application.
+where all three contributions are calculated at the coarsest scale. At all scales
+$n>0$, however, we only need to calculate \scalingrep{\tilde{g}}{n} and
+\waveletrep{\tilde{g}}{n}, as \scalingrep{\hat{g}}{n} can be obtained from
+the next coarser scale
+\begin{equation}
+    \scalingrep{\hat{g}}{n} = \scalingrep{\hat{g}}{n-1} + \scalingrep{\tilde{g}}{n-1} + 
+	\waveletrep{\tilde{g}}{n-1}, \qquad n > 0
+\end{equation}
+and this is continued locally until we reach a representation of sufficient 
+accuracy, following the same algorithm as before.
 
-\subsection*{Non-standard representation}
-By applying the operator the standard way, we improve our final result by 
-adding wavelet corrections one scale at the time, not altering what was already
-there at the coarser scales. We will now introduce a somewhat different 
-approach, where we do not apply the entire \emph{multiresolution} operator on 
-every scale, but rather the \emph{mono}resolution operator one scale at the 
-time.
-\begin{align}
-	\label{eq:NSadapoper}
-	\begin{split}
-	g^n  &=\ ^nT^nf^n+\ ^nC^ndf^n\\
-	dg^n &=\ ^nB^nf^n+\ ^nA^ndf^n
-	\end{split}
-\end{align}
-This is the so-called non-standard (NS) way of applying operators, and the 
-matrix equation will now look like
-\begin{align}
-	\tiny
-	\label{eq:NSmatrix}
-	\begin{split}
-	\left(
-	\begin{array}{c|c}
-		\begin{array}{c|c}
-			$\multirow{8}{*}{$^{N-2}T^{N-2}$}$&
-			$\multirow{8}{*}{$^{N-2}C^{N-2}$}$
-			\\ &\\ &\\ &\\ &\\ &\\ &\\ &\\\hline
-			$\multirow{8}{*}{$^{N-2}B^{N-2}$}$&
-			$\multirow{8}{*}{$^{N-2}A^{N-2}$}$
-			\\ &\\ &\\ &\\ &\\ &\\ &\\ &\\
-		\end{array}
-		&
-		\begin{array}{cc}
-			\begin{array}{cc}
-				&
-			\end{array}
-			&
-			\begin{array}{cc}
-				&
-			\end{array}\\
-			\begin{array}{cc}
-				&
-			\end{array}
-			&
-			\begin{array}{cc}
-				&
-			\end{array}\\
-		\end{array}\\\hline
-		\begin{array}{c}
-			\begin{array}{cc}
-				&\\&
-			\end{array}\\
-			\begin{array}{cc}
-				&\\&
-			\end{array}\\
-		\end{array}
-		&
-		\begin{array}{c|c}
-			\begin{array}{ccc}
-				\multicolumn{3}{c}{$\multirow{12}{*}
-				{$\ \ \ \ ^{N-1}T^{N-1}\ \ $}$}
-				\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\
-			\end{array}
-			&
-			\begin{array}{ccc}
-				\multicolumn{3}{c}{$\multirow{12}{*}
-				{$\ \ \ ^{N-1}C^{N-1}\ $}$}
-				\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\
-			\end{array}\\\hline
-			\begin{array}{ccc}
-				\multicolumn{3}{c}{$\multirow{12}{*}
-				{$\ \ \ \ ^{N-1}B^{N-1}\ \ $}$}
-				\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\
-			\end{array}
-			&
-			\begin{array}{ccc}
-				\multicolumn{3}{c}{$\multirow{12}{*}
-				{$\ \ \ ^{N-1}A^{N-1}\ $}$}
-				\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\&&\\
-			\end{array}\\
-		\end{array}
-	\end{array}
-	\right)	\left(
-	\begin{array}{c}
-		$\multirow{8}{*}{$f^{N-2}$}$\\ \\ \\ \\ \\ \\ \\ \\\hline
-		$\multirow{8}{*}{$df^{N-2}$}$\\ \\ \\ \\ \\ \\ \\ \\\hline
-		$\multirow{12}{*}{$f^{N-1}$}$\\	\\ \\ \\ \\ \\ \\ \\ \\ \\ \\\hline
-		$\multirow{12}{*}{$df^{N-1}$}$\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
-	\end{array}
-	\right)	&= \left(
-	\begin{array}{c}
-		$\multirow{8}{*}{$g^{N-2}$}$\\ \\ \\ \\ \\ \\ \\ \\\hline
-		$\multirow{8}{*}{$dg^{N-2}$}$\\ \\ \\ \\ \\ \\ \\ \\\hline
-		$\multirow{12}{*}{$g^{N-1}$}$\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\\hline
-		$\multirow{12}{*}{$dg^{N-1}$}$\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\
-	\end{array}
-	\right)
-	\end{split}
-\end{align}
-The advantage of this operator application is that the coarse scale
-evaluations will be more efficient, in that we are using only one of the 
-terms in each of the sums in eq.(\ref{eq:Sadapoper}), and only when we reach the
-finest scale of the operator are we applying the \emph{full} multiresolution 
-operator.\\
-
-\noindent
-There are at least two disadvantages of the non-standard operator. The most
-obvious being that the total matrix has grown in size, since we are now
-explicitly calculating the scaling coefficients on every scale. In our case
-this is not that big an overhead, since we need these scaling coefficients 
-anyway, and in the S representation they would have to be obtained by wavelet 
-transform after the calculation of the wavelet coefficients. In $d$ dimensions
-this is even less of a problem since the scaling part is then only
-one of the $2^d$ scaling/wavelet contributions on each scale.\\
-
-\noindent
-The other, more important disadvantage, is that it seems that we have to
-evaluate the dense $^nT^n$ submatrices all the way to the the finest scale, and
-this would shatter any hope for a linear scaling algorithm. The way around
-this problem is to realize that the effect of $^nT^n$ on $f^n$ is exactly what
-was calculated at the previous scale, and instead of calculating this part
-again, we can do a wavelet transform of the $g^{n-1}$ and $dg^{n-1}$
-coefficients to obtain the $^nT^n$ contribution to $g^n$. In this way only the
-coarsest scale $T$ matrix will actually have to be evaluated, and we re-gain
-our fast algorithm.\\
-
-\noindent
-As was pointed out, we are not applying the \emph{full} multiresolution
-operator until we reach the finest scale, which means that the coefficients
-calculated at the coarser scales are somewhat incomplete. However, the
-representation we have on the finest scale \emph{will} be complete, and a 
-wavelet decomposition all the way to the coarsest scale will update all 
-non-terminal \texttt{nodes} to include the effect of the full operator.\\
-
-\noindent
-Another consequence of the NS form of the operator is that we might have to
-extend the representation of $f$ beyond its finest scale during the operator
-application, since the scaling part of $f$ will be non-vanishing at any
-scale. However, at these nodes only the $B$ part of the operator needs to be
-applied because the wavelet coefficients are zero for generated \texttt{nodes}.
-
-\subsection*{Adaptive algorithm}
-The application of the NS operator follows the same algorithm as before, but
-with a few additional terms. 
-\begin{algorithm}
-	\label{alg:operator}
-	\caption{Algorithm for operator application}
-	\begin{algorithmic}[1]
-		\FOR{each term in the kernel expansion 
-			$K(x) =	\sum_{\kappa=1}^MK_\kappa(x)$}
-			\WHILE{number of nodes at current scale is $N_s>0$}
-				\FOR{each node at current scale}
-				\FOR{each operator component ($O = 
-				\boldsymbol{\alpha}, \boldsymbol{\beta}, 
-				\boldsymbol{\gamma}$ or $\boldsymbol{\tau}$)}
-					\FOR{each input node within bandwidth $l_x-l_y <
-					\Lambda^{n,n}$}
-					\IF{($||O^{n,n}_{l_x-l_y}||\cdot
-					||w^{n,f}_{l_y}||>\delta$)}
-					\STATE apply operator $w_{l_x}^{n,g} := w_{l_x}^{n,g}\ +\
-					O^{n,n}_{l_x-l_y}w^{n,f}_{l_y}$
-					\ENDIF
-					\ENDFOR
-				\ENDFOR
-				\IF{node needs to be refined}
-					\STATE mark node as non-terminal
-					\STATE allocate children nodes
-					\STATE update list of nodes at the next scale
-					\STATE add current node result to children by wavelet
-					transform
-					\ENDIF
-				\ENDFOR
-				\STATE increment scale
-			\ENDWHILE
-		\ENDFOR
-	\end{algorithmic}
-\end{algorithm}
-\noindent
-First of all, we loop over the sum in the kernel
-expansion. The reason for doing this, in contrast to adding these terms to
-one kernel representation first, is that the different terms will have
-different bandwidths, and by adding them all together, we would end up with a
-bandwidth equal to the widest individual one.\\
-
-\noindent
-The second additional term is the
-double loop in the evaluation of the expansion coefficients, and the third
-difference is the wavelet transform after the allocation of children 
-\texttt{nodes} to obtain the contribution from the $^nT^n$ part of the operator
-for all but the coarsest scale. In the algorithm, $O$ stands for the entries
-of any of the operator components $A, B, C$ and $T$, and $w$ stands for both 
-scaling and wavelet coefficients.\\
-
-\noindent
 One should note that there are three factors determining whether a specific
 entry $O^{n_x,n_y}_{l_x,l_y}$ of the operator needs to be taken into
 account. Firstly, we need only the operator at the current scale. Secondly, we
 need only the \texttt{nodes} that are within the bandwidth, and finally, we use
-only the terms where the product of the norms is above a given threshold 
-(line 6\ in algorithm 2). This greatly reduces the number of terms we actually 
-need to compute.
+only the terms where the product of the norms is above a given threshold. 
+This greatly reduces the number of terms we actually need to compute.
 
-\subsection*{Obtaining the coefficients}
+There are many things to consider when operating on MPI distributed functions.
+
+\subsection{Obtaining the coefficients}
 The actual calculation of the coefficients is performed in the following way.
-In the NS matrix equation, the wavelet coefficients are obtained by the 
-$\boldsymbol{\gamma}$ and $\boldsymbol{\alpha}$ parts of the operator at any 
-scale.
+In the non-standard matrix equation, the wavelet coefficients are obtained by the 
+$\bs{\gamma}$ and $\bs{\alpha}$ parts of the operator at any scale.
 \begin{align}
-	\nonumber
-	dg^n(x) &=\ ^nB^nf^n(x) +\ ^nA^n df^n(x)\\
-	\nonumber
-	\sum_{l_x} \boldsymbol{d}^{n,g}_{l_x}\boldsymbol{\psi}^n_{l_x}(x)
+    \nonumber
+    \waveletrep{\tilde{g}}{n}(x) &=\ \B{n}{n}\scalingrep{f}{n}(x) +\ 
+	\A{n}{n}\waveletrep{f}{n}(x)\\
+    \nonumber
+    \sum_{l_x} \bs{\waveletcoef}^{n,g}_{l_x}\waveletvec^n_{l_x}(x)
 	&= \sum_{l_x}\Bigg(\sum_{l_y}
-	\bigg(\boldsymbol{\beta}_{l_xl_y}^{n,n}\boldsymbol{s}^{n,f}_{l_y} +
-	\boldsymbol{\alpha}^{n,n}_{l_xl_y}\boldsymbol{d}^{n,f}_{l_y}\bigg)
-	\boldsymbol{\psi}_{l_x}^n(x)\Bigg)\\
-	\boldsymbol{d}^{n,g}_{l_x} &= 
-	\sum_{l_y}\bigg(\boldsymbol{\beta}_{l_xl_y}^{n,n}\boldsymbol{s}^{n,f}_{l_y}
-	+ \boldsymbol{\alpha}^{n,n}_{l_xl_y}\boldsymbol{d}^{n,f}_{l_y}\bigg)
+	\bigg(
+	\bs{\beta}^{n,n}_{l_x,l_y}\bs{\scalingcoef}^{n,f}_{l_y} +
+	\bs{\alpha}^{n,n}_{l_x,l_y}\bs{\waveletcoef}^{n,f}_{l_y}\bigg)
+	\waveletvec_{l_x}^n(x)\Bigg)\\
+    \bs{\waveletcoef}^{n,g}_{l_x} &= 
+	\sum_{l_y}\bigg(
+	\bs{\beta}^{n,n}_{l_x,l_y}\bs{\scalingcoef}^{n,f}_{l_y} + 
+	\bs{\alpha}^{n,n}_{l_x,l_y}\bs{\waveletcoef}^{n,f}_{l_y}\bigg)
 \end{align}
-In the calculation of the scaling coefficients, the $\boldsymbol{\tau}$ part is
+In the calculation of the scaling coefficients, the $\bs{\tau}$ part is
 included only for the coarsest scale.
 \begin{align}
-	\nonumber
-	g^0(x) &=\ ^0T^0f^0(x) +\ ^0C^0 df^0(x)\\
-	\nonumber
-	\sum_{l_x} \boldsymbol{s}^{0,g}_{l_x}\boldsymbol{\phi}^0_{l_x}(x)
+    \nonumber
+    \scalingrep{\hat{g}}{0}(x) + \scalingrep{\tilde{g}}{0}(x) 
+    &=\ \T{0}{0}\scalingrep{f}{0}(x) +\ \C{0}{0}\waveletrep{f}{0}(x)\\
+    \nonumber
+    \sum_{l_x} \bs{\scalingcoef}^{0,g}_{l_x}\scalingvec^0_{l_x}(x)
 	&= \sum_{l_x}\Bigg(\sum_{l_y}
-	\bigg(\boldsymbol{\tau}_{l_xl_y}^{0,0}\boldsymbol{s}^{0,f}_{l_y} +
-	\boldsymbol{\gamma}^{0,0}_{l_xl_y}\boldsymbol{d}^{0,f}_{l_y}\bigg)
-	\boldsymbol{\phi}_{l_x}^0(x)\Bigg)\\
-	\boldsymbol{s}^{0,g}_{l_x} &= 
-	\sum_{l_y}\bigg(\boldsymbol{\tau}_{l_xl_y}^{0,0}\boldsymbol{s}^{0,f}_{l_y}
-	+ \boldsymbol{\gamma}^{0,0}_{l_xl_y}\boldsymbol{d}^{0,f}_{l_y}\bigg)
+	\bigg(
+	\bs{\tau}^{0,0}_{l_x,l_y}\bs{\scalingcoef}^{0,f}_{l_y} +
+	\bs{\gamma}^{0,0}_{l_x,l_y}\bs{\waveletcoef}^{0,f}_{l_y}\bigg)
+	\scalingvec_{l_x}^0(x)\Bigg)\\
+    \bs{\scalingcoef}^{0,g}_{l_x} &= 
+	\sum_{l_y}\bigg(
+	\bs{\tau}^{0,0}_{l_x,l_y}\bs{\scalingcoef}^{0,f}_{l_y} + 
+	\bs{\gamma}^{0,0}_{l_x,l_y}\bs{\waveletcoef}^{0,f}_{l_y}\bigg)
 \end{align}
-For the general scale $n>0$ the $\boldsymbol{\tau}$ part is substituted with a
+For the general scale $n>0$ the $\bs{\tau}$ part is substituted with a
 filter operation.
 \begin{align}
-	\begin{split}
-	\boldsymbol{s}^{n,g}_{l_x=even} &= \bigg(H^{(0)T}
-	\boldsymbol{s}^{n-1,g}_{l_x/2} +
-	G^{(0)T}\boldsymbol{d}^{n-1,g}_{l_x/2}\bigg) + \sum_{l_y}
-	\boldsymbol{\gamma}^{n,n}_{l_xl_y}\boldsymbol{d}^{n,f}_{l_y}\\
-	\boldsymbol{s}^{n,g}_{l_x=odd} &= \bigg(H^{(1)T}
-	\boldsymbol{s}^{n-1,g}_{(l_x-1)/2} +
-	G^{(1)T}\boldsymbol{d}^{n-1,g}_{(l_x-1)/2}\bigg) + \sum_{l_y}
-	\boldsymbol{\gamma}^{n,n}_{l_xl_y}\boldsymbol{d}^{n,f}_{l_y}
-	\end{split}
+    \begin{split}
+    \bs{\scalingcoef}^{n,g}_{l_x=even} &= \bigg(H^{(0)T}
+	\bs{\scalingcoef}^{n-1,g}_{l_x/2} +
+	G^{(0)T}\bs{\waveletcoef}^{n-1,g}_{l_x/2}\bigg) + \sum_{l_y}
+	\bs{\gamma}^{n,n}_{l_x,l_y}\bs{\waveletcoef}^{n,f}_{l_y}\\
+    \bs{\scalingcoef}^{n,g}_{l_x=odd} &= \bigg(H^{(1)T}
+	\bs{\scalingcoef}^{n-1,g}_{(l_x-1)/2} +
+	G^{(1)T}\bs{\waveletcoef}^{n-1,g}_{(l_x-1)/2}\bigg) + \sum_{l_y}
+	\bs{\gamma}^{n,n}_{l_x,l_y}\bs{\waveletcoef}^{n,f}_{l_y}
+    \end{split}
 \end{align}
 In all of these expressions the summation over $l_y$ is limited to those that
 differ from $l_x$ by less than the bandwidth $|l_y-l_x| < \Lambda^{n,n}$. More
 on the calculation of this bandwidth if given in \cite{Fossgaard}.
 
-\pagebreak
+\subsection{Estimating the \tree structure}
+The obvious way of estimating the \tree structure in the case of operator
+application is perhaps to copy the grid of the input function, and this
+was originally proposed by Beylkin\cite{Beylkin}. However, as the integral
+operators treated in this work are known for their smoothing properties, the
+output function will in general require a coarser grid than the input, and such
+a construction will lead to an overestimation of the grid refinement. 
 
-\subsection{Addition of functions}
-Consider the equation $h(x) = f(x)+g(x)$. Projecting $h$ onto the scaling
-space yields
-\begin{align}
-    \nonumber
-    h^n(x)  &= P^nh(x)\\
-    \nonumber
-    	    &= P^n\left(f(x)+g(x)\right)\\
-    \nonumber
-	    &= P^nf(x)+P^ng(x)\\
-    \label{eq:scalingadd}
-	    &= f^n(x)+g^n(x)
-\end{align}
-and similarly
-\begin{equation}
-    \label{eq:waveletadd}
-    dh^n(x) = df^n(x)+dg^n(x)
-\end{equation}
-The generalization to multiple dimensions is trivial, and will not be discussed.
-
-\subsubsection*{Scaling function multiplication}
-Consider the equation $h(x) = f(x)\times g(x)$. We want to represent the
-function $h(x)$ at some scale $N$ 
-\begin{align}
-    \nonumber
-    h^N(x)  &= P^Nh(x)\\
-    \label{eq:multprojection}
-	    &= P^N\left(f(x)\times g(x)\right)
-\end{align}
-However, as we have seen, the projection of the product in
-Eq.~(\ref{eq:multprojection}) does \emph{not} equal the product of the
-projections, and we need to perfom the projection of the oversampled 
-functions $f^N$ and $g^N$
-\begin{equation}
-    h^N(x) \approx P^N\left(f^N(x) \times g^N(x)\right) \mydef P^N\tilde{h}(x)
-\end{equation}
-The scaling coefficients of the product is approximated by the projection integral
-\begin{align}
-    \nonumber
-    s^{N,h}_{j^h,l} 
-    &\approx \int_0^1	\tilde{h}(x)\phi_{j^h,l}^N(x)dx\\
-    \nonumber
-    &= \int_0^1 f^N(x)g^N(x)\phi^N_{j^h,l}(x)dx\\
-    \nonumber
-    &= \int_0^1 
-    \left(\sum_{j^f=0}^k s^{N,f}_{j^f,l} \phi^N_{j^f,l}(x)\right)
-    \left(\sum_{j^g=0}^k s^{N,g}_{j^g,l} \phi^N_{j^g,l}(x)\right)
-    \phi_{j^h,l}^N(x)dx\\
-    &= 2^N \sum_{j^f=0}^k\sum_{j^g=0}^k 
-    s_{j^f,l}^{N,f} s_{j^g,l}^{N,g} \int_0^1 
-    \phi_{j^f,0}^0(x)\phi_{j^g,0}^0(x)\phi_{j^h,0}^0(x)dx
-    \label{eq:multexpansion}
-\end{align}
-and if the scale $N$ is chosen properly, the error in the coefficients can
-be made negligeable compared to the total error in $h^N(x)$. We see that the
-multiplication is related to a limited number of integrals, specifically 
-$(k+1)^3$ different integrals involving scale zero scaling functions, 
-regardless of how many total basis functions being used. A lot of these 
-integrals will again be identical because of symmetry.
-
-\subsubsection*{Multiplication in $d$ dimensions}
-The generalization to multiple dimensions is quite straightforward, using the
-notation of eq.(\ref{eq:multidimscaling})
-\begin{equation}
-    \label{eq:multexpansionND}
-    s^{N,h}_{\boldsymbol{j}^h,\boldsymbol{l}} =
-	2^N \sum_{\boldsymbol{j}^f}\sum_{\boldsymbol{j}^g} 
-	s_{\boldsymbol{j}^f,\boldsymbol{l}}^{N,f} 
-	s_{\boldsymbol{j}^g,\boldsymbol{l}}^{N,g} \int_{[0,1]^d}
-	\Phi_{\boldsymbol{j}^f,\boldsymbol{0}}^0(\boldsymbol{x})
-	\Phi_{\boldsymbol{j}^g,\boldsymbol{0}}^0(\boldsymbol{x})
-	\Phi_{\boldsymbol{j}^h,\boldsymbol{0}}^0(\boldsymbol{x})
-	d\boldsymbol{x}
-\end{equation}
-The only difference consists in the number of integrals, which grows
-exponentially in the number of dimensions. The multidimensional integral can
-however be decomposed into a product of mono-dimensional ones
-\begin{align}
-    \nonumber
-    \int_{[0,1]^d} 
-    \Phi_{\boldsymbol{j}^f,\boldsymbol{0}}^0(\boldsymbol{x})
-    \Phi_{\boldsymbol{j}^g,\boldsymbol{0}}^0(\boldsymbol{x})
-    \Phi_{\boldsymbol{j}^h,\boldsymbol{0}}^0(\boldsymbol{x})
-    d\boldsymbol{x}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \\
-    \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 
-    = 	\prod_{i=1}^d \int_0^1
-	\phi_{j_i^f,0}^0(x_i)\phi_{j_i^g,0}^0(x_i)\phi_{j_i^h,0}^0(x_i)dx_i
-\end{align}
-and we have again related all the integrals to the same small set of 
-$(k+1)^3$ different integrals, even though the total number of basis functions
-quickly becomes millions and billions in several dimensions. However, the 
-summations in Eq.~(\ref{eq:multexpansionND}) runs over all $(k+1)^d$ different 
-scaling function combinations of both $f$ and $g$.
-
-
-\subsection*{Legendre basis}
-The Legendre polynomials $\lbrace L_j(x)\rbrace_{j\in \mathbb{N}}$ are solutions
-of the Legendre differential equation
-\begin{equation}
-    \frac{\ud}{\ud x} \big[(1-x^2) \frac{\ud}{\ud x} L_n(x)\big]
-	+n(n+1)L_n(x) = 0,\qquad x \in (-1,1)
-\end{equation}
-which implies that they are orthogonal with respect to the $L^2([-1,1])$ inner product
-\begin{equation}
-    \int_{-1}^{1} L_i(x)L_j(x) \ud x = 0, \qquad i \neq j
-\end{equation}
-but they are usually normalized such that $L_j(1) = 1$. The polynomials can be constructed 
-by induction
-\begin{align}
-    L_0(x) &= 1\\
-    L_1(x) &= x\\
-    (n+1)L_{n+1}(x) &= (2n+1)xL_n(x) - nP_{n-1}(x)
-\end{align}
-and the \emph{Legendre scaling functions} $\phi_j^L$ are obtained by dilation 
-and translation to the unit interval, followed by $L^2$ normalization
-\begin{equation}    
-    \phi_j^L(x) = \sqrt{2j+1}L_j(2x-1),\qquad x \in [0,1]
-\end{equation}
-This is the original construction of scaling functions done by Alpert \cite{Alpert93}.
-
-\subsection*{Interpolating basis}
-Alpert et al. \cite{Alpert02} presented an alternative set of scaling functions 
-with interpolating properties. These \emph{Interpolating scaling functions} 
-$\phi_j^I$ are based on the Legendre scaling functions $\lbrace \phi_j^L
-\rbrace_{j=0}^k$, and the roots $\lbrace x_j\rbrace_{j=0}^k$ and weights
-$\lbrace w_j \rbrace_{j=0}^k$ of the Gauss-Legendre quadrature of order 
-$k+1$, and are constructed as the linear combinations
-\begin{equation}
-    \label{eq:interpolating}
-    \phi_j^I(x) = \sqrt{w_j}\sum_{i=0}^{k} \phi_i^L(x_j)\phi_i^L(x),\qquad x \in [0,1]
-\end{equation}
-This construction leads to orthogonality on the unit interval, as well as the 
-interpolating property
-\begin{equation}
-    \label{eq:interprop}
-    \phi_j^I(x_i) = \frac{\delta_{j,i}}{\sqrt{w_i}}
-\end{equation}
-which will prove important for numerical efficiency. A detailed discussion on 
-the properties of Interpolating wavelets can be found in Donoho \cite{Donoho}.
-
-
-Moreover, the disjoint support of the basis functions means that the accuracy can be 
-locally controlled by truncating the wavelet expansions in Eq.~(\ref{eq:wavelet_exp}), 
-keeping only terms with wavelet norm above the threshold
-\begin{equation}
-  \label{eq:threshold}
-  \| \bs{\waveletcoef}_l^{n,f} \| > \frac{\epsilon}{2^{n/2}} \| f \|
-\end{equation}
-which ensures that the norm of the error in $f$ is less than $\epsilon$. 
-Eq.~(\ref{eq:multires}) constitutes a multiresolution representation of the function 
-$f$, as the basis functions in the expansion are defined on a range of length scales, 
-where the fine scale corrections are present only where they are needed. This reduces
-the number of expansion coefficients needed to represent the function to the given 
-accuracy dramatically compared to the uniform high-resolution representation in
-Eq.~(\ref{eq:highres}).
-
-\subsection{Integral operators}
-We now turn our attention to a specific type of operator; the one-dimensional 
-integral operator given in the form
-\begin{equation}
-	\label{eq:intop1d}
-	[Tf](x) = \int K(x,y)f(y)dy
-\end{equation}
-where $K$ is the two-dimensional operator kernel. The first step is to expand
-the kernel in the multiwavelet basis
-\begin{equation}
-	\label{eq:kernelexp}
-	K^N(x,y) = \sum_{l_x,l_y}\bs{\tau}^{N,N}_{l_xl_y} 
-	\bs{\phi}^N_{l_x}(x)\bs{\phi}^N_{l_y}(y)
-\end{equation}
-where the expansion coefficients are given by the integrals
-\begin{equation}
-	\label{eq:taudef}
-	\bs{\tau}^{n_x,n_y}_{l_xl_y} = \int\int
-	K(x,y)\bs{\phi}^{n_x}_{l_x}(x)\bs{\phi}^{n_y}_{l_y}(y)dxdy
-\end{equation}
-Inserting eq.(\ref{eq:kernelexp}) into eq.(\ref{eq:intop1d}) yields
-\begin{align}
-	\nonumber
-	^NT^Nf^N(x) &= \int\left(\sum_{l_x,l_y} \bs{\tau}^{N,N}_{l_xl_y}
-	\bs{\phi}^N_{l_x}(x)\bs{\phi}^N_{l_y}(y)\right)f(y)dy\\
-	&= \sum_{l_x,l_y} \bs{\tau}^{N,N}_{l_xl_y}
-	\bs{\phi}^N_{l_x}(x)\int f(y)\bs{\phi}^N_{l_y}(y)dy
-\end{align}
-where the last integral is recognized as the scaling coefficients of $f$
-\begin{equation}
-	\label{eq:Tmatrixsum}
-	^NT^Nf^N(x) = \sum_{l_x,l_y} \bs{\tau}^{N,N}_{l_xl_y}
-	\bs{\phi}^N_{l_x}(x)\bs{s}^{N,f}_{l_y}
-\end{equation}
-We can now identify $\bs{\tau}^{N,N}_{l_xl_y}$ as the matrix elements 
-of $^NT^N$ and eq.(\ref{eq:Tmatrixsum}) is the matrix equation 
-eq.(\ref{eq:Tmatrix}) written explicitly. As pointed out, the matrix $^NT^N$ is 
-dense and we would generally have to keep all the terms in 
-eq.(\ref{eq:Tmatrixsum}), therefore we want to decompose it to contributions on 
-coarser scales. We introduce the following definitions, eq.(\ref{eq:taudef}) is 
-repeated for clearity
-\begin{align}
-	\label{eq:tcbadef}
-	\begin{split}
-	\bs{\tau}^{n_x,n_y}_{l_xl_y} &= \int\int
-	K(x,y)\bs{\phi}^{n_x}_{l_x}(x)\bs{\phi}^{n_y}_{l_y}(y)dxdy\\
-	\bs{\gamma}^{n_x,n_y}_{l_xl_y} &= \int\int
-	K(x,y)\bs{\phi}^{n_x}_{l_x}(x)\bs{\psi}^{n_y}_{l_y}(y)dxdy\\
-	\bs{\beta}^{n_x,n_y}_{l_xl_y} &= \int\int
-	K(x,y)\bs{\psi}^{n_x}_{l_x}(x)\bs{\phi}^{n_y}_{l_y}(y)dxdy\\
-	\bs{\alpha}^{n_x,n_y}_{l_xl_y} &= \int\int
-	K(x,y)\bs{\psi}^{n_x}_{l_x}(x)\bs{\psi}^{n_y}_{l_y}(y)dxdy
-	\end{split}
-\end{align}
-Equation eq.(\ref{eq:Tmatrixsum}) can then be decomposed as
-\begin{align}
-	\label{eq:ABCTmatrixsum}
-	\begin{split}
-	[Tf]^N(x) &= \sum_{l_x,l_y}\bs{\tau}^{N-1,N-1}_{l_xl_y}
-	\bs{\phi}^{N-1}_{l_x}(x) \bs{s}^{N-1}_{l_y}\\
-	&+ \sum_{l_x,l_y}\bs{\gamma}^{N-1,N-1}_{l_xl_y}
-	\bs{\phi}^{N-1}_{l_x}(x) \bs{d}^{N-1}_{l_y}\\
-	&+ \sum_{l_x,l_y}\bs{\beta}^{N-1,N-1}_{l_xl_y}
-	\bs{\psi}^{N-1}_{l_x}(x) \bs{s}^{N-1}_{l_y}\\
-	&+ \sum_{l_x,l_y}\bs{\alpha}^{N-1,N-1}_{l_xl_y}
-	\bs{\psi}^{N-1}_{l_x}(x) \bs{d}^{N-1}_{l_y}
-	\end{split}
-\end{align}
-where we can identify $\bs{\alpha}_{l_xl_y}, 
-\bs{\beta}_{l_xl_y}$ and 
-$\bs{\gamma}_{l_xl_y}$ as the matrix elements of $A, B$ and
-$C$, respectively, and eq.(\ref{eq:ABCTmatrixsum}) is again the matrix equation
-eq.(\ref{eq:ABCTmatrix}) written explicitly. In this expression the last term
-involving the $\bs{\alpha}$ coefficients will be extremely sparse, and 
-this sum can be limited to $l_x,l_y$ values that differ by less than some 
-predetermined bandwidth $|l_x-l_y| < \Lambda^{N-1,N-1}$. The rest of the 
-expression eq.(\ref{eq:ABCTmatrixsum}) involves at least one scaling term, so
-we seek to decompose them further.\\
-
-\noindent
-The first term in eq.(\ref{eq:ABCTmatrixsum}) can be decomposed in the same
-manner as eq.(\ref{eq:Tmatrixsum}), and the $\bs{\gamma}$ and
-$\bs{\beta}$ terms can be partially decomposed, following the
-arguments of eq.(\ref{eq:Cdecomp}) and eq.(\ref{eq:Bdecomp}), respectively. If we do 
-this all the way to the coarsest scale, we obtain
-\begin{align}
-	\label{eq:Smatrixsum}
-	\begin{split}
-	[Tf]^N(x) &= \bs{\tau}^{0,0}_{00}
-	\bs{\phi}^{0}_{0}(x) \bs{s}^{0}_{0}\\
-	&+ \sum_{n_y=0}^{N-1}\sum_{l_y}
-	\bs{\gamma}^{0,n_y}_{0l_y}
-	\bs{\phi}^{0}_{0}(x) \bs{d}^{n_y}_{l_y}\\
-	&+ \sum_{n_x=0}^{N-1}\sum_{l_x}
-	\bs{\beta}^{n_x,0}_{l_x0}\bs{\psi}^{n_x}_{l_x}(x) 
-	\bs{s}^{0}_{0}\\
-	&+ \sum_{n_x=0}^{N-1}\sum_{n_y=0}^{N-1}\sum_{l_x,l_y}
-	\bs{\alpha}^{n_x,n_y}_{l_xl_y} \bs{\psi}^{n_x}_{l_x}(x) 
-	\bs{d}^{n_y}_{l_y}
-	\end{split}
-\end{align}
-This is the explicit expression for the standard representation of an operator
-in the multiwavelet basis eq.(\ref{eq:MRoperS}). In eq.(\ref{eq:Smatrixsum}) the 
-majority of terms are included in the last quadruple sum, which is limited to 
-include only terms $|l_x-l_y| < \Lambda^{n_x,n_y}$, making the total evaluation
-much more efficient than eq.(\ref{eq:Tmatrixsum}). 
-
+Instead we 
+will set up a much simplified operator whose purpose is only to build the initial 
+grid. We have found that by only applying the purly diagonal part ($l_x = l_y$) 
+of the original operator, we capture more than 95\% of the norm of the result, 
+but at a fraction of the computational time, and by building an adaptive grid using
+this operator, we end up with a \tree structure that is quite close to the final 
+grid of the full operator. Only when this estimated grid is complete do we apply the
+full operator, and the grid is further refined if needed. Moreover, if the operator
+expansion has $M$ terms, it is in general not necessary to include all of
+them in the simplified operator, and typically $M/10$ should be sufficient,
+if the terms are chosen among the full range of exponents.
