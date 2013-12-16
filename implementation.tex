@@ -481,6 +481,136 @@ be no wavelet contribution beyond this level of refinement in the result. In
 multiplications, however, it might be necessary to refine a scale or two locally,
 and this is taken care of by the adaptive algorithm.
 
+\section{Operator construction}
+
+\subsection{Separated representation of operators}
+In the discussion of multi-dimensional operators in the previous section it
+was assumed that we have an operator that is separable in the Cartesian
+coordinates. This assumption is necessary in order to make calculations
+feasable in higher dimensions, as the straightforward generalization of a
+one-dimensional approach leads to a prohibitive exponential scaling in the 
+dimension. It is,
+however, not necessary that the operator separates exactly, and Beylkin 
+and Mohlenkamp~\cite{Beylkin:2002p429,Beylkin:2005p45} shows that the integral 
+kernel of many physically interresting operators can be approximated as a linear 
+combination of products of one-dimensional kernels
+\begin{equation}
+    \label{eq:sep_rep}
+    K(\bs{x},\bs{y}) \approx \hat{K}(\bs{x},\bs{y}) \mydef 
+	\sum_{\kappa=1}^{M}\alpha_\kappa \prod_{p=1}^d K_p^\kappa(x_p,y_p)
+\end{equation}
+The accuracy of this separated representation can be controlled by adapting
+the functions $K_p^\kappa$, the expansion coefficients $\alpha_\kappa$ and the 
+separation rank $M$, and any precision can in principle be achieved. Such
+a representation allows the multi-dimensional operator to be applied one 
+dimension at the time, reducing the computational complexity from
+$k^{2d}$ per grid cell of the full non-separable operator, to $Mdk^{d+1}$ 
+per grid cell of the separated representation in Eq.~(\ref{eq:sep_rep}),
+where $k$ is the order of the polynomial basis. While the scaling is still 
+exponential in the dimension, the exponent is sufficiently reduced for the 
+approach to be applicable for $d=2,3$. 
+
+\subsection{Poisson kernel}
+The Poisson equation is usually written in its differential form
+\begin{equation}
+    \nabla^2 g(\bs{x}) = -f(\bs{x})
+\end{equation}
+and the solution of can be expressed in terms of the convolution integral
+\begin{equation}
+    g(\bs{x}) = \int P(\bs{x}-\bs{y})f(\bs{y})\ud\bs{y}
+\end{equation}
+where $P(\bs{x}-\bs{y})$ is the Green's function satisfying the fundamental 
+equation with free boundary conditions (zero at infinity)
+\begin{equation}
+    \label{eq:fundamental_poisson}
+    \nabla^2 P(\bs{x}-\bs{y}) = -\delta(\bs{x}-\bs{y})
+\end{equation}
+This equation can be solved analytically and the Green's function for
+the Poisson equation for $d=3$ is given as
+\begin{equation}
+    \label{eq:poisson_kern}
+    P(\bs{x}-\bs{y}) = \frac{1}{4\pi||\bs{x}-\bs{y}||}
+\end{equation}
+
+\subsection{Helmholtz kernel}
+The inhomogeneous Helmholtz equation is a generalization of the Poisson equation,
+and is given in differential form
+\begin{equation}
+    \big(\nabla^2 + \mu^2\big) g(\bs{x}) = -f(\bs{x})
+\end{equation}
+The solution can again be expressed as an integral
+\begin{equation}
+    g(\bs{x}) = \int H^\mu(\bs{x}-\bs{y})f(\bs{y})\ud\bs{y}
+\end{equation}
+using the Helmholtz kernel $H^\mu(\bs{x}-\bs{y})$, which is the Greeen's function 
+satisfying the fundamental equation
+\begin{equation}
+    \label{eq:fundamental_helmholtz}
+    \big(\nabla^2 + \mu^2\big) H^\mu(\bs{x}-\bs{y}) = -\delta(\bs{x}-\bs{y})
+\end{equation}
+with zero boundary conditions at infinity. The Green's function for the Helmholtz 
+equation for $d=3$ is known analytically as
+\begin{equation}
+    \label{eq:helmholtz_kern}
+    H^\mu(\bs{x}-\bs{y}) = \frac{e^{-\mu\|\bs{x}-\bs{y}\|}}{4\pi||\bs{x}-\bs{y}||}
+\end{equation}
+
+\subsection{Separation using Gaussians}
+Neither the Poisson nor Helmholtz kernels are separable in the Cartesian coordinates, 
+but it is possible to obtain a separated representation as in Eq.~(\ref{eq:sep_rep}) 
+of low rank using Gaussian functions
+\begin{equation}
+    \label{eq:gaussian_exp}
+    K(\bs{x}-\bs{y}) \approx \hat{K}(\bs{x}-\bs{y}) = 
+	\sum_{\kappa=1}^M \alpha_\kappa e^{-\beta_\kappa \|\bs{x}-\bs{y}\|^2}
+\end{equation}
+This representation is motivated by the well known integral representation of the 
+Poisson kernel\cite{something}
+\begin{equation}
+    \label{eq:poisson_int_rep}
+    P(r) = \frac{1}{r} = \frac{4}{\sqrt{\pi}}\int_0^\infty e^{-4r^2t^2}\ud t, 
+	\quad r \mydef \|\bs{x}-\bs{y}\|
+\end{equation}
+and the parameters in Eq.~(\ref{eq:gaussian_exp}) are obtained in the case of the Poisson 
+kernel by transforming Eq.~(\ref{eq:poisson_int_rep}) into an integral of super-exponential 
+decay, and discretizing using the trapezoidal rule\cite{Harrison,Frediani}. In this way, 
+and similarly in the case of the Helmholtz kernel, it is possible to obtain a separated 
+representation $\hat{K}$ of Eq.(\ref{eq:gaussian_exp}) with accuracy $\epsilon_s$ over a 
+finite interval
+\begin{equation}
+    sup_{r>0}\Big|\frac{K(r)-\hat{K}(r)}{K(r)}\Big| < \epsilon_s, \quad r\in[r_0,r_1]
+\end{equation}
+where the upper bound $r_1$ should be chosen as the longest possible distance
+in the computational domain ($r_1=\sqrt{3}$ for the unit cube), and the lower
+bound $r_0$ should be chosen so that the contribution due to the integration
+at the singularity can be neglected\cite{Frediani}.
+
+\subsection{Derivative kernel}
+As a final note we show how we can obtain approximate representations of the 
+derivative operator using the framework of integral operators presented above. 
+The derivative operator can be expressed as
+\begin{equation}
+    \frac{\ud}{\ud x} f(x) = \int \frac{\ud}{\ud x} \delta(x-y) f(y) \ud y
+\end{equation}
+where the delta function can be approximated by a high-exponent Gaussian
+\begin{equation}
+    \label{eq:delta_approx}
+    \delta(x-y) \approx \sqrt{\frac{\pi}{\beta}} e^{-\beta (x-y)^2}
+\end{equation}
+which is normalized so that it integrates to unity. This approximation can be 
+differentiated, and the derivative operator can be expressed as the integral
+\begin{equation}
+    \frac{\ud}{\ud x} f(x) = \int D(x-y)f(y) \ud y
+\end{equation}
+using the derivative kernel
+\begin{equation}
+    D(x-y)  = \frac{\ud}{\ud x} \sqrt{\frac{\pi}{\beta}}e^{-\beta (x-y)^2} 
+	    = -2 \sqrt{\beta\pi}(x-y)e^{-\beta (x-y)^2}
+\end{equation}
+This representation approaches the exact derivative as defined by Alpert 
+\etal~\cite{Alpert} and presented in section \ref{sec:diff_oper} as the Gaussian 
+in Eq.~(\ref{eq:delta_approx}) approaches the delta function ($\beta \rightarrow \infty$).
+
 \section{Operator application}
 In the non-standard operator application given in the matrix 
 equation~(\ref{eq:NSmatrix}), the length scales of the problem have been

@@ -1,13 +1,12 @@
 \chapter{Mathematical Theory}
 In this chapter a general introduction to multiwavelet theory will be given through 
-the concept of multiresolution analysis (MRA), that was developed by 
-Mallat\cite{Mallat:1989}\footnote{Mallat uses the term multiresolution 
-\emph{approximation}, but in this work we will use multiresolution \emph{analysis}, as 
-it is more commonly used in the literature.} and Daubechies\cite{Daubechies:1988} in
-the late 1980s. A detailed description of MRAs can be found in 
-Keinert\cite{Keinert:2004}, from which a brief summary of the key issues are given in 
-the following, with the difference that we limit our discussion to the unit interval 
-instead of the real line.
+the concept of multiresolution analysis (MRA)\footnote{Mallat uses the term 
+multiresolution \emph{approximation}, but in this work we will use multiresolution 
+\emph{analysis}, as it is more commonly used in the literature.}, that was developed 
+by Mallat\cite{Mallat:1989} and Daubechies\cite{Daubechies:1988} in the late 1980s. 
+A detailed description of MRAs can be found in Keinert\cite{Keinert:2004}, from 
+which a brief summary of the key issues are given in the following, with the 
+difference that we limit our discussion to the unit interval instead of the real line.
 
 \section{Multiresolution Analysis}
 A multiresolution analysis of $L^2([0,1])$ is an infinite nested sequence of subspaces
@@ -18,7 +17,7 @@ A multiresolution analysis of $L^2([0,1])$ is an infinite nested sequence of sub
 \end{equation}
 with the following properties
 \begin{enumerate}
-    \item $\scalingspace{\infty}\ is\ dense\ in\ L^2([0,1])$.
+    \item $\bigcup_{n=0}^{\infty}\scalingspace{n}\ is\ dense\ in\ L^2([0,1])$.
     \item $f(x) \in \scalingspace{n} \Longleftrightarrow f(2x) \in \scalingspace{n+1}
     	\ ,\ \forall n \in \mathbb{N}$.
     \item $f(x) \in \scalingspace{n} \Longleftrightarrow f(x-2^{-n}l) \in 
@@ -36,18 +35,17 @@ Since $\scalingspace{n} \subset \scalingspace{n+1}$ the basis functions of
 \scalingspace{n} can be expanded in the basis of \scalingspace{n+1}
 \begin{equation}
     \label{eq:twoscalescaling}
-    \scalingvec^n_l(x) \mydef 2^{n/2}\scalingvec(2^nx-l) = 
-	\sum_{l'=0}^{2^n-1} H^{(l')} \scalingvec^{n+1}_{l'}(x)
+    \scaling^n_{i,l}(x) \mydef 2^{n/2}\scaling_i(2^nx-l) = 
+	\sum_{m=0}^{2^n-1} \sum_{j=0}^k H_{ij}^{(m)} \scaling^{n+1}_{j,m}(x)
 \end{equation}
-where the $H^{(l')}$s are the so-called filter matrices that describes the 
+where the $H^{(m)}$s are the so-called filter matrices that describes the 
 transformation between different spaces \scalingspace{n}. The MRA is called 
 orthogonal if 
 \begin{equation}
     \label{eq:orthogonality}
-    \langle \scalingvec_l^n, \scalingvec_{l'}^n \rangle = \delta_{l,l'}I_{k+1}
+    \langle \scaling_{i,l}^n, \scaling_{j,m}^n \rangle = \delta_{i,j}\delta_{l,m}
 \end{equation}
-where $I_{k+1}$ is the unit matrix of size $k+1$, and $k+1$ is the 
-length of the function vector. This orthogonality condition means that the 
+This orthogonality condition means that the 
 functions are orthogonal both within one function vector and through all 
 possible translations on one scale, but \emph{not} through the different scales.
 
@@ -64,16 +62,16 @@ Analogously to Eq.~(\ref{eq:twoscalescaling}) the function vector can be expande
 in the basis of \scalingspace{n+1}
 \begin{equation}
     \label{eq:twoscalewavelet}
-    \waveletvec^n_l(x) \mydef 2^{n/2}\waveletvec(2^nx-l) = 
-	\sum_{l'=0}^{2^n-1} G^{(l')}\scalingvec_{l'}^{n+1}(x)
+    \wavelet^n_{i,l}(x) \mydef 2^{n/2}\wavelet_i(2^nx-l) = 
+	\sum_{m=0}^{2^n-1} \sum_{j=0}^k G_{ij}^{(m)}\scaling_{j,m}^{n+1}(x)
 \end{equation}
-with filter matrices $G^{(l')}$. In orthogonal MRA the functions $\waveletvec$ fulfill 
+with filter matrices $G^{(m)}$. In orthogonal MRA the functions $\waveletvec$ fulfill 
 the same othogonality condition as Eq.~(\ref{eq:orthogonality}), and if we combine 
 Eq.~(\ref{eq:MRA}) and Eq.~(\ref{eq:MRAcomplement}) we see that they must also be 
 orthogonal with respect to different scales
 \begin{equation}
-    \langle \waveletvec_l^n, \waveletvec_{l'}^{n'} \rangle = 
-	\delta_{l,l'}\delta_{n,n'}I_{k+1}
+    \langle \wavelet_{j,l}^n, \wavelet_{i,m}^{n'} \rangle = 
+	\delta_{i,j}\delta_{l,m}\delta_{n,n'}
 \end{equation}
 Recursive application of Eq.~(\ref{eq:MRAcomplement}) yields the important relation
 \begin{equation}
@@ -120,7 +118,7 @@ The \emph{wavelet space} \waveletspace{n} is defined, according to
 Eq.~(\ref{eq:MRAcomplement}), as the orthogonal complement of \scalingspace{n} 
 in \scalingspace{n+1}. The wavelet basis functions of \waveletspace{n} are hence 
 piecewise polynomials of degree $\leq k$ on \emph{each} of the two intervals on 
-scale n+1 that overlaps with \emph{one} interval on scale n (but may be 
+scale $n+1$ that overlaps with \emph{one} interval on scale $n$ (but may be 
 discontinous in the merging point). In the construction of the wavelet basis 
 these piecewise polynomials should be made orthogonal both to the scaling basis 
 of \scalingspace{n} and to each other.
@@ -159,16 +157,16 @@ Eq.~(\ref{eq:twoscalewavelet}) thus reduces to
 \begin{equation}
     \label{eq:twoscalerelations}
     \begin{pmatrix}
-	\wavelet_{l}^{n}\\
-	\scaling_{l}^{n}\\
+	\waveletvec_{l}^{n}\\
+	\scalingvec_{l}^{n}\\
     \end{pmatrix}=
     \begin{pmatrix}
 	G^{(1)}&G^{(0)}\\
 	H^{(1)}&H^{(0)}\\
     \end{pmatrix}
     \begin{pmatrix}
-	\scaling_{2l+1}^{n+1}\\
-	\scaling_{2l}^{n+1}\\
+	\scalingvec_{2l+1}^{n+1}\\
+	\scalingvec_{2l}^{n+1}\\
     \end{pmatrix}
 \end{equation}
 \\
@@ -180,7 +178,7 @@ wavelet decomposition, while its inverse is called backward wavelet transform
 or wavelet reconstruction.
 
 \subsection{Multiwavelets in $d$ dimensions}
-Multidimensional wavelets are usually constructed by tensor products, where the
+Multi-dimensional wavelets are usually constructed by tensor products, where the
 scaling space is defined as
 \begin{equation}
     \scalingspace{n,d} \mydef \bigotimes^d \scalingspace{n}
@@ -238,7 +236,7 @@ scaling function
 \end{equation}
 and we will keep the notation $\scalingnd^n_{\bs{j},\bs{l}}$ for the
 scaling function, and exclude the $\alpha=0$ term in the wavelet notation
-when treating multidimensional functions.
+when treating multi-dimensional functions.
 
 We can immediately see that the dimensionality of the wavelet space is higher
 than the scaling space on the same scale $n$, specifically $2^d-1$ times
@@ -305,6 +303,7 @@ between the projection operators
 which means that the wavelet projection should not be regarded as an approximation 
 of the function $f$, but rather the difference between two approximations
 \begin{equation}
+    \label{eq:rep_rel}
     \waveletrep{f}{n} = \waveletproj{n} f = (\scalingproj{n+1}-\scalingproj{n})f = 
 	\scalingrep{f}{n+1} - \scalingrep{f}{n}
 \end{equation}
@@ -312,8 +311,9 @@ This means that the wavelet projection \waveletrep{f}{n} can be used as a measur
 of the accuracy of the scaling projection \scalingrep{f}{n}, provided that the 
 projection sequence is converging, $\lim_{n\rightarrow\infty} \scalingrep{f}{n} = f$, 
 which will be the case for square integrable functions\cite{Alpert:1993p5460}.
-A given approximation $f^N$ can then be expressed as the much coarser 
-approximation \scalingrep{f}{0} with a number of wavelet corrections
+By recursive application of Eq.~(\ref{eq:rep_rel}) a given approximation $f^N$ can 
+be expressed as the much coarser approximation \scalingrep{f}{0} with a number 
+of wavelet corrections
 \begin{align}
     \label{eq:highres}
     f(x)    &\approx \scalingrep{f}{N}(x)\\
@@ -321,13 +321,13 @@ approximation \scalingrep{f}{0} with a number of wavelet corrections
 	    &= \scalingrep{f}{0}(x) + \sum_{n=0}^{N-1} \waveletrep{f}{n}(x)
 \end{align}
 These equivalent representations are the high-resolution and multi-resolution 
-approximations, respectively, of the function $f$. The filter matrices $H^{(0)}, 
-H^{(1)}, G^{(0)}$ and $G^{(1)}$ of Eq.~(\ref{eq:twoscalerelations}) allow us to 
-change between the representations of Eq.~(\ref{eq:highres}).
+approximations, respectively, of the function $f$. The forward and backward
+wavelet transforms of Eq.~(\ref{eq:twoscalerelations}) allow us to change between 
+the representations of Eqs.~(\ref{eq:highres}) and (\ref{eq:multires}).
 
 In principle it is possible to perform wavelet reconstructions \emph{beyond} the
 finest scale $N$ in the function representation \scalingrep{f}{N}. In this case
-the wavelet contributions $\wavelet_l^n$ in the inverse of 
+the wavelet contributions $\waveletvec_l^n$ in the inverse of 
 Eq.~(\ref{eq:twoscalerelations}) are zero, and no additional information is
 given to the scaling representation. However, the size of the scaling basis is 
 doubled when the scale is increased by one, and the effect of such a wavelet 
@@ -443,7 +443,7 @@ In this section we discuss the multiresolution analysis of a general operator $T
 \end{equation}
 and we describe two different multiresolution representation of the operator: the 
 so-called standard and non-standard representations. The difference between 
-the two is largely a matter of implementation, as they are mathematecally equivalent,
+the two is largely a matter of implementation, as they are mathematically equivalent,
 but as we will see below, the non-standard form leads to considerably simpler algorithms, 
 especially in the multi-dimensional implementation. In the standard representation the
 operator couples all length scales in all dimensions, leading to a very complicated
@@ -510,8 +510,8 @@ at the next coarser scale
 		    \big(\scalingproj{n} + \waveletproj{n}\big)\\
 	&=	    \PTP{n}{n} +\ \PTQ{n}{n} +\ \QTP{n}{n} +\ \QTQ{n}{n}
 \end{align}
-and we simplify the notation with the following definitions, including a generalization of the
-definition in Eq.~(\ref{eq:defTn})
+and we simplify the notation with the following definitions, including a 
+generalization of the definition in Eq.~(\ref{eq:defTn})
 \begin{eqnarray}
     \label{eq:defABCT}
     \begin{split}
@@ -527,21 +527,19 @@ leading to the relation
     \T{n+1}{n+1} =\ \T{n}{n}\ +\ \C{n}{n}\ +\ \B{n}{n}\ +\ \A{n}{n}\ 
 \end{equation} 
 The motivation for such a decomposition of the operator lies in the vanishing moments
-property of the basis. The $A$, $B$ and $C$ parts of the operator involves projections
-onto the wavelet basis, which has the property of vanishing moments, and it has been 
-shown \cite{Beylkin} that this leads to sparse representations of certain operators.
-This will be discussed in more detail in section \ref{sec:int_oper} when the specific 
-operators used in this work are treated.
+of the basis. The $A$, $B$ and $C$ parts of the operator involves projections into 
+the wavelet basis, which has the property of vanishing moments, and we will see later
+that this leads to sparse representations of certain operators.
 
-The decomposition in Eq.~(\ref{eq:ABCT}) can be continued recursively, and by this introduce
-more sparsity into the operator, and there are two ways to proceed in order to achieve
-this. In the following both the standard and the non-standard form of the multiresolution
-operator will be presented.
+The decomposition in Eq.~(\ref{eq:ABCT}) can be continued recursively, and by this 
+introduce more sparsity into the operator, and there are two ways to proceed in order 
+to achieve this. In the following both the standard and the non-standard form of the 
+multiresolution operator will be presented.
 
 \subsection{Standard representation}
-The standard representation is the straightforward matrix realization of the operator in the 
-multiresolution basis. In order to obtain this representation we start with the matrix 
-representation in the scaling basis at scale $N$
+The standard representation is the straightforward matrix realization of the operator 
+in the multiresolution basis. In order to obtain this representation we start with the 
+matrix representation in the scaling basis at scale $N$
 \begin{equation}
 \begin{split} 
     \label{eq:Tmatrix}
@@ -716,15 +714,15 @@ where we gradually introduce more $A$-character into the operator
 		&   \sum_{n=0}^{N-1}\ \Big(\ \C{0}{n} +\  \B{n}{0} +
 		    \sum_{n'=0}^{N-1}\ \A{n}{n'} \Big)
 \end{eqnarray}
-This multiresolution matrix representation of the operator is called the Standard 
-representation\cite{somebeylkin}.
+This multiresolution matrix representation of the operator is called the standard 
+representation.
 
 \subsection{Non-Standard representation}
 While the standard form of the operator given in Eq.~(\ref{eq:MRoperS}) does
 lead to sparse representations, it gives rise to rather complicated algorithms,
 especially in several dimensions, as it couples all scales in the problem. 
-Beylkin~\etal \cite{Beylkin} introduced a different approach, which they called
-the non-standard representation, where the scales are explicitly separated. By
+Beylkin~\etal \cite{Beylkin:1991} introduced a different approach, which they called
+the non-standard representation, where the scales are explicitly separated, by
 organizing the operator as a collection of triples
 \begin{equation}
     \T{N}{N} =\ \T{0}{0}\ +\ \sum_{n=0}^{N-1} \big(\ \A{n}{n}\ +\ \B{n}{n}\ +\ \C{n}{n}\ \big) 
@@ -829,14 +827,14 @@ The post-processing wavelet transforms require $O(N)$ operations, and provided
 sparse $A$, $B$ and $C$ parts of the operator, the complete non-standard 
 application scales as $O(N)$, in contrast to the standard form, where 
 scale-to-scale interactions are treated explicitly, which has a formal 
-$O(N log N)$ scaling \cite{something}.
+$O(N log N)$ scaling \cite{Beylkin:1991}.
 
-\subsection{Integral operators}
+\subsection{Integral operator}
 Multiwavelets were originally introduced for their effectively sparse 
 representation of certain integral operators, in particular operators with 
 non-oscillatory kernels that are analytic except along a finite set of 
-curves \cite{Alpert}. To be more specific, we consider one-dimensional operators
-on the form
+curves~\cite{Alpert:1993p5460}. To be more specific, we consider one-dimensional 
+operators on the form
 \begin{equation}
     \label{eq:intop1d}
     [Tf](x) = \int K(x,y) f(y) \ud y
@@ -846,144 +844,154 @@ on the integral kernel $K$, which is discussed below. We start, however, by
 expanding the kernel in the multiwavelet basis
 \begin{equation}
     \label{eq:kernelexp}
-    K^N(x,y) = \sum_{l_x,l_y}\bs{\tau}^{N,N}_{l_xl_y} 
-	\scalingvec^N(x)\scalingvec^N(y)
+    K^n(x,y) = \sum_{l,m} \sum_{i,j}
+	\big[\tau^n_{lm}\big]_{ij} 
+	\scaling_{i,l}^n(x)
+	\scalingvec_{j,m}^n(y)
 \end{equation}
 where the expansion coefficients are given by the integrals
 \begin{equation}
     \label{eq:taudef}
-    \bs{\tau}^{n_x,n_y}_{l_xl_y} = \int\int
-	K(x,y)\scalingvec^{n_x}_{l_x}(x)\scalingvec^{n_y}_{l_y}(y)\ud x \ud y
+    \big[\tau^n_{lm}\big]_{ij} = \int\int
+	K(x,y)\scaling^n_{i,l}(x)\scaling^n_{j,m}(y)\ud x \ud y
 \end{equation}
 Inserting Eq.~(\ref{eq:kernelexp}) into Eq.~(\ref{eq:intop1d}) yields
 \begin{align}
-    \nonumber
-    \T{N}{N}\scalingrep{f}{N}(x) &= \int\left(\sum_{l_x,l_y} \bs{\tau}^{N,N}_{l_xl_y}
-	\scalingvec^N_{l_x}(x)\scalingvec^N_{l_y}(y)\right)f(y)\ud y\\
-	&= \sum_{l_x,l_y} \bs{\tau}^{N,N}_{l_xl_y}
-	\scalingvec^N_{l_x}(x)\int f(y)\scalingvec^N_{l_y}(y)\ud y
+    \T{n}{n}\scalingrep{f}{n}(x) &= \int\left(\sum_{l,m} \sum_{i,j}
+	\big[\tau^n_{lm}\big]_{ij}
+	\scaling^n_{i,l}(x)
+	\scaling^n_{j,m}(y)
+	\right)f(y)\ud y\\
+	&= \sum_{l,m} \sum_{i,j}
+	\big[\tau^n_{lm}\big]_{ij}
+	\scaling^n_{i,l}(x)
+	\int f(y)\scaling^n_{j,m}(y)\ud y
 \end{align}
-where the last integral is recognized as the scaling coefficients of $f$ from 
-Eq.~(\ref{eq:scaling_coef})
+where the last integral is recognized as the vector of scaling coefficients of $f$ 
+from Eq.~(\ref{eq:scaling_coef})
 \begin{equation}
     \label{eq:Tmatrixsum}
-    \T{N}{N}\scalingrep{f}{N}(x) = \sum_{l_x,l_y} \bs{\tau}^{N,N}_{l_xl_y}
-	\scalingvec^N_{l_x}(x)\scalingcoef^{N,f}_{l_y}
+    \T{n}{n}\scalingrep{f}{n}(x) = \sum_{l,m} \sum_{i,j} 
+	\big[\tau^n_{lm}\big]_{ij}
+	\scaling^n_{i,l}(x)
+	\scalingcoef^{n,f}_{j,m}
 \end{equation}
-We can now identify $\bs{\tau}^{N,N}_{l_xl_y}$ as the matrix elements of \T{N}{N} 
+We can now identify $\taumat^n_{lm}$ as the matrix elements of \T{n}{n} 
 and Eq.~(\ref{eq:Tmatrixsum}) is Eq.~(\ref{eq:Tmatrix}) written explicitly. 
-Similarly, we define $\bs{\alpha}$, $\bs{\beta}$ and $\bs{\gamma}$ as the matrix 
+Similarly, we define \alphamat, \betamat and \gammamat as the matrix 
 elements of $A$, $B$ and $C$, respectively
 \begin{align}
-	\label{eq:tcbadef}
-	\begin{split}
-	\bs{\alpha}^{n_x,n_y}_{l_xl_y} &= \int\int
-	K(x,y)\waveletvec^{n_x}_{l_x}(x)\waveletvec^{n_y}_{l_y}(y)\ud x \ud y\\
-	\bs{\beta}^{n_x,n_y}_{l_xl_y} &= \int\int
-	K(x,y)\waveletvec^{n_x}_{l_x}(x)\scalingvec^{n_y}_{l_y}(y)\ud x \ud y\\
-	\bs{\gamma}^{n_x,n_y}_{l_xl_y} &= \int\int
-	K(x,y)\scalingvec^{n_x}_{l_x}(x)\waveletvec^{n_y}_{l_y}(y)\ud x \ud y
-	\end{split}
+    \label{eq:tcbadef}
+    \big[\alpha^n_{lm}\big]_{ij} &= \int\int
+	K(x,y)\wavelet^n_{i,l}(x)\wavelet^n_{j,m}(y)\ud x \ud y\\
+    \big[\beta^n_{lm}\big]_{ij} &= \int\int
+	K(x,y)\wavelet^n_{i,l}(x)\scaling^n_{j,m}(y)\ud x \ud y\\
+    \big[\gamma^n_{lm}\big]_{ij} &= \int\int
+	K(x,y)\scaling^n_{i,l}(x)\wavelet^n_{j,m}(y)\ud x \ud y
 \end{align}
-and Eq.~(\ref{eq:Tmatrixsum}) can then be decomposed according to Eq.~(\ref{eq:ABCT}) as
+which act on the function representations of $f$ in the following way
 \begin{align}
-	\label{eq:ABCTmatrixsum}
-	\begin{split}
-	[Tf]^N(x) &= \sum_{l_x,l_y}\bs{\tau}^{N-1,N-1}_{l_xl_y}
-	\scalingvec^{N-1}_{l_x}(x) \bs{\scalingcoef}^{N-1}_{l_y}\\
-	&+ \sum_{l_x,l_y}\bs{\gamma}^{N-1,N-1}_{l_xl_y}
-	\scalingvec^{N-1}_{l_x}(x) \bs{\waveletcoef}^{N-1}_{l_y}\\
-	&+ \sum_{l_x,l_y}\bs{\beta}^{N-1,N-1}_{l_xl_y}
-	\waveletvec^{N-1}_{l_x}(x) \bs{\scalingcoef}^{N-1}_{l_y}\\
-	&+ \sum_{l_x,l_y}\bs{\alpha}^{N-1,N-1}_{l_xl_y}
-	\waveletvec^{N-1}_{l_x}(x) \bs{\waveletcoef}^{N-1}_{l_y}
-	\end{split}
+    \A{n}{n}\waveletrep{f}{n}(x) &= \sum_{l,m} \sum_{i,j}
+	\big[\alpha^n_{lm}\big]_{ij}
+        \wavelet^n_{i,l}(x) 
+	\waveletcoef^n_{j,m}\\
+    \B{n}{n}\scalingrep{f}{n}(x) &= \sum_{l,m} \sum_{i,j}
+	\big[\beta^n_{lm}\big]_{ij}
+        \wavelet^n_{i,m}(x) 
+	\scalingcoef^n_{j,m}\\
+    \C{n}{n}\waveletrep{f}{n}(x) &= \sum_{l,m} \sum_{i,j}
+	\big[\gamma^n_{lm}\big]_{ij}
+        \scaling^n_{i,l}(x) 
+	\waveletcoef^n_{j,m}
 \end{align}
-which is Eq.~(\ref{eq:ABCTmatrix}) written explicitly. 
-
-Suppose that the integral kernel satisfy the estimates
+As was mentioned above, the motivation for decomposing the operator into $A$, $B$
+and $C$ terms is that these matrices will be sparse for certain operators. Suppose 
+that the integral kernel in Eq.~(\ref{eq:intop1d}) satisfy the estimates
 \begin{align}
     |K(x,y)| &\leq \frac{1}{|x-y|}\\
     |\partial_x^M K(x,y)|+ |\partial_y^M K(x,y)| &\leq \frac{C_M}{|x-y|^{M+1}}
 \end{align}
 for some $M\geq1$. Such operators are called Calderon-Zygmund operators, and
 include both the Poisson and bound-state Helmholtz operators which is discussed 
-in detail below. Beylkin \etal\cite{Beylkin} shows that in a basis with
-$M$ vanishing moments, the coefficients $\bs{\alpha}$, $\bs{\beta}$ and 
-$\bs{\gamma}$ are bounded as
+in detail below. Beylkin \etal~\cite{Beylkin:1991} 
+shows that in a basis with $M$ vanishing moments, the wavelet 
+components \alphamat, \betamat and \gammamat will be bounded as
 \begin{equation}
-    |\bs{\alpha}_{l_x,l_y}| + |\bs{\beta}_{l_x,l_y}| + |\bs{\gamma}_{l_x,l_y}| 
+    \|\alphamat_{l_xl_y}\|_2 + \|\betamat_{l_xl_y}\|_2 + \|\gammamat_{l_xl_y}\|_2 
 	\leq \frac{C_M}{1+|l_x-l_y|^{M+1}}
 \end{equation}
-for all
-\begin{equation}
-    |l_x-l_y| \geq 2M
-\end{equation}
-This means that within a given accuracy, all contributions beyond a certain spatial 
-separation $|l_x-l_y|$ can be set to zero, leading to operators that are banded 
-along the diagonal.
+where the expression has been adapted to a multiwavelet setting using the matrix
+2-norm. This means that within a given accuracy, all contributions beyond a certain 
+spatial separation $|l_x-l_y|$ can be set to zero, leading to operators that are 
+banded along the diagonal.
 
 \subsection{Derivative operator}\label{sec:diff_oper}
-Alpert \etal described in \cite{Alpert} how to construct derivative operators in
-the multiwavelet basis. Since the basis is discontinous, there does not exist a
-unique representation of the derivative operator. In \cite{Alpert} this non-uniqueness
+Alpert \etal~\cite{Alpert:2002p149} described how to construct derivative operators in
+the multiwavelet basis. Since the basis is discontinuous, there does not exist a
+unique representation of the derivative operator. This non-uniqueness
 appears as two adjustable parameters that handles boundary conditions at the
-discontinous merging point between basis functions. The representation can be
+discontinuous merging point between basis functions. The representation can be
 viewed as the straightforward differentiation of the basis functions at the 
 \emph{interior} of each interval, combined with a finite difference representation
 \emph{across} intervals.
 
 The matrix representation of the operator $T=d/dx$ is formally given as
-\begin{equation}
-    \bs{\tau}_{lm}^{n,n} = \int_{2^{-n}l}^{2^{-n}(l+1)} \scalingvec_{l}^n(x) T \scalingvec_m^n(x) \ud x
-	= 2^n \int_0^1 \scalingvec_0^0(x) T \scalingvec_{l-m}^0(x) \ud x
-\end{equation}
+\begin{align}
+    \big[\tau_{lm}^{n,n}\big]_{ij} &= \int_{2^{-n}l}^{2^{-n}(l+1)} 
+        \scaling_{i,l}^n(x) T \scaling_{j,m}^n(x) \ud x\\
+	&= 2^n \int_0^1 \scaling_i(x) T \scaling_j(x-(l-m)) \ud x
+\end{align}
 however, for derivative operators, this integral is not absolutely convergent. 
 Because of the disjoint support of the basis functions, it is immidiately clear that
-there will be no interaction beyond the neighboring interval, and $\tau_{lm} = 0$ for
+there will be no interaction beyond the neighboring interval, and $\taumat_{lm} = 0$ for
 $|l-m| > 1$. The case $|l-m| = 1$ needs to be treated with care, since there are
 boundary effects to consider even if the basis functions are non-overlapping. This
-becomes apparent if we look at the scaling coefficients of the derivative \scalingrep{f'}{n} of
-a function \scalingrep{f}{n} represented in the scaling basis at scale $n$
+becomes apparent if we look at the scaling coefficients of the derivative 
+\scalingrep{f'}{n} of a function \scalingrep{f}{n} represented in the scaling basis 
+at scale $n$
 \begin{equation}
-    \bs{\scalingcoef}_{l}^{n,f'} = \int_{2^{-n}l}^{2^{-n}(l+1)} 
-	\scalingvec_l^n(x) \frac{\ud}{\ud x} \scalingrep{f}{n}(x) \ud x 
+    \scalingcoef_{i,l}^{n,f'} = \int_{2^{-n}l}^{2^{-n}(l+1)} 
+	\scaling_{i,l}^n(x) \frac{\ud}{\ud x} \scalingrep{f}{n}(x) \ud x 
 \end{equation}
 Integration by parts now introduces a boundary term
 \begin{align}
-    \bs{\scalingcoef}_{l}^{n,f'} 
-    &= \scalingrep{f}{n}(x)\scalingvec_l^n(x)|_{2^{-n}}^{2^{-n}(l+1)}
-	- \int_{2^{-n}l}^{2^{-n}(l+1)} \scalingrep{f}{n}(x) \frac{\ud}{\ud x} \scalingvec_l^n(x) \ud x \\
+    \scalingcoef_{i,l}^{n,f'} 
+	&= \scaling_{i,l}^n(x)\scalingrep{f}{n}(x)\Big|_{2^{-n}l}^{2^{-n}(l+1)}
+	    - \int_{2^{-n}l}^{2^{-n}(l+1)} 
+	    \scalingrep{f}{n}(x)
+	    \frac{\ud}{\ud x} \scaling_{i,l}^n(x) \ud x\\
     \label{eq:diff_boundary}
-    &= 2^{n/2} [\scalingrep{f}{n}(2^{-n}l)\scalingvec_0^0(1) - 
-	\scalingrep{f}{n}(2^{-n}(l+1))\scalingvec_0^0(0)] - 2^n\sum_{j=0}^{k} K_{ij}\bs{\scalingcoef}_l^n
+	&= 2^{n/2} \Big[\scalingrep{f}{n}(2^{-n}(l+1))\scaling_i(1) - 
+	    \scalingrep{f}{n}(2^{-n}l)\scaling_i(0)\Big] - 2^n\sum_{j=0}^{k} 
+	    K_{ij}\scalingcoef_{j,l}^{n,f}
 \end{align}
 where the matrix $K$ is defined
 \begin{equation}
-    K = \int_0^1 \scalingvec(x) \frac{\ud}{\ud x} \scalingvec^T(x) \ud x
+    K_{ij} = \int_0^1 \scaling_j(x) \frac{\ud}{\ud x} \scaling_i(x) \ud x
 \end{equation}
-We see in Eq.~(\ref{eq:diff_boundary}) that the function representation \scalingrep{f}{n} 
-needs to be evaluated precisely at the discontinuities of the
+We see in Eq.~(\ref{eq:diff_boundary}) that the function representation 
+\scalingrep{f}{n} needs to be evaluated precisely at the discontinuities of the
 basis where the function value is not well defined. This problem is circumvented
 by interpolating between the function values obtained at both sides of the boundary
-\begin{align}
-    \scalingrep{f}{n} &= a\scalingrep{f}{n}_{-} + (1-a) \scalingrep{f}{n}_{+}\\
-    \scalingrep{f}{n} &= b\scalingrep{f}{n}_{-} + (1-b) \scalingrep{f}{n}_{+}
-\end{align}
+\begin{equation}
+    \scalingrep{f}{n} = a \scalingrep{f}{n}_{-} + b \scalingrep{f}{n}_{+}
+\end{equation}
 where $a$ and $b$ are adjustable parameters. In the Haar basis (piecewise constants)
 this reduces to a finite difference definition of the derivative, with the choice 
 $a=b=1/2$ corresponding to central difference, and $a=1,b=0$ and $a=0,b=1$ 
 corresponding to forward and backward differences, respectively. With the choice
 $a=b=0$ no boundary effects are treated, and the derivative is obtained by a 
-straightforward piecewise derivative of the polynomial basis. This inevitably leads
-to a reduction of the approximation order as the basis is effectively reduced from
-order $k$ to order $k-1$. The way to maintain the high approximation order is then
-to use the boundary information ($a=b=1/2$) whenever the approximation order of
-the finite differences ($O((2^{-n})^2)$) is at least as high as the approximation of the 
-basis ($O(2^{-n(k-1)})$). This is important to consider in adaptive function representations,
-where parts of the function can be represented at relatively coarse scales, where
-the inclusion of the boundary term can severly limit the approximation order of
-the differentiated function.
+straightforward piecewise derivative of the polynomial basis. 
+
+%This inevitably leads
+%to a reduction of the approximation order as the basis is effectively reduced from
+%order $k$ to order $k-1$. The way to maintain the high approximation order is then
+%to use the boundary information ($a=b=1/2$) whenever the approximation order of
+%the finite differences ($O((2^{-n})^2)$) is at least as high as the approximation 
+%of the basis ($O(2^{-n(k-1)})$). This is important to consider in adaptive function 
+%representations, where parts of the function can be represented at relatively coarse 
+%scales, where the inclusion of the boundary term can severly derate the approximation 
+%order of the differentiated function.
 
 \subsection{Multiresolution operators in $d$ dimensions}
 We assume that we have a separable representation of a $d$-dimensional
@@ -994,7 +1002,7 @@ operator $\mathcal{T}$ such that
 where $T_p$ correspond to a one-dimensional operator as described above.
 As for the one-dimensional case we have the equation
 \begin{equation}
-    \scalingrep{\hat{g}}{n+1} = \bigotimes^d\ \T{n+1}{n+1} \scalingrep{f}{n+1}
+    \scalingrep{g}{n+1} = \bigotimes^d\ \T{n+1}{n+1} \scalingrep{f}{n+1}
 \end{equation}
 which we can decompose to
 \begin{equation}
@@ -1003,12 +1011,14 @@ which we can decompose to
 	\big(\scalingrep{f}{n} + \waveletrep{f}{n}\big)
 \end{equation}
 and we can simplify the notation in the following way
-\begin{equation}
-    \A{n}{n} = O^{11,n} \qquad
-    \B{n}{n} = O^{10,n} \qquad
-    \C{n}{n} = O^{01,n} \qquad
-    \T{n}{n} = O^{00,n}
-\end{equation}
+\begin{align}
+    \begin{split}
+        \A{n}{n} &= O^{11,n} \qquad \qquad
+	\B{n}{n} = O^{10,n} \\
+	\C{n}{n} &= O^{01,n} \qquad \qquad
+	\T{n}{n} = O^{00,n}
+    \end{split}
+\end{align}
 and the tensor product of the operator can be written
 \begin{equation}
     \bigotimes^d\ \Big(\ \A{n}{n}+\ \B{n}{n} +\ \C{n}{n}+\ \T{n}{n}\Big) =
@@ -1023,151 +1033,28 @@ are defined by the binary expansion of $\alpha$ and $\beta$ in $d$ dimensions.
 We can now obtain a completely equivalent structure as for the mono-dimensional
 case
 \begin{equation}
+    \label{eq:multidimoper}
     \scalingrep{g}{n} + \waveletrep{g}{n} = 
 	\Big(\mathcal{A}^n + \mathcal{B}^n + \mathcal{C}^n + \mathcal{T}^n\Big)
-	\big(\scalingrep{f}{n} + \waveletrep{n}{n}\big)
+	\big(\scalingrep{f}{n} + \waveletrep{f}{n}\big)
 \end{equation} 
 with the following definitions
-\begin{equation}
-    \mathcal{A}^{n} \mydef 
-    \sum_{\alpha=1}^{2^d-1} \sum_{\beta=1}^{2^d-1} O^{\alpha\beta,n}, \quad
-    \mathcal{B}^{n} \mydef 
-    \sum_{\alpha=1}^{2^d-1} O^{\alpha 0,n}, \quad
-    \mathcal{C}^{n} \mydef 
-    \sum_{\beta=1}^{2^d-1} O^{0 \beta,n}, \quad 
-    \mathcal{T}^{n} \mydef O^{00,n}
-\end{equation}
+\begin{eqnarray}
+    \begin{split}
+	\mathcal{A}^{n} &\mydef 
+        \sum_{\alpha=1}^{2^d-1} \sum_{\beta=1}^{2^d-1} O^{\alpha\beta,n} \qquad
+	&\mathcal{B}^{n} &\mydef 
+	\sum_{\alpha=1}^{2^d-1} O^{\alpha 0,n} \\
+	\mathcal{C}^{n} &\mydef 
+	\sum_{\beta=1}^{2^d-1} O^{0 \beta,n}
+	&\mathcal{T}^{n} &\mydef O^{00,n}
+    \end{split}
+\end{eqnarray}
 We could now proceed with a further decomposition of the scaling parts of the
 operator and functions to the next coarser scale, obtaining the standard
-representation of the operator in multiple dimension. However, the notation
-then becomes very complicated, and, as we will see in the later in the 
-implementation part in section \ref{sec:implementation}, this is not needed
-in the so-called non-standard representation of the operator.
+representation of the operator in multiple dimension. It is quite clear that the 
+notation (as well as implementation) becomes very complicated in this case, and this
+is one of the main motivations for using the non-standard representation of operators,
+as the scales are decoupled, and Eq.~(\ref{eq:multidimoper}) applies to each scale
+separately.
 
-\section{Separated representation of operators}
-In the discussion of multi-dimensional operators in the previous section it
-was assumed that we have an operator that is separable in the Cartesian
-coordinates. This assumption is necessary in order to make calculations
-feasable in higher dimensions, as the straightforward generalization of a
-one-dimensional approach leads to a prohibitive exponential scaling in the 
-dimension. It is,
-however, not necessary that the operator separates exactly, and Beylkin 
-\etal~\cite{Beylkin} shows that the integral kernel of many physically 
-interresting operators can be approximated as a linear combination of 
-products of one-dimensional kernels
-\begin{equation}
-    \label{eq:sep_rep}
-    K(\bs{x},\bs{y}) \approx \hat{K}(\bs{x},\bs{y}) \mydef 
-	\sum_{\kappa=1}^{M}\alpha_\kappa \prod_{p=1}^d K_p^\kappa(x_p,y_p)
-\end{equation}
-The accuracy of this separated representation can be controlled by adapting
-the functions $K_p^\kappa$, the expansion coefficients $\alpha_\kappa$ and the 
-separation rank $M$, and any precision can in principle be achieved. Such
-a representation allows the multi-dimensional operator to be applied one 
-dimension at the time, reducing the computational complexity from
-$k^{2d}$ per grid cell of the full non-separable operator, to $Mdk^{d+1}$ 
-per grid cell of the separated representation in Eq.~(\ref{eq:sep_rep}),
-where $k$ is the order of the polynomial basis. While the scaling is still 
-exponential in the dimension, the exponent is sufficiently reduced for the 
-approach to be applicable for $d=2,3$. 
-
-\subsection{Poisson kernel}
-The Poisson equation is usually written in its differential form
-\begin{equation}
-    \nabla^2 g(\bs{x}) = -f(\bs{x})
-\end{equation}
-and the solution of can be expressed in terms of the convolution integral
-\begin{equation}
-    g(\bs{x}) = \int P(\bs{x}-\bs{y})f(\bs{y})\ud\bs{y}
-\end{equation}
-where $P(\bs{x}-\bs{y})$ is the Green's function satisfying the fundamental 
-equation with free boundary conditions (zero at infinity)
-\begin{equation}
-    \label{eq:fundamental_poisson}
-    \nabla^2 P(\bs{x}-\bs{y}) = -\delta(\bs{x}-\bs{y})
-\end{equation}
-This equation can be solved analytically and the Green's function for
-the Poisson equation for $d=3$ is given as
-\begin{equation}
-    \label{eq:poisson_kern}
-    P(\bs{x}-\bs{y}) = \frac{1}{4\pi||\bs{x}-\bs{y}||}
-\end{equation}
-
-\subsection{Helmholtz kernel}
-The inhomogeneous Helmholtz equation is a generalization of the Poisson equation,
-and is given in differential form
-\begin{equation}
-    \big(\nabla^2 + \mu^2\big) g(\bs{x}) = -f(\bs{x})
-\end{equation}
-The solution can again be expressed as an integral
-\begin{equation}
-    g(\bs{x}) = \int H^\mu(\bs{x}-\bs{y})f(\bs{y})\ud\bs{y}
-\end{equation}
-using the Helmholtz kernel $H^\mu(\bs{x}-\bs{y})$, which is the Greeen's function 
-satisfying the fundamental equation
-\begin{equation}
-    \label{eq:fundamental_helmholtz}
-    \big(\nabla^2 + \mu^2\big) H^\mu(\bs{x}-\bs{y}) = -\delta(\bs{x}-\bs{y})
-\end{equation}
-with zero boundary conditions at infinity. The Green's function for the Helmholtz 
-equation for $d=3$ is known analytically as
-\begin{equation}
-    \label{eq:helmholtz_kern}
-    H^\mu(\bs{x}-\bs{y}) = \frac{e^{-\mu\|\bs{x}-\bs{y}\|}}{4\pi||\bs{x}-\bs{y}||}
-\end{equation}
-
-\subsection{Separation using Gaussians}
-Neither the Poisson nor Helmholtz kernels are separable in the Cartesian coordinates, 
-but it is possible to obtain a separated representation as in Eq.~(\ref{eq:sep_rep}) 
-of low rank using Gaussian functions
-\begin{equation}
-    \label{eq:gaussian_exp}
-    K(\bs{x}-\bs{y}) \approx \hat{K}(\bs{x}-\bs{y}) = 
-	\sum_{\kappa=1}^M \alpha_\kappa e^{-\beta_\kappa \|\bs{x}-\bs{y}\|^2}
-\end{equation}
-This representation is motivated by the well known integral representation of the 
-Poisson kernel\cite{something}
-\begin{equation}
-    \label{eq:poisson_int_rep}
-    P(r) = \frac{1}{r} = \frac{4}{\sqrt{\pi}}\int_0^\infty e^{-4r^2t^2}\ud t, 
-	\quad r \mydef \|\bs{x}-\bs{y}\|
-\end{equation}
-and the parameters in Eq.~(\ref{eq:gaussian_exp}) are obtained in the case of the Poisson 
-kernel by transforming Eq.~(\ref{eq:poisson_int_rep}) into an integral of super-exponential 
-decay, and discretizing using the trapezoidal rule\cite{Harrison,Frediani}. In this way, 
-and similarly in the case of the Helmholtz kernel, it is possible to obtain a separated 
-representation $\hat{K}$ of Eq.(\ref{eq:gaussian_exp}) with accuracy $\epsilon_s$ over a 
-finite interval
-\begin{equation}
-    sup_{r>0}\Big|\frac{K(r)-\hat{K}(r)}{K(r)}\Big| < \epsilon_s, \quad r\in[r_0,r_1]
-\end{equation}
-where the upper bound $r_1$ should be chosen as the longest possible distance
-in the computational domain ($r_1=\sqrt{3}$ for the unit cube), and the lower
-bound $r_0$ should be chosen so that the contribution due to the integration
-at the singularity can be neglected\cite{Frediani}.
-
-\subsection{Derivative kernel}
-As a final note we show how we can obtain approximate representations of the derivative 
-operator using the same framework as presented above. The derivative operator can be
-expressed as
-\begin{equation}
-    \frac{\ud}{\ud x} f(x) = \int \frac{\ud}{\ud x} \delta(x-y) f(y) \ud y
-\end{equation}
-where the delta function can be approximated by a high-exponent Gaussian
-\begin{equation}
-    \label{eq:delta_approx}
-    \delta(x-y) \approx \sqrt{\frac{\pi}{\beta}} e^{-\beta (x-y)^2}
-\end{equation}
-which is normalized so that it integrates to unity. This approximation can be 
-differentiated, and the derivative operator can be expressed as the integral
-\begin{equation}
-    \frac{\ud}{\ud x} f(x) = \int D(x-y)f(y) \ud y
-\end{equation}
-using the derivative kernel
-\begin{equation}
-    D(x-y)  = \frac{\ud}{\ud x} \sqrt{\frac{\pi}{\beta}}e^{-\beta (x-y)^2} 
-	    = -2 \sqrt{\beta\pi}(x-y)e^{-\beta (x-y)^2}
-\end{equation}
-This representation approaches the exact derivative as defined by Alpert 
-\etal~\cite{Alpert} and presented in section \ref{sec:diff_oper} as the Gaussian 
-in Eq.~(\ref{eq:delta_approx}) approaches the delta function ($\beta \rightarrow \infty$).
