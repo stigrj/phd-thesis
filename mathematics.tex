@@ -1,4 +1,4 @@
-\chapter{Mathematical Theory}
+\chapter{Mathematical Theory}\label{chap:mathematics}
 In this chapter a general introduction to multiwavelet theory will be given through 
 the concept of multiresolution analysis (MRA)\footnote{Mallat uses the term 
 multiresolution \emph{approximation}, but in this work we will use multiresolution 
@@ -847,7 +847,7 @@ expanding the kernel in the multiwavelet basis
     K^n(x,y) = \sum_{l,m} \sum_{i,j}
 	\big[\tau^n_{lm}\big]_{ij} 
 	\scaling_{i,l}^n(x)
-	\scalingvec_{j,m}^n(y)
+	\scaling_{j,m}^n(y)
 \end{equation}
 where the expansion coefficients are given by the integrals
 \begin{equation}
@@ -870,14 +870,14 @@ Inserting Eq.~(\ref{eq:kernelexp}) into Eq.~(\ref{eq:intop1d}) yields
 where the last integral is recognized as the vector of scaling coefficients of $f$ 
 from Eq.~(\ref{eq:scaling_coef})
 \begin{equation}
-    \label{eq:Tmatrixsum}
+    \label{eq:Tact}
     \T{n}{n}\scalingrep{f}{n}(x) = \sum_{l,m} \sum_{i,j} 
 	\big[\tau^n_{lm}\big]_{ij}
 	\scaling^n_{i,l}(x)
 	\scalingcoef^{n,f}_{j,m}
 \end{equation}
 We can now identify $\taumat^n_{lm}$ as the matrix elements of \T{n}{n} 
-and Eq.~(\ref{eq:Tmatrixsum}) is Eq.~(\ref{eq:Tmatrix}) written explicitly. 
+and Eq.~(\ref{eq:Tact}) is Eq.~(\ref{eq:Tmatrix}) written explicitly. 
 Similarly, we define \alphamat, \betamat and \gammamat as the matrix 
 elements of $A$, $B$ and $C$, respectively
 \begin{align}
@@ -891,18 +891,21 @@ elements of $A$, $B$ and $C$, respectively
 \end{align}
 which act on the function representations of $f$ in the following way
 \begin{align}
+    \label{eq:Aact}
     \A{n}{n}\waveletrep{f}{n}(x) &= \sum_{l,m} \sum_{i,j}
 	\big[\alpha^n_{lm}\big]_{ij}
         \wavelet^n_{i,l}(x) 
-	\waveletcoef^n_{j,m}\\
+	\waveletcoef^{n,f}_{j,m}\\
+    \label{eq:Bact}
     \B{n}{n}\scalingrep{f}{n}(x) &= \sum_{l,m} \sum_{i,j}
 	\big[\beta^n_{lm}\big]_{ij}
-        \wavelet^n_{i,m}(x) 
-	\scalingcoef^n_{j,m}\\
+        \wavelet^n_{i,l}(x) 
+	\scalingcoef^{n,f}_{j,m}\\
+    \label{eq:Cact}
     \C{n}{n}\waveletrep{f}{n}(x) &= \sum_{l,m} \sum_{i,j}
 	\big[\gamma^n_{lm}\big]_{ij}
         \scaling^n_{i,l}(x) 
-	\waveletcoef^n_{j,m}
+	\waveletcoef^{n,f}_{j,m}
 \end{align}
 As was mentioned above, the motivation for decomposing the operator into $A$, $B$
 and $C$ terms is that these matrices will be sparse for certain operators. Suppose 
@@ -915,8 +918,9 @@ for some $M\geq1$. Such operators are called Calderon-Zygmund operators, and
 include both the Poisson and bound-state Helmholtz operators which is discussed 
 in detail below. Beylkin \etal~\cite{Beylkin:1991} 
 shows that in a basis with $M$ vanishing moments, the wavelet 
-components \alphamat, \betamat and \gammamat will be bounded as
+components \alphamat, \betamat\ and \gammamat\ will be bounded as
 \begin{equation}
+    \label{eq:operbandwidth}
     \|\alphamat_{l_xl_y}\|_2 + \|\betamat_{l_xl_y}\|_2 + \|\gammamat_{l_xl_y}\|_2 
 	\leq \frac{C_M}{1+|l_x-l_y|^{M+1}}
 \end{equation}
