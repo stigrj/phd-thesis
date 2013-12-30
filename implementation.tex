@@ -90,7 +90,7 @@ recursively, going through the $2^d$ children of each \node in a specific order.
 Using bit notation (one bit for each dimension), the natural ordering (Lebesgue) will 
 lead to a discontinuous path. For $d=2$ this is shown as the Z shape of the bit sequence 
 (00, 01, 10, 11) in figure \ref{fig:lebesgue}. A corresponding (there are several 
-possebilities) Hilbert path through the four children in two dimensions could be the 
+possibilities) Hilbert path through the four children in two dimensions could be the 
 bit sequence (00, 10, 11, 01) shown in the first panel in figure \ref{fig:hilbert}. 
 In order to keep the continuouity as the path is recursively refined, the order in 
 which the children are traversed needs to be adapted, and will depend on the position 
@@ -529,8 +529,8 @@ the functions $K_p^\kappa$, the expansion coefficients $\alpha_\kappa$ and the
 separation rank $M$, and any precision can in principle be achieved. Such
 a representation allows the multi-dimensional operator to be applied one 
 dimension at the time, reducing the computational complexity from
-$k^{2d}$ per grid cell of the full non-separable operator, to $Mdk^{d+1}$ 
-per grid cell of the separated representation in Eq.~(\ref{eq:sep_rep}),
+$k^{2d}$ per \node of the full non-separable operator, to $Mdk^{d+1}$ 
+per \node of the separated representation in Eq.~(\ref{eq:sep_rep}),
 where $k$ is the order of the polynomial basis. While the scaling is still 
 exponential in the dimension, the exponent is sufficiently reduced for the 
 approach to be applicable for $d=2,3$. 
@@ -630,8 +630,8 @@ differentiated, and the derivative operator can be expressed as the integral
 \end{equation}
 using the derivative kernel
 \begin{equation}
-    D(x-y)  = \frac{\ud}{\ud x} \sqrt{\frac{\pi}{\beta}}e^{-\beta (x-y)^2} 
-	    = -2 \sqrt{\beta\pi}(x-y)e^{-\beta (x-y)^2}
+    D(x-y)  = \frac{\ud}{\ud x} \sqrt{\frac{\beta}{\pi}}e^{-\beta (x-y)^2} 
+	    = -2\beta \sqrt{\frac{\beta}{\pi}}(x-y)e^{-\beta (x-y)^2}
 \end{equation}
 This representation approaches the exact derivative as defined by Alpert 
 \etal~\cite{Alpert:2002p149} and presented in section \ref{sec:diff_oper} as 
@@ -647,14 +647,15 @@ cross-correlation of the scaling functions~\cite{Fann:2004}
 \end{equation}
 and the two-dimensional projection integral is reduced to one dimension
 \begin{align}
-    \big[\tau_{lm}^n\big]_{ij}	&= \int_0^1 \int_0^1 K(x-y)\phi_i^n(x-l)\phi_j^n(y-m) \ud x \ud y \\
-				&= \int_{-1}^1 K(z)\Phi_{ij}(2^nz+m-l)\ud z
+    \big[\tau_{lm}^n\big]_{ij}
+	&= \int_0^1 \int_0^1 K(x-y)\phi_i^n(x-l)\phi_j^n(y-m) \ud x \ud y \\
+	&= \int_{-1}^1 K(z)\Phi_{ij}(2^nz+m-l)\ud z
 \end{align}
 For $d$-dimensional operators the kernel is $2d$-dimensional, and the cross-correlation 
 functions will reduce the integral to $d$ dimensions. Moreover, if the kernel is
 separable, the matrix element can be computed as products of one-dimensional integrals
 \begin{equation}
-    \big[\tau_{\bs{lm}}^n\big]_{ij} = \prod_{p=1}^d\int_{-1}^1 
+    \big[\tau_{\bs{l}\bs{m}}^n\big]_{ij} = \prod_{p=1}^d\int_{-1}^1 
 	K_p(z_p)\Phi_{ij}\big(2^nz_p+m_p-l_p\big) \ud z_p
 \end{equation}
 which significantly reduces the cost of constructing multi-dimensional operators. 
@@ -694,20 +695,62 @@ the next coarser scale
     \scalingrep{\hat{g}}{n} = \scalingrep{\hat{g}}{n-1} + \scalingrep{\tilde{g}}{n-1} + 
 	\waveletrep{\tilde{g}}{n-1}, \qquad n > 0
 \end{equation}
-and this is continued locally until we reach a representation of sufficient 
-accuracy, following the same algorithm as before.
-
-One should note that there are three factors determining whether a specific
-entry $O^{n_x,n_y}_{l_x,l_y}$ of the operator needs to be taken into
-account. Firstly, we need only the operator at the current scale. Secondly, we
-need only the \nodes that are within the bandwidth, and finally, we use
-only the terms where the product of the norms is above a given threshold. 
-This greatly reduces the number of terms we actually need to compute.
-
-There are many things to consider when operating on MPI distributed functions.
+and this is continued locally \node by \node until we reach a representation of 
+sufficient accuracy, following the same algorithm as before.
 
 \subsection{Obtaining the coefficients}
-The actual calculation of the coefficients is performed in the following way.
+\begin{algorithm}
+    \footnotesize
+    \caption{Operator application. Inserted in line 7 of algorithm \ref{alg:function}}
+    \label{alg:operator}
+    \begin{algorithmic}[1]
+	\FOR{each separated component ($\kappa = 1,\dots,M$) of the operator}
+	    \FOR{each ($\alpha = 0,\dots,2^d-1$) of output function}
+		\FOR{each ($\beta = 0,\dots,2^d-1$) of input function}
+		    \STATE get operator component $O_\kappa^{\alpha\beta,n} = 
+			\bigotimes_{p=1}^dO_\kappa^{\alpha_p\beta_p,n}$
+		    \STATE construct bandwidth
+		    \STATE fetch input and operator \nodes within bandwidth
+		    \STATE prune list of input \nodes based on norm product
+			$\big(\|O_{\kappa,\bs{l-m}}^{\alpha\beta,n}\|_2 \cdot 
+			\|\bs{\waveletcoef}_{\bs{l}}^{\alpha,n,f}\|\big)$
+		    \FOR{each contributing input \node}
+			\STATE apply operator $ \bs{\waveletcoef}_{\bs{l}}^{\alpha,n,g}
+			    += \bigotimes_{p=1}^d O^{\alpha_p\beta_p,n}_{\kappa,\bs{l-m}}
+			    \bs{\waveletcoef}_{\bs{m}}^{\beta_p,n,f}$
+		    \ENDFOR
+		\ENDFOR
+	    \ENDFOR
+	\ENDFOR		
+    \end{algorithmic}
+\end{algorithm}
+
+\noindent
+The calculation of scaling/wavelet coefficients (line 7 of algorithm \ref{alg:function}) 
+in the operator application is somewhat involved in multiple dimensions, and is presented
+in algorithm \ref{alg:operator}. Each component of the separated representation of the
+operator needs to be applied separately in order to exploit the tensorial structure of
+the operator. Also, the different separated components will have very different bandwidths
+at a given scale (the higher the Gaussian exponent of the operator, the deeper in scale 
+its main contribution will be). A more detailed discussion of the algorithm can be found 
+in Frediani \etal\cite{Frediani:2013p1143}.
+
+The bandwith of each specific operator component can be calculated according to 
+Eq.~(\ref{eq:operbandwidth}), and by explicitly treating and thresholding all $2^{2d}$
+($A$, $B$, $C$ and $T$ in each dimension) operator components the number of contributing 
+terms is reduced significantly, with prospects of algorithms that scale linearly with
+system size.
+ 
+In parallel computations where the data of the functions involved are distributed among 
+the memory of several computational hosts, the presented algorithm inevitably requires
+some communication, as the calculation of a given \node of the result requires all \nodes
+of the input function within the bandwidth, and these input \nodes are not necessarily 
+located on the same host. There are different strategies for how this data transfer can 
+be performed, and this is discussed in publication 1, where the performance (linear scaling
+and parallelelization) of the code is presented.
+
+The actual calculation of the coefficients is performed in the following way,
+for simplicity presented for a single operator component in one dimension.
 At the coarsest scale, in this case $n=0$, the $T$ part of the operator is applied,
 where we according to Eq.~(\ref{eq:Tact}) have
 \begin{align}
@@ -727,7 +770,7 @@ scaling coefficient from $C$
 	&= \sum_{l,m}\sum_{i,j} \big[\gamma^n_{lm}\big]_{ij}
 	\waveletcoef^{n,f}_{j,m} \scaling_{i,l}^n(x) \\
     \tilde{\scalingcoef}^{n,g}_{i,l} 
-	&= \sum_m\sum_j \big[\tau^n_{lm}\big]_{ij} \waveletcoef^{n,f}_{j,m}
+	&= \sum_m\sum_j \big[\gamma^n_{lm}\big]_{ij} \waveletcoef^{n,f}_{j,m}
 \end{align}
 while the wavelet coefficients are obtained from parts $B$ and $A$
 \begin{align}

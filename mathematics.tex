@@ -921,12 +921,12 @@ shows that in a basis with $M$ vanishing moments, the wavelet
 components \alphamat, \betamat\ and \gammamat\ will be bounded as
 \begin{equation}
     \label{eq:operbandwidth}
-    \|\alphamat_{l_xl_y}\|_2 + \|\betamat_{l_xl_y}\|_2 + \|\gammamat_{l_xl_y}\|_2 
-	\leq \frac{C_M}{1+|l_x-l_y|^{M+1}}
+    \|\alphamat_{lm}\|_2 + \|\betamat_{lm}\|_2 + \|\gammamat_{lm}\|_2 
+	\leq \frac{C_M}{1+|l-m|^{M+1}}
 \end{equation}
 where the expression has been adapted to a multiwavelet setting using the matrix
 2-norm. This means that within a given accuracy, all contributions beyond a certain 
-spatial separation $|l_x-l_y|$ can be set to zero, leading to operators that are 
+spatial separation $|l-m|$ can be set to zero, leading to operators that are 
 banded along the diagonal.
 
 \subsection{Derivative operator}\label{sec:diff_oper}
@@ -1001,7 +1001,7 @@ straightforward piecewise derivative of the polynomial basis.
 We assume that we have a separable representation of a $d$-dimensional
 operator $\mathcal{T}$ such that
 \begin{equation}
-    \mathcal{T} = \bigotimes_{i=1}^d T_i
+    \mathcal{T} = \bigotimes_{p=1}^d T_p
 \end{equation}
 where $T_p$ correspond to a one-dimensional operator as described above.
 As for the one-dimensional case we have the equation
@@ -1030,9 +1030,9 @@ and the tensor product of the operator can be written
 \end{equation}
 where we define
 \begin{equation}
-    O^{\alpha\beta,n} \mydef \bigotimes_{i}^d\ O^{\alpha_i\beta_i,n}
+    O^{\alpha\beta,n} \mydef \bigotimes_{p}^d\ O^{\alpha_p\beta_p,n}
 \end{equation}
-with $0 \leq \alpha < 2^d$ and $0 \leq \beta < 2^d$ and $\alpha_i$ and $\beta_i$
+with $0 \leq \alpha < 2^d$ and $0 \leq \beta < 2^d$ and $\alpha_p$ and $\beta_p$
 are defined by the binary expansion of $\alpha$ and $\beta$ in $d$ dimensions.
 We can now obtain a completely equivalent structure as for the mono-dimensional
 case
