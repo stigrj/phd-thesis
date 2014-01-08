@@ -1,4 +1,4 @@
-\chapter{Chemistry}
+\chapter{Electronic structure theory}
 In this chapter we present the equations that govern chemical systems, in particular
 the electronic stucture of atoms and molecules. At the moleculear length scale, nature
 is most accurately described by the theory of quantum mechanics, where the central
@@ -41,8 +41,12 @@ multi-dimensional partial differential equation that determine the wavefunction
     \frac{\langle\Wavefunction_0|\hat{H}|\Wavefunction_0\rangle}
     {\langle\Wavefunction_0|\Wavefunction_0\rangle}
 \end{equation}
+\begin{equation}
+    \hat{h}_0 = \sum_{I<J} \frac{Z_IZ_J}{|\bs{R}_I-\bs{R}_J|}
+\end{equation}
 
 \section{Hartree-Fock Theory}\label{sec:HFT}
+\subsection{Slater determinant}
 \begin{equation}
     \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = \sum_m c_m 
 	\orbital_1^m(\bs{x}_1)
@@ -64,9 +68,6 @@ multi-dimensional partial differential equation that determine the wavefunction
     \end{split}
 \end{equation}
 \begin{equation}
-    \hat{h}_0 = \sum_{I<J} \frac{Z_IZ_J}{|\bs{R}_I-\bs{R}_J|}\bigg)
-\end{equation}
-\begin{equation}
     \hat{h}_i = \bigg(-\frac{1}{2}\nabla_i^2
 	-\sum_I \frac{Z_I}{|\bs{r}_i-\bs{R}_I|}\bigg)
 \end{equation}
@@ -74,7 +75,7 @@ multi-dimensional partial differential equation that determine the wavefunction
     \hat{g}_{ij} = \frac{1}{|\bs{r}_j-\bs{r}_i|}
 \end{equation}
 \begin{equation}
-    \hat{H} = \hat{h}_0 + \sum_i \hat{h}_i + \sum_{i<j} \hat{g}_{ij}
+    \hat{H} = \sum_i \hat{h}_i + \sum_{i<j} \hat{g}_{ij}
 \end{equation}
 The energy of a Slater determinant wave function is evaluated as the expectation value
 of the Hamiltonian, and is given by
@@ -82,7 +83,7 @@ of the Hamiltonian, and is given by
     E[\wavefunction] &=
     \langle\orbital_1\orbital_2\cdots\orbital_N|\hat{H}|
     \orbital_1\orbital_2\cdots\orbital_N\rangle\\
-    &= \hat{h}_0 + \sum_{i=1}^N \langle \orbital_i |\hat{h}| \orbital_i \rangle +
+    &= \sum_{i=1}^N \langle \orbital_i |\hat{h}| \orbital_i \rangle +
     \frac{1}{2} \sum_{i=1}^N\sum_{j=1}^N \Big(
     \langle \orbital_i\orbital_j |\hat{g}| \orbital_i\orbital_j\rangle -
     \langle \orbital_i\orbital_j |\hat{g}| \orbital_j\orbital_i\rangle\Big)
@@ -99,13 +100,13 @@ Introducing the Coulomb $\hat{J}=\sum_i\hat{J}_i$ and exchange $\hat{K}=\sum_i\h
 operators, which are defined through their action on an arbitrary function $f$ 
 \begin{align}
     \hat{J}_j f(\bs{x}_1) &= \bigg(\int \frac{\orbital_j^{\ast}(\bs{x}_2)\orbital_j(\bs{x}_2)}
-	{|\bs{x}_2-\bs{x}_1|}\ud\bs{x}_2\bigg) f(\bs{x}_1)\\
+	{\|\bs{r}_2-\bs{r}_1\|}\ud\bs{x}_2\bigg) f(\bs{x}_1)\\
     \hat{K}_j f(\bs{x}_1) &= \bigg(\int \frac{\orbital_j^{\ast}(\bs{x}_2)f(\bs{x}_2)}
-	{|\bs{x}_2-\bs{x}_1|}\ud\bs{x}_2\bigg) \orbital_j(\bs{x}_1)
+	{\|\bs{r}_2-\bs{r}_1\|}\ud\bs{x}_2\bigg) \orbital_j(\bs{x}_1)
 \end{align}
 we arrive at the expression for the total electronic energy of a Slater determinant
 \begin{equation}
-    E[\wavefunction] = \hat{h}_0 +
+    E[\wavefunction] = 
     \sum_{i=1}^N \langle \orbital_i |\hat{h}| \orbital_i \rangle +
     \frac{1}{2} \sum_{i=1}^N 
     \langle \orbital_i |\hat{J}-\hat{K}| \orbital_i\rangle
@@ -118,112 +119,242 @@ to orbital variations
 following the variational principle of Eq.~(\ref{eq:var_princ}), under the constraint 
 that the orbitals remain orthonormal $\langle\orbital_i|\orbital_j\rangle = \delta_{ij}$.
 
+\subsection{Hartree-Fock equations}
+\begin{equation}
+    \orbital_i^\sigma(\bs{r},s) = \orbital_i(\bs{r})\sigma(s), \qquad \sigma = \alpha, \beta
+\end{equation}
+\begin{equation}
+    \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = 
+    |\orbital_1^\alpha\orbital_1^\beta\cdots\orbital_{N/2}^\alpha\orbital_{N/2}^\beta\rangle
+\end{equation}
+The Hamiltonian for a closed-shell system is 
+\begin{equation}
+    \hat{F}_{HF} = \hat{h} + \sum_j^{N/2} \Big(2\hat{J}_j - \hat{K}_j\Big)
+\end{equation}
+and is usually referred to as the Fock operator.
+\begin{equation}
+    v_{nuc}(\bs{r}) = \sum_{I} \frac{Z_I}{\|\bs{r} - \bs{R}_I\|}
+\end{equation}
+\begin{equation}
+    v_{el}(\bs{r}) = \sum_j^{N/2} 2\hat{J}_j = 2 \sum_j^{N/2} \int \frac{|\orbital_j(\bs{r}')|^2}
+	{\|\bs{r} - \bs{r}'\|} \ud \bs{r}'
+\end{equation}
+\begin{equation}
+    \hat{K}\orbital_i(\bs{r}) = \sum_j^{N/2} \hat{K}_j \orbital_i(\bs{r}) 
+	= \sum_j^{N/2} \orbital_j (\bs{r}) \int \frac{\orbital_j^{\ast}(\bs{r}')\orbital_i(\bs{r}')}
+	    {\|\bs{r} - \bs{r}'\|} \ud \bs{r}'
+\end{equation}
+leads to the canonical Hartree-Fock equations
+\begin{equation}
+    \Big[-\frac{1}{2}\nabla^2 + v_{nuc}(\bs{r}) + v_{el}(\bs{r}) - \hat{K}\Big]\orbital_i(\bs{r}) 
+	= \epsilon_i \orbital_i(\bs{r})
+\end{equation}
+where the Hartree-Fock wave function is the Slater determinant constructed from the $N/2$ lowest
+energy eigenfunctions of the Fock operator, each appearing twice ($\alpha$ and $\beta$ spins).
+
+\subsection{Spin-unrestricted Hartree-Fock}
+\begin{equation}
+    v_{el}(\bs{r}) = v_{el}^\alpha (\bs{r}) + v_{el}^\beta (\bs{r})
+\end{equation}
+The exchange operator runs over all orbitals of a given spin
+\begin{equation}
+    \hat{K}^\sigma\orbital_i^\sigma(\bs{r}) 
+	= \sum_j^{N_\sigma} \orbital_j^\sigma (\bs{r}) 
+	    \int \frac{\orbital_j^{\sigma\ast}(\bs{r}')\orbital_i^\sigma(\bs{r}')}
+	    {\|\bs{r} - \bs{r}'\|} \ud \bs{r}', \qquad \sigma = \alpha, \beta
+\end{equation}
+\begin{equation}
+    \hat{F}_{HF}^\sigma = -\frac{1}{2}\nabla^2 + v_{nuc}(\bs{r}) + v_{el}(\bs{r}) - \hat{K}^\sigma 
+\end{equation}
+and the unrestricted wave function is the determinant constructed by the $N_\alpha$ and 
+$N_\beta$ lowest energy eigenfunctions of the operators $\hat{F}_{HF}^\alpha$ and 
+$\hat{F}_{HF}^\beta$, respectively
+\begin{equation}
+    \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = 
+    |\orbital_1^\alpha\orbital_1^\beta\cdots\orbital_{N_\alpha}^\alpha\orbital_{N_\beta}^\beta\rangle
+\end{equation}
+
 \section{Density Functional Theory} \label{sec:DFT}
-Energy expression\\
-Hohenberg-Kohn theorems\\
-
-\subsection{Density functionals}
-Thomas-Fermi-Dirac\\
-von Wiesacker\\
-Borgoo\\
-
-\subsection{Kohn-Sham theory}
-Energy expression\\
-
-In the absence of any externally applied fields, there are three contributions 
-to the effective potential in Kohn-Sham theory.
 \begin{equation}
-    \label{eq:eff_pot}
-    V_{eff} = V_{nuc} + V_{coul} + V_{xc}
+    \rho(\bs{r}_1) = N \int |\wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N)|^2 
+	\ud s_1 \ud \bs{x}_2 \cdots \ud \bs{x}_N
 \end{equation}
-In addition to the nuclear potential $V_{nuc}$ presented above, there is the 
-classical Coulomb repulsion between the electrons $V_{coul}$ as well as the 
-non-classical exchange-correlation potential $V_{xc}$. The Coulomb potential 
-is described in terms of the Poisson equation, which is expressed in integral 
-form using the Green's function of Eq.~(\ref{eq:greens_kernel})
 \begin{equation}
-    \label{eq:coulomb}
-    V_{coul}(r) = \int P(r-r')\rho(r')\ud r'
+    E[\rho] = T[\rho] + V_{ne}[\rho] + V_{ee}[\rho]
 \end{equation}
-A highly efficient (linear scaling) and parallelized implementation of the 
-solution to the Poisson equation in the multiwavelet basis has been presented 
-in a previuos study\cite{mwpar}. 
-
-\subsection{Exchange-Correlation potentials}
-The exchange-correlation potential is formally expressed in terms of the 
-functional derivative of the exchange-correlation energy
+\begin{align}
+    V_{ne}[\rho] &= \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud \bs{r}\\
+    F[\rho] &= T[\rho] + V_{ee}[\rho]
+\end{align}
 \begin{equation}
-    V_{xc} 	= \frac{\delta E_{xc}[\rho]}{\delta \rho} 
-		= \frac{\delta}{\delta \rho} \int F_{xc}(\rho,|\nabla\rho|,\nabla^2\rho,\dots) \ud \rho
+    E_0 = \mymin{\rho}\ E[\rho]
 \end{equation}
-which in the local density approximation (LDA) reduces to
-\begin{equation}
-    V_{xc} = \frac{\partial F_{xc}(\rho)}{\partial \rho}
-\end{equation}
-
-\subsection{Open shell systems} \label{sec:open_shell_KS}
-The extension to open shell systems is straightforward. In the local spin 
-density approximation (LSDA) we separate the orbitals into $\alpha$ and 
-$\beta$ spins, with corresponding spin densities 
-\begin{equation}
-    \rho^{\sigma} (r) = \sum_{i=1}^{N_{\sigma}} |\phi_i^{\sigma}(r)|^2 \qquad \sigma = \alpha, \beta
-\end{equation} 
-where the different spin orbitals experience different effective potentials
-\begin{equation}
-    V_{eff}^{\sigma} = V_{nuc} + V_{coul} + V_{xc}^{\sigma} \qquad \sigma = \alpha, \beta
-\end{equation}
-All spin effects are included in the exchange-correlation potential, so the 
-nuclear and Coulomb potentials are the same as in Eq.~(\ref{eq:eff_pot}), 
-where the latter is obtained from the full ($\alpha + \beta$) electron density.
-
-
-
-\section{Integral formulation}
-
-\subsection{Single-orbital systems}
-\subsection{Many-orbital systems}
-\subsection{Orbital-free DFT}
-
+with the constraints that the density is everywhere positive and integrates to the number
+of electrons.
 
 \subsection{Kohn-Sham equations}
-For a closed shell system in Kohn-sham DFT the ground state electron density is given 
-in terms of the occupied Kohn-Sham orbitals (open shell systems are 
-treated in section \ref{sec:open_shell_KS})
 \begin{equation}
-    \rho(r) = 2 \sum_{i=1}^N |\varphi_i(r)|^2
+    \rho(\bs{r}) = 2 \sum_i^{N/2} | \orbital_i(\bs{r})|^2
 \end{equation}
-where the occupied orbitals are the $N$ lowest eigenfunctions of the 
-Kohn-Sham operator
 \begin{equation}
-    \label{eq:KS-diff}
-    \big[-\frac{1}{2}\nabla^2 + V_{eff}(r)\big] \varphi_i(r) = \epsilon_i \varphi_i(r)
+    F[\rho] = T_s[\rho] + J[\rho] + E_{xc}[\rho]
 \end{equation}
-where the effective potential (defined below) depends implicitly on the 
-orbitals through the density. This means that we have a non-linear problem with $N$ coupled 
-equations that must be solved self-consistently.
+\begin{equation}
+    T_s[\rho] = \sum_i^{N/2} \langle \orbital_i | -\frac{1}{2}\nabla^2 | \orbital_i \rangle
+\end{equation}
+\begin{equation}
+    J[\rho] = \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud \bs{r}
+\end{equation}
+\begin{equation}
+    E_{xc}[\rho] = T[\rho] - T_s[\rho] + V_{ee}[\rho] - J[\rho]
+\end{equation}
+\begin{equation}
+    E[\rho] = V_{en}[\rho] + J[\rho] + E_{xc}[\rho] + T_s[\rho]
+\end{equation}
+leads to the Euler equation
+\begin{equation}
+    \mu = v_{eff}(\bs{r}) + \frac{\delta T_s[\rho]}{\delta \rho(\bs{r})}
+\end{equation}
+where the chemical potential $\mu$ is a Lagrange multiplier that fixes the number of 
+electrons and the effective potential is given by
+\begin{align}
+    v_{eff}(\bs{r}) 
+	&= \frac{\delta V_{en}[\rho]}{\delta \rho(\bs{r})}
+	+ \frac{\delta J[\rho]}{\delta \rho(\bs{r})}
+	+ \frac{\delta E_{xc}[\rho]}{\delta \rho(\bs{r})}\\
+	&= v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}(\bs{r})
+\end{align}
+The Fock operator for the system of non-interacting electrons influenced by an effective
+potential is given simply as
+\begin{equation}
+    \hat{F}_{KS} = -\sum_i^{N/2} \frac{1}{2}\nabla_i^2 + \sum_i^{N/2} v_{eff}(\bs{r}_i)
+\end{equation}
+and is also called the Kohn-Sham operator. As there are no couplings between the electrons, 
+this operator is separable, and the exact wave function is given by a single determinant 
+constructed by the $N/2$ lowest energy eigenfunctions of the Kohn-Sham operator
+\begin{equation}
+    \Big[-\frac{1}{2}\nabla^2 + v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}(\bs{r})\Big] 
+	\orbital_i(\bs{r}) = \epsilon_i \orbital_i(\bs{r})
+\end{equation}
+where each orbital appears in the determinant with $\alpha$ and $\beta$ spins.
 
-\subsection{Integral formulation}\label{sec:1_orb_int}
+\subsection{The Exchange-Correlation potential}
+The exchange-correlation energy functional is given as an integral over an energy
+density $F_{xc}$
+\begin{equation}
+    E_{xc}[\rho] = \int F_{xc}\ud \bs{r}
+\end{equation}
+In the local density approximation (LDA) the energy density is a function of the density 
+alone $F_{xc}(\rho)$, in the generalized gradient approximation (GGA) it is a function of
+the density and its gradient $F_{xc}(\rho, |\nabla\rho|)$, while in meta-GGA's, higher order 
+derivatives are introduced $F_{xc}(\rho, |\nabla\rho|, \nabla^2\rho, \cdots)$. Hybrid 
+functionals, such as the very popular B3LYP\cite{B3LYP}, are GGA's with a certain amount of
+exact Hartree-Fock exchange, evaluated as in Eq.~(\ref{eq:HFX}) using Kohn-Sham orbitals.
+
+The exchange-correlation potential was implicitly defined in Eq.~(\ref{eq:XXX}) as the
+functional derivative of the exchange-correlation energy with respect to the density
+\begin{equation}
+    v_{xc} = \frac{\delta E_{xc}[\rho]}{\delta \rho} 
+	= \frac{\delta}{\delta \rho} \int F_{xc} \ud \bs{r}
+\end{equation}
+which in LDA reduces to
+\begin{equation}
+    v_{xc}^{LDA} = \frac{\partial F_{xc}}{\partial \rho}
+\end{equation}
+while a second derivative of $F_{xc}$ is required for GGA's
+\begin{equation}
+    v_{xc}^{GGA} = \frac{\partial F_{xc}}{\partial \rho} - 
+	\nabla\cdot\frac{\partial F_{xc}}{\partial\nabla\rho}
+\end{equation}
+
+\subsection{Spin-unrestricted Kohn-Sham}
+The extension to spin-unrestricted and open-shell systems is straightforward. In this case the
+$\alpha$ and $\beta$ electrons occupy different spatial orbitals, $\orbital^\alpha$ and 
+$\orbital^\beta$, and we define the corresponding spin densities
+\begin{equation}
+    \rho^{\sigma}(\bs{r}) = 
+	\sum_{i=1}^{N_{\sigma}} |\phi_i^{\sigma}(\bs{r})|^2, \qquad \sigma = \alpha, \beta
+\end{equation}
+All spin effects are included in the exchange-correlation potential, which in this case will 
+depend on the spin densities and possibly their gradients, and the $\alpha$ and $\beta$ electrons 
+will experience different effective potentials
+\begin{equation}
+    v_{eff}^{\sigma} (\bs{r}) = 
+	v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}^{\sigma}(\bs{r}), \qquad \sigma = \alpha, \beta
+\end{equation}
+The nuclear potential is the same as before, whereas the electronic potential is obtained
+from the total electron density
+\begin{equation}
+    v_{el}(\bs{r}) = \int \frac{\rho^\alpha(\bs{r}') + \rho^\beta(\bs{r}')}
+	{\|\bs{r}-\bs{r}'\|} \ud \bs{r}'
+\end{equation}
+This leads to different Kohn-Sham operators for the different spins
+\begin{equation}
+    \hat{F}_{KS}^\sigma = -\sum_i^{N_\sigma} \frac{1}{2}\nabla_i^2 + 
+	\sum_i^{N_\sigma} v_{eff}^\sigma(\bs{r}_i), \qquad \sigma = \alpha, \beta
+\end{equation}
+and a single determinant wave function is constructed by the $N_\alpha$ and $N_\beta$ 
+lowest energy eigenfunctions of the operators $\hat{F}_{KS}^\alpha$ and 
+$\hat{F}_{KS}^\beta$, respectively.
+
+\section{Basis sets in computational chemistry}
+
+\section{Integral formulation}
 Although the differential form in Eq.~(\ref{eq:diff_schrodinger}) is most 
 commonly used, it is not very well suited for solution in the multiwavelet 
 basis \cite{Harrison}, and differential operators (in particular higher 
 order operators) should be avoided in order to maintain high accuracy. 
 Kalos \cite{Kalos} showed in 1962 that the Schr\"{o}dinger equation can 
 be formulated as an integral equation, using the Helmholtz Green's functions 
-of Eq.~(\ref{eq:greens_kernel}), switching to atomic units
+of Eq.~(\ref{eq:greens_kernel})
+
+\subsection{One-electron systems}
 \begin{align}
-    \big[-\frac{1}{2}\nabla^2 + V(r)\big]\varphi(r) &= E \varphi(r)\\
-    \big[-\nabla^2 - 2E\big]\varphi(r) &= -2V(r) \varphi(r)\\
-    \varphi(r) &= -2\int H_{\mu}(r-r')V(r') \varphi(r') \ud r'\\
+    \big[-\frac{1}{2}\nabla^2+v_{nuc}(\bs{r})\big]\wavefunction(\bs{r}) &= E \wavefunction(\bs{r})\\
+    \big[-\nabla^2 - 2E\big]\wavefunction(\bs{r}) &= -2v_{nuc}(\bs{r}) \wavefunction(\bs{r})\\
+    \wavefunction(\bs{r}) &= -2\int H_{\mu}(\bs{r}-\bs{r}')v_{nuc}(\bs{r}') 
+	\wavefunction(\bs{r}') \ud \bs{r}'\\
     \label{eq:int_schrodinger}
-    \varphi &= -2 \hat{H}\big[V\varphi\big]
+    \wavefunction &= -2 \hat{G}_{\mu}\big[v_{nuc}\wavefunction\big]
 \end{align}
-with $\mu = \sqrt{-2E}$. Eq.~(\ref{eq:int_schrodinger}) defines a fixed-point 
-problem, and iterative solution techniques for the determination of the 
-wavefunction $\varphi$ and its ''energy'' $\mu$ are presented in section 
-\ref{sec:iterative_solution}.
+with $\mu = \sqrt{-2E}$.
 
 
-\subsection{Integral formulation}
+\subsection{Many-electron systems}
+
+\begin{equation}
+    F_{ij} = \langle \orbital_i | \hat{F} | \orbital_j \rangle
+\end{equation}
+\begin{equation}
+    \hat{F}| i \rangle	
+	= \Big[\sum_j |j \rangle\langle j|\Big] \hat{F}|i \rangle 
+	= \sum_j F_{ji} |j \rangle
+\end{equation}
+
+\subsubsection{Kohn-Sham DFT}
+\begin{align}
+    \big[-\frac{1}{2}\nabla^2+v_{eff}(\bs{r})\big]\orbital_i(\bs{r}) 
+	    &= \sum_j F_{ji} \orbital_j(\bs{r})\\
+    \big[-\nabla^2 - 2\lambda\big]\orbital_i(\bs{r}) &= -2\Big[v_{eff}(\bs{r}) \orbital_i(\bs{r})
+	    + \sum_j \big(\lambda\delta_{ij} - F_{ji}\big) \orbital_j(\bs{r})\Big]\\
+    \orbital_i &= -2\hat{G}_\mu\Big[v_{eff} \orbital_i + 
+	\sum_j \big(\lambda\delta_{ij} - F_{ji}\big) \orbital_j\Big]
+\end{align}
+where $\mu = \sqrt{-2\lambda}$. This general expression can be simplified in many ways.
+By using the canonical orbitals, e.i. the eigenfunctions of the Fock operator, the 
+Fock matrix is diagonal $F_{ji} = \epsilon_i\delta_{ij}$ and the expression reduces to
+\begin{equation}
+    \orbital_i = -2\hat{G}_\mu\Big[v_{eff} \orbital_i + 
+	\big(\lambda - \epsilon_{i}\big) \orbital_i\Big]
+\end{equation}
+Furthermore, choosing $\lambda = \epsilon_i$, we get $N$ separated orbital equations similar 
+to Eq.~(\ref{eq:int_schrodinger}) (still implicitly coupled through the effective potential)
+\begin{equation}
+    \orbital_i = -2 \hat{G}_{\mu_i}\big[v_{eff}\orbital_i\big]
+\end{equation}
+with $\mu_i = \sqrt{-2\epsilon_i}$.
+
+
 As for the one-electron problem, we want to rewrite the differential 
 equations in Eq.~(\ref{eq:KS-diff}) into integral form in order to be 
 solved using the multiwavelet basis. This can be done straightforwardly
@@ -246,5 +377,7 @@ one can keep orthonormality, and these are discussed below. Note also the
 iteration label on the effective potential, as this depends on the orbitals 
 and must be updated in each iteration.
 
-\section{Basis sets in computational chemistry}
+\subsubsection{Hartree-Fock}
+\subsection{Calculation of Fock matrix}
+\subsection{Calculation of energy}
 
