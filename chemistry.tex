@@ -125,7 +125,7 @@ that the orbitals remain orthonormal $\langle\orbital_i|\orbital_j\rangle = \del
 \end{equation}
 \begin{equation}
     \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = 
-    |\orbital_1^\alpha\orbital_1^\beta\cdots\orbital_{N/2}^\alpha\orbital_{N/2}^\beta\rangle
+    |\orbital_1^\alpha\cdots\orbital_{N/2}^\alpha\orbital_1^\beta\cdots\orbital_{N/2}^\beta\rangle
 \end{equation}
 The Hamiltonian for a closed-shell system is 
 \begin{equation}
@@ -171,7 +171,7 @@ $N_\beta$ lowest energy eigenfunctions of the operators $\hat{F}_{HF}^\alpha$ an
 $\hat{F}_{HF}^\beta$, respectively
 \begin{equation}
     \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = 
-    |\orbital_1^\alpha\orbital_1^\beta\cdots\orbital_{N_\alpha}^\alpha\orbital_{N_\beta}^\beta\rangle
+    |\orbital_1^\alpha\cdots\orbital_{N_\alpha}^\alpha\orbital_1^\beta\cdots\orbital_{N_\beta}^\beta\rangle
 \end{equation}
 
 \section{Density Functional Theory} \label{sec:DFT}
@@ -209,11 +209,12 @@ of electrons.
     E_{xc}[\rho] = T[\rho] - T_s[\rho] + V_{ee}[\rho] - J[\rho]
 \end{equation}
 \begin{equation}
-    E[\rho] = V_{en}[\rho] + J[\rho] + E_{xc}[\rho] + T_s[\rho]
+    \label{eq:KS-energy}
+    E[\rho] = T_s[\rho] + V_{en}[\rho] + J[\rho] + E_{xc}[\rho]
 \end{equation}
 leads to the Euler equation
 \begin{equation}
-    \mu = v_{eff}(\bs{r}) + \frac{\delta T_s[\rho]}{\delta \rho(\bs{r})}
+    \mu = \frac{\delta T_s[\rho]}{\delta \rho(\bs{r})} + v_{eff}(\bs{r})
 \end{equation}
 where the chemical potential $\mu$ is a Lagrange multiplier that fixes the number of 
 electrons and the effective potential is given by
@@ -306,13 +307,21 @@ basis \cite{Harrison}, and differential operators (in particular higher
 order operators) should be avoided in order to maintain high accuracy. 
 Kalos \cite{Kalos} showed in 1962 that the Schr\"{o}dinger equation can 
 be formulated as an integral equation, using the Helmholtz Green's functions 
-of Eq.~(\ref{eq:greens_kernel})
+
+\begin{equation}
+    g(\bs{r}) = \int K(\bs{r}-\bs{r}') f(\bs{r}') \ud\bs{r}
+\end{equation}
+using the Poisson and bound-state Helmholtz integral kernels
+\begin{equation}
+    P(\bs{r}-\bs{r}') = \frac{1}{4\pi\|\bs{r}-\bs{r}'\|} \qquad
+    H^\mu(\bs{r}-\bs{r}') = \frac{e^{-\mu\|\bs{r}-\bs{r}'\|}}{4\pi\|\bs{r}-\bs{r}'\|}
+\end{equation}
 
 \subsection{One-electron systems}
 \begin{align}
     \big[-\frac{1}{2}\nabla^2+v_{nuc}(\bs{r})\big]\wavefunction(\bs{r}) &= E \wavefunction(\bs{r})\\
     \big[-\nabla^2 - 2E\big]\wavefunction(\bs{r}) &= -2v_{nuc}(\bs{r}) \wavefunction(\bs{r})\\
-    \wavefunction(\bs{r}) &= -2\int H_{\mu}(\bs{r}-\bs{r}')v_{nuc}(\bs{r}') 
+    \wavefunction(\bs{r}) &= -2\int H^{\mu}(\bs{r}-\bs{r}')v_{nuc}(\bs{r}') 
 	\wavefunction(\bs{r}') \ud \bs{r}'\\
     \label{eq:int_schrodinger}
     \wavefunction &= -2 \hat{G}_{\mu}\big[v_{nuc}\wavefunction\big]
@@ -350,34 +359,100 @@ Fock matrix is diagonal $F_{ji} = \epsilon_i\delta_{ij}$ and the expression redu
 Furthermore, choosing $\lambda = \epsilon_i$, we get $N$ separated orbital equations similar 
 to Eq.~(\ref{eq:int_schrodinger}) (still implicitly coupled through the effective potential)
 \begin{equation}
-    \orbital_i = -2 \hat{G}_{\mu_i}\big[v_{eff}\orbital_i\big]
+    \orbital_i = -2 \hat{G}_{\mu_i}\Big[v_{eff}\orbital_i\Big]
 \end{equation}
 with $\mu_i = \sqrt{-2\epsilon_i}$.
 
+\subsubsection{Hartree-Fock}
+denoting the total Coulomb potential experienced by the electrons as
+\begin{equation}
+    v_{coul}(\bs{r}) = v_{nuc}(\bs{r}) + v_{el}(\bs{r})
+\end{equation}
+\begin{equation}
+    \big[-\frac{1}{2}\nabla^2+v_{coul}(\bs{r})-\hat{K}\big]\orbital_i(\bs{r}) 
+	    = \sum_j F_{ji} \orbital_j(\bs{r})
+\end{equation}
+can be rewritten in terms of the integral operator $\hat{G}_\mu$ in the same way as the Kohn-Sham
+equations above
+\begin{equation}
+    \orbital_i = -2\hat{G}_\mu\Big[\big(v_{coul} - \hat{K}\big)\orbital_i + 
+	\sum_j \big(\lambda\delta_{ij} - F_{ji}\big) \orbital_j\Big]
+\end{equation}
+with $\mu = \sqrt{-2\lambda}$. This expression can again be simplified by choosing
+canonical orbitals and $\lambda = \epsilon_i$, which leads to separated orbital equations
+\begin{equation}
+    \orbital_i = -2 \hat{G}_{\mu_i}\Big[\big(v_{coul} - \hat{K}\big)\orbital_i\Big]
+\end{equation}
+with $\mu_i = \sqrt{-2\epsilon_i}$.
 
-As for the one-electron problem, we want to rewrite the differential 
-equations in Eq.~(\ref{eq:KS-diff}) into integral form in order to be 
-solved using the multiwavelet basis. This can be done straightforwardly
-by the procedure of section \ref{sec:1_orb_int} for each orbital separately, 
+\subsection{Calculation of energy}
+We will now assume that the Hartree-Fock or Kohn-Sham equations have been solved to obtain
+the orbitals $\orbital_i$ that make up ground state wave function, and their energies 
+$\epsilon_i$ (or in general, the Fock matrix $F_{ij}$ in a non-canonical solution), and use
+these to calculate the electronic energy of the molecular system. In addition we have the
+constant nuclear repulsion energy
 \begin{equation}
-    \label{eq:KS-int}
-    \varphi_i(r) = -2\int H_{\mu_i}(r-r')V_{eff}(r') \varphi_i(r') \ud r'
+    E_{nuc} = \sum_{I>J} \frac{Z_IZ_J}{\|\bs{R}_I-\bs{R}_J\|}
 \end{equation}
-and the equations are again solved iteratively
-\begin{equation}
-    \label{eq:KS-iter}
-    \tilde{\varphi}^{n+1}_i = -2 \hat{H}^n\big[V^n_{eff}\varphi^n_i\big]
-\end{equation}
-although care must be taken in order to keep orthonormality between the 
-orbitals. A simple iteration of all $N$ orbitals separately will not 
-conserve the canonical character of the input orbitals, and all orbitals 
-will eventually collapse into the lowest energy eigenfunction, unless 
-orthogonality is explicitly enforced. There are different ways in which 
-one can keep orthonormality, and these are discussed below. Note also the
-iteration label on the effective potential, as this depends on the orbitals 
-and must be updated in each iteration.
+The goal of this section is to rewrite the expressions given above into something better 
+suited for evaluation in the multiwavelet framework. In particular this means to avoid
+the application of the kinetic energy operator, which is a second derivative.
 
 \subsubsection{Hartree-Fock}
-\subsection{Calculation of Fock matrix}
-\subsection{Calculation of energy}
+The energy of a Slater determinant wave function was given in Eq.~(\ref{eq:det_energy}).
+Introducing the orbital occupation $f$ we get a general expression for
+both restricted ($f=2$) and unrestricted ($f=1$) Hartree-Fock, where the sums runs over the
+number of orbitals
+\begin{align}
+    E	&= f \sum_i \langle \orbital_i|\hat{h}|\orbital_i \rangle
+	    + \frac{f}{2} \sum_i \langle \orbital_i|f\hat{J} - \hat{K}|\orbital_i \rangle\\
+	&= f \sum_i \langle \orbital_i|T|\orbital_i \rangle
+	    + f \sum_i \langle \orbital_i|v_{nuc}|\orbital_i \rangle
+	    + \frac{f}{2} \sum_i \langle \orbital_i|v_{el} - \hat{K}|\orbital_i \rangle \\
+	&= f \sum_i \langle \orbital_i|T - \frac{1}{2}\hat{K}|\orbital_i \rangle
+	    + \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud\bs{r}
+	    + \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
+\end{align}
+The kinetic energy operator can be avoided by making the following observation:
+\begin{align}
+    \label{eq:sum_orb_en}
+    f \sum_i F_{ii} &= f \sum_i \langle\orbital_i|\hat{T} + v_{nuc} + v_{el} - \hat{K}|\orbital_i\rangle\\
+		    &= f \sum_i \langle\orbital_i|\hat{T} - \hat{K}|\orbital_i\rangle
+		     + \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud\bs{r}
+		     + \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
+\end{align}
+All terms in Eq.~(\ref{eq:sum_orb_en}) are invariant under unitary transformations of the orbitals,
+and in a canonical orbital solution the left hand side is the sum over orbital energies $\epsilon_i$.
+Comparing the expressions in Eqs.~(\ref{eq:energy_exp_HF}) and (\ref{eq:sum_orb_en}) we see that
+the total electronic energy can be calculated as
+\begin{equation}
+    E = f \sum_i F_{ii} - \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
+	- \frac{f}{2} \sum_i \langle\orbital_i|\hat{K}|\orbital_i\rangle
+\end{equation}
+without the need of applying the kinetic energy operator, given the orbitals and Fock matrix that
+solves the Hartree-Fock equations.
 
+\subsubsection{Kohn-Sham DFT}
+The energy in Kohn-Sham DFT was given through the energy functionals in Eq.~(\ref{eq:KS-energy}) as
+\begin{equation}
+    E[\rho] = T_s[\rho] + V_{en}[\rho] + J[\rho] + E_{xc}[\rho]
+\end{equation}
+\begin{equation}
+    E = f \sum_i \langle \orbital_i|T|\orbital_i \rangle
+	+ \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud\bs{r}
+	+ \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
+	+ \int F_{xc} \ud\bs{r}
+\end{equation}
+\begin{align}
+    f \sum_i F_{ii} &= f \sum_i \langle\orbital_i|\hat{T} + v_{eff}|\orbital_i\rangle\\
+		    &= f \sum_i \langle\orbital_i|\hat{T}|\orbital_i\rangle
+		     + \int \rho(\bs{r})\big(v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}(\bs{r})\big) \ud\bs{r}
+\end{align}
+\begin{equation}
+    E = f \sum_i F_{ii} - \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
+	+ \int F_{xc} \ud\bs{r} - \int \rho(\bs{r})v_{xc}(\bs{r}) \ud\bs{r}
+\end{equation}
+where it should be notet that 
+\begin{equation}
+    E_{xc}[\rho] = \int F_{xc} \ud\bs{r} \neq \int \rho(\bs{r})v_{xc}(\bs{r}) \ud\bs{r}
+\end{equation}
