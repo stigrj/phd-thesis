@@ -1,62 +1,156 @@
 \chapter{Electronic structure theory}
 In this chapter we present the equations that govern chemical systems, in particular
-the electronic stucture of atoms and molecules. At the moleculear length scale, nature
+the electronic stucture of atoms and molecules. At the molecular length scale, nature
 is most accurately described by the theory of quantum mechanics, where the central
-problem is the solution of the non-relativistic Schr\"{o}dinger equation, the 
-multi-dimensional partial differential equation that determine the wavefunction 
-\Wavefunction that completely describes the quantum system.
+problem is the solution of the non-relativistic Schr\"{o}dinger equation.
+
+Being that this problem cannot be solved exactly by any analytical method whenever
+the system contains more than two particles, much of the work in the field of quantum
+chemistry has been concerned with developing accurate and efficient approximations,
+a work that has been given invaluable support by the remarkable increase in 
+computational power that has taken place since the advent of the electronic computer 
+more than halv a century ago.
+
+This chapter will give an introduction to the Self-Consistent Field (SCF)
+approximations that are commonly employed in computational chemistry. We will start with a
+traditional presentation of the orbital based methods of Hartree-Fock and Kohn-Sham 
+Density Functional Theory, where the aim of the chapter
+is to rewrite the equations into their less familiar integral formulation,
+a formulation much better suited for the treatment in the multiwavelet framework 
+presented in chapter \ref{chap:math}. Algorithms for how to solve these equations
+using the mathematical tools as implemented in chapter \ref{chap:implementation} 
+is the topic of publication 3.
 
 \section{The molecular Schr\"{o}dinger equation}\label{sec:schrodinger}
+The physical state of a quantum system influenced by potentials that do not change
+with time is described by the time-independent Schr\"{o}dinger equation 
 \begin{equation}
+    \label{eq:mol_schr}
     \hat{H}\Wavefunction = E\Wavefunction
 \end{equation}
+where the Hamiltonian $\hat{H}$ is the operator for the total energy $E$ of the system.
+The wave function \Wavefunction\ is an eigenfunction of the Hamiltonian operator, 
+and is a multi-dimensional (in general complex-valued) function that depends on the 
+degrees of freedom of the system, e.i. the position $\bs{r}$ and spin $s$ of all $N$ 
+particles, and we have $\Wavefunction=\Wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N)$, 
+where $\bs{x}_i=(\bs{r}_i,s_i)$ denotes the position and spin of the $i$-th particle. 
+There are in general infinitely many eigenfunctions for a given Hamiltonian operator,
+each corresponding to a possible state of the system. 
+
+The wave function contains all the information that can possibly be extracted from the 
+physical system. For each physical observable $\Omega$ there is an associated mathematical 
+operator $\hat{\Omega}$, such that the expected value of an experimental measurement is given by
 \begin{equation}
-    \hat{H} = \hat{T}_{nuc} + \hat{H}_{el}
+    \langle \hat{\Omega}\rangle = \frac{\langle\Wavefunction|\hat{\Omega}|\Wavefunction\rangle}
+    {\langle\Wavefunction|\Wavefunction\rangle}
 \end{equation}
+This means that the fundamental problem in quantum chemistry is to obtain the molecular
+wave function by solving the Schr\"{o}dinger equation (\ref{eq:mol_schr}). For a molecule,
+the Hamiltonian contains kinetic $\hat{T}$ and potential $\hat{V}$ energy of the 
+electrons and nuclei that make up the system
+\begin{equation}
+    \hat{H} = \hat{T}_{nuc} + \hat{T}_{el} + \hat{V}_{n-n} + \hat{V}_{e-e} + \hat{V}_{n-e}
+\end{equation}
+Analytical solutions exists only for the one- and two-particle problems, and approximations are
+inevitable if we want to be able to treat more interresting chemical systems. 
+
+The first approximation for molecular systems is almost exclusively the Born-Oppenheimer 
+approximation\cite{BornOppenheimer},
+in which we consider the nuclei to be fixed in space, so that the electrons move in a static
+nuclear potential. The motivation for this approximation is that the nuclei are much heavier
+than the electrons, and hence move much slower, so that at the electronic time scale, the
+nuclei are percieved as classical particles frozen in space. This means that we can disregard the
+instantaneous correlation between the electrons and the nuclei, and we can separate the nuclear
+kinetic energy from an electronic Hamiltonian
 \begin{align}
-    \Wavefunction &= \wavefunction_{nuc}\wavefunction_{el}\\
-    E &= E_{nuc} + E_{el}
+    \hat{H} &= \hat{T}_{nuc} + \hat{H}_{el}\\
+    \hat{H}_{el} &= \hat{T}_{el} + \hat{V}_{n-e} + \hat{V}_{e-e} + \hat{V}_{n-n}
 \end{align}
+In atomic units\footnote{$e=m_e=\hbar=4\pi\epsilon_0=1$}, using uppercase indices for the
+nuclei and lowercase indices for the electrons, we have the electron kinetic energy
 \begin{equation}
-    \hat{T}_{nuc} = -\sum_I\frac{1}{2m_I} \nabla_I^2
+    \hat{T}_{el} = -\sum_i \frac{1}{2}\nabla_i^2
 \end{equation}
+the electron-nuclear attraction
 \begin{equation}
-    \hat{H}_{el} = -\sum_i \frac{1}{2}\nabla_i^2 
-	+ \sum_{i>j} \frac{1}{|\bs{r}_j-\bs{r}_i|}
-	- \sum_{I,i} \frac{Z_I}{|\bs{r}_i-\bs{R_I}|}
-        + \sum_{I>J} \frac{Z_IZ_J}{|\bs{R}_I-\bs{R_J}|}
+    \hat{V}_{n-e} = -\sum_{i,I} \frac{Z_I}{\|\bs{r}_i-\bs{R_I}\|}
 \end{equation}
+the electron-electron repulsion
 \begin{equation}
+    \hat{V}_{e-e} = \sum_{i>j} \frac{1}{\|\bs{r}_j-\bs{r}_i\|}
+\end{equation}
+and finally the nuclear-nuclear repulsion
+\begin{equation}
+    \hat{V}_{n-n} = \sum_{I>J} \frac{Z_IZ_J}{\|\bs{R}_I-\bs{R_J}\|}
+\end{equation}
+Within the Born-Oppenheimer approximation, the last term is a simple additive constant 
+and is usually left out when solving the electronic problem
+\begin{equation}
+    \label{eq:el_schr}
     \hat{H}_{el}\wavefunction_{el} = E_{el}\wavefunction_{el}
 \end{equation}
-\begin{equation}
-    \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = -
-    \wavefunction(\bs{x}_2,\bs{x}_1,\dots,\bs{x}_N)
-\end{equation}
+At the nuclear time scale, the electrons are percieved as a diffuse charge density that is
+able to respond instantaneously to the movement of the nuclei, and molecular rotations and 
+vibrations are described by the nuclear wave function which is influenced by this dynamic
+electron density. In the following, however, we are concerned exclusively with the calculation 
+of the electronic wave function through Eq.~(\ref{eq:el_schr}), where the $el$ subscript 
+henceforth will be dropped.
+
+The particular state $\wavefunction_0$ with the lowest energy $E_0$ is called 
+the electronic ground state of the system and serves special attention in quantum chemistry.
+The reason for this is that for most chemical systems the ground state is the only state
+significantly populated under normal laboratory conditions, and hence, most chemical 
+phenomena can be explained in terms of properties of the electronic ground state. The way to
+calculate the ground state is usually to exploit the variational principle, which states that
+for a given Hamiltonian $H$ with true ground state $\wavefunction_0$, we have, for an arbitrary
+trial wave function $\tilde{\wavefunction}$
 \begin{equation}
     \label{eq:var_princ}
-    \frac{\langle\tilde{\Wavefunction}|\hat{H}|\tilde{\Wavefunction}\rangle}
-    {\langle\tilde{\Wavefunction}|\tilde{\Wavefunction}\rangle}
+    \frac{\langle\tilde{\wavefunction}|\hat{H}|\tilde{\wavefunction}\rangle}
+    {\langle\tilde{\wavefunction}|\tilde{\wavefunction}\rangle}
     \geq
-    \frac{\langle\Wavefunction_0|\hat{H}|\Wavefunction_0\rangle}
-    {\langle\Wavefunction_0|\Wavefunction_0\rangle}
+    \frac{\langle\wavefunction_0|\hat{H}|\wavefunction_0\rangle}
+    {\langle\wavefunction_0|\wavefunction_0\rangle}
 \end{equation}
-\begin{equation}
-    \hat{h}_0 = \sum_{I<J} \frac{Z_IZ_J}{|\bs{R}_I-\bs{R}_J|}
-\end{equation}
+which means that finding the ground state can be regarded as a minimization problem, where
+the trial wave function is varied to the point where the corresponding energy is minimized.
 
 \section{Hartree-Fock Theory}\label{sec:HFT}
-\subsection{Slater determinant}
+The most apparent complication in developing approximate methods for the solution of the 
+electronic Sch\"{o}dinger equation is perhaps the high dimensionality of the problem. For
+a system containing $N$ electrons, the wave function is a $3N$-dimensional scalar function 
+(disregarding spin). The common way to approach such high-dimensional problems is by
+approximating the full $d$-dimensional function in terms of products of functions of lower 
+dimensionality. In chemistry it is convenient to use one-particle function, called spin-orbitals,
+which depend on the coordinates of a single electron
 \begin{equation}
+    \label{eq:orb_exp}
     \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = \sum_m c_m 
 	\orbital_1^m(\bs{x}_1)
 	\orbital_2^m(\bs{x}_2)\cdots
 	\orbital_N^m(\bs{x}_N)
 \end{equation}
+Unfortunately, the convergence of such expansions is not very good, and a large number
+of terms is usually required in order to obtain high accuracy. One way of improving
+the convergence is to include two-particle functions in the expansion. Such approaches,
+known as \emph{explicitly correlated methods}\cite{klopper,valeev}, will not be discussed
+further at this point, and in the following we will use wave functions constructed as a 
+single Slater determinant.
+
+\subsection{Slater determinant}
+Being fermionic, the electronic wave function needs to be anti-symmetric with respect to 
+the exchange of two particles
+\begin{equation}
+    \wavefunction(\bs{x}_1,\bs{x}_2,\bs{x}_3,\dots,\bs{x}_N) = -
+    \wavefunction(\bs{x}_2,\bs{x}_1,\bs{x}_3\dots,\bs{x}_N)
+\end{equation}
+This condition is known as the Pauli exclusion principle\cite{Pauli_princ}, which has the 
+consequence that each fermionic state can only be occupied by one particle. The simplest way
+of constructing a wave function that fulfils the anti-symmetry requirement using one-particle
+spin-orbitals is the Slater determinant\cite{slater}
 \begin{equation}
     \begin{split}
-    \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = 
-    |\orbital_1\orbital_2\cdots\orbital_N\rangle \mydef \frac{1}{\sqrt{N}} 
+    \wavefunction = |\orbital_1\orbital_2\cdots\orbital_N\rangle \mydef \frac{1}{\sqrt{N!}} 
     \left|
     \begin{array}{cccc}
 	\orbital_1(\bs{x}_1)	& \orbital_1(\bs{x}_2)	& \cdots & \orbital_1(\bs{x}_N)\\
@@ -67,112 +161,86 @@ multi-dimensional partial differential equation that determine the wavefunction
     \right|
     \end{split}
 \end{equation}
-\begin{equation}
-    \hat{h}_i = \bigg(-\frac{1}{2}\nabla_i^2
-	-\sum_I \frac{Z_I}{|\bs{r}_i-\bs{R}_I|}\bigg)
-\end{equation}
-\begin{equation}
-    \hat{g}_{ij} = \frac{1}{|\bs{r}_j-\bs{r}_i|}
-\end{equation}
-\begin{equation}
-    \hat{H} = \sum_i \hat{h}_i + \sum_{i<j} \hat{g}_{ij}
-\end{equation}
-The energy of a Slater determinant wave function is evaluated as the expectation value
-of the Hamiltonian, and is given by
+where the spin-orbitals $\orbital_i(\bs{x})$ are orthonormal and can be expressed as a product 
+of a three-dimensional spatial part and a spin part. The energy of such a wave function is 
+evaluated as the expectation value of the Hamiltonian
 \begin{align}
-    E[\wavefunction] &=
-    \langle\orbital_1\orbital_2\cdots\orbital_N|\hat{H}|
-    \orbital_1\orbital_2\cdots\orbital_N\rangle\\
-    &= \sum_{i=1}^N \langle \orbital_i |\hat{h}| \orbital_i \rangle +
-    \frac{1}{2} \sum_{i=1}^N\sum_{j=1}^N \Big(
-    \langle \orbital_i\orbital_j |\hat{g}| \orbital_i\orbital_j\rangle -
-    \langle \orbital_i\orbital_j |\hat{g}| \orbital_j\orbital_i\rangle\Big)
+    E[\wavefunction] 
+	&= \langle\orbital_1\orbital_2\cdots\orbital_N|\hat{H}|
+	\orbital_1\orbital_2\cdots\orbital_N\rangle\\
+	&= \sum_{i=1}^N \langle \orbital_i |\hat{h}| \orbital_i \rangle +
+	\frac{1}{2} \sum_{i=1}^N \sum_{j=1}^N
+	\langle \orbital_i |\hat{J}_j-\hat{K}_j| \orbital_i\rangle
 \end{align}
-where the one- and two-electron integrals are
-\begin{align}
-    \langle \orbital_i|\hat{O}|\orbital_j \rangle &= \int\orbital_i^{\ast}(\bs{x}_1)
-    \hat{O}\orbital_j(\bs{x}_1) \ud \bs{x}_1\\
-    \langle \orbital_i\orbital_j|\hat{O}|\orbital_k\orbital_l \rangle &= \int \int 
-    \orbital_i^{\ast}(\bs{x}_1)\orbital_j^{\ast}(\bs{x}_2)
-    \hat{O}\orbital_k(\bs{x}_1)\orbital_l(\bs{x}_2) \ud \bs{x}_1 \ud \bs{x}_2
-\end{align}
-Introducing the Coulomb $\hat{J}=\sum_i\hat{J}_i$ and exchange $\hat{K}=\sum_i\hat{K}_i$
-operators, which are defined through their action on an arbitrary function $f$ 
-\begin{align}
-    \hat{J}_j f(\bs{x}_1) &= \bigg(\int \frac{\orbital_j^{\ast}(\bs{x}_2)\orbital_j(\bs{x}_2)}
-	{\|\bs{r}_2-\bs{r}_1\|}\ud\bs{x}_2\bigg) f(\bs{x}_1)\\
-    \hat{K}_j f(\bs{x}_1) &= \bigg(\int \frac{\orbital_j^{\ast}(\bs{x}_2)f(\bs{x}_2)}
-	{\|\bs{r}_2-\bs{r}_1\|}\ud\bs{x}_2\bigg) \orbital_j(\bs{x}_1)
-\end{align}
-we arrive at the expression for the total electronic energy of a Slater determinant
+where we have defined the one-electron operator
 \begin{equation}
-    E[\wavefunction] = 
-    \sum_{i=1}^N \langle \orbital_i |\hat{h}| \orbital_i \rangle +
-    \frac{1}{2} \sum_{i=1}^N 
-    \langle \orbital_i |\hat{J}-\hat{K}| \orbital_i\rangle
+    \hat{h}\orbital_i(\bs{x}) = \bigg(-\frac{1}{2}\nabla^2 - \sum_I\frac{Z_I}{\|\bs{r}-\bs{R}_I\|}\bigg)
+	\orbital_i(\bs{x})
 \end{equation}
-The Hartree-Fock energy $E_{HF}$ is obtained by minimizing the energy with respect 
+as well as the Coulomb $\hat{J}_j$ and exchange $\hat{K}_j$ operators
+\begin{align}
+    \hat{J}_j \orbital_i(\bs{x}) &= \bigg(\int \frac{\orbital_j^{\ast}(\bs{x}')\orbital_j(\bs{x}')}
+	{\|\bs{r}-\bs{r}'\|}\ud\bs{x}'\bigg) \orbital_i(\bs{x})\\
+    \hat{K}_j \orbital_i(\bs{x}) &= \bigg(\int \frac{\orbital_j^{\ast}(\bs{x}')\orbital_i(\bs{x}')}
+	{\|\bs{r}-\bs{r}'\|}\ud\bs{x}'\bigg) \orbital_j(\bs{x})
+\end{align}
+where it is important to note that the integration is over space \emph{and} spin coordinates,
+which means that the exchange operator is zero if the spin of orbitals $i$ and $j$ differ. 
+The Coulomb operator, on the other hand, in non-vanishing for all spin-orbitals.
+
+\subsection{The Hartree-Fock equations}
+The best approximation to the ground state in terms of a \emph{single} Slater determinant is 
+called the Hartree-Fock wave function, and is obtained by minimizing the energy with respect 
 to orbital variations
 \begin{equation}
-    E_{HF} = \mymin{\wavefunction}\ E[\wavefunction]
+    E_0 = \mymin{\wavefunction}\ E[\wavefunction]
 \end{equation}
-following the variational principle of Eq.~(\ref{eq:var_princ}), under the constraint 
-that the orbitals remain orthonormal $\langle\orbital_i|\orbital_j\rangle = \delta_{ij}$.
+following the variational principle of Eq.~(\ref{eq:var_princ}). By imposing the constraint 
+that the orbitals remain orthonormal $\langle\orbital_i|\orbital_j\rangle = \delta_{ij}$
+by means of Lagrange multipliers, we arrive at the Hartree-Fock equations
+\begin{equation}
+    \hat{F}\orbital_i(\bs{x}) = \epsilon_i \orbital_i(\bs{x})
+\end{equation}
+where the Fock operator is given as
+\begin{equation}
+    \hat{F} = \hat{h} + \sum_j^N \Big(\hat{J}_j - \hat{K}_j\Big)
+\end{equation}
+The Hartree-Fock wave function is then obtained as the Slater determinant constructed by 
+the $N$ lowest energy eigenfunctions $\orbital_i$ of the Fock operator.
 
-\subsection{Hartree-Fock equations}
-\begin{equation}
-    \orbital_i^\sigma(\bs{r},s) = \orbital_i(\bs{r})\sigma(s), \qquad \sigma = \alpha, \beta
-\end{equation}
-\begin{equation}
-    \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = 
-    |\orbital_1^\alpha\cdots\orbital_{N/2}^\alpha\orbital_1^\beta\cdots\orbital_{N/2}^\beta\rangle
-\end{equation}
-The Hamiltonian for a closed-shell system is 
-\begin{equation}
-    \hat{F}_{HF} = \hat{h} + \sum_j^{N/2} \Big(2\hat{J}_j - \hat{K}_j\Big)
-\end{equation}
-and is usually referred to as the Fock operator.
+Some of the terms included in the Fock operator can be expressed as multiplicative
+potentials instead of operators. The core Hamiltonian $\hat{h}$ includes the scalar 
+electrostatic potential arising from the nuclear charges
 \begin{equation}
     v_{nuc}(\bs{r}) = \sum_{I} \frac{Z_I}{\|\bs{r} - \bs{R}_I\|}
 \end{equation}
+and the sum of the Coulomb operators is nothing but the scalar electrostatic potential
+arising from all electrons of the system
 \begin{equation}
-    v_{el}(\bs{r}) = \sum_j^{N/2} 2\hat{J}_j = 2 \sum_j^{N/2} \int \frac{|\orbital_j(\bs{r}')|^2}
-	{\|\bs{r} - \bs{r}'\|} \ud \bs{r}'
+    v_{el}(\bs{r}) = \sum_j^N \hat{J}_j = \sum_j^N \int \frac{|\orbital_j(\bs{x}')|^2}
+	{\|\bs{r} - \bs{r}'\|} \ud \bs{x}'
 \end{equation}
+If we now collect the sum of exchange operators into a single operator
 \begin{equation}
-    \hat{K}\orbital_i(\bs{r}) = \sum_j^{N/2} \hat{K}_j \orbital_i(\bs{r}) 
-	= \sum_j^{N/2} \orbital_j (\bs{r}) \int \frac{\orbital_j^{\ast}(\bs{r}')\orbital_i(\bs{r}')}
-	    {\|\bs{r} - \bs{r}'\|} \ud \bs{r}'
+    \hat{K}\orbital_i(\bs{x}) = \sum_j^N \hat{K}_j \orbital_i(\bs{x}) 
+	= \sum_j^N \orbital_j (\bs{x}) \int \frac{\orbital_j^{\ast}(\bs{x}')\orbital_i(\bs{x}')}
+	    {\|\bs{r} - \bs{r}'\|} \ud \bs{x}'
 \end{equation}
-leads to the canonical Hartree-Fock equations
+we can write the Hartree-Fock equations as
 \begin{equation}
-    \Big[-\frac{1}{2}\nabla^2 + v_{nuc}(\bs{r}) + v_{el}(\bs{r}) - \hat{K}\Big]\orbital_i(\bs{r}) 
-	= \epsilon_i \orbital_i(\bs{r})
+    \label{eq:HF_equations}
+    \Big[-\frac{1}{2}\nabla^2 + v_{nuc}(\bs{r}) + v_{el}(\bs{r}) - \hat{K}\Big]\orbital_i(\bs{x}) 
+	= \epsilon_i \orbital_i(\bs{x})
 \end{equation}
-where the Hartree-Fock wave function is the Slater determinant constructed from the $N/2$ lowest
-energy eigenfunctions of the Fock operator, each appearing twice ($\alpha$ and $\beta$ spins).
-
-\subsection{Spin-unrestricted Hartree-Fock}
-\begin{equation}
-    v_{el}(\bs{r}) = v_{el}^\alpha (\bs{r}) + v_{el}^\beta (\bs{r})
-\end{equation}
-The exchange operator runs over all orbitals of a given spin
-\begin{equation}
-    \hat{K}^\sigma\orbital_i^\sigma(\bs{r}) 
-	= \sum_j^{N_\sigma} \orbital_j^\sigma (\bs{r}) 
-	    \int \frac{\orbital_j^{\sigma\ast}(\bs{r}')\orbital_i^\sigma(\bs{r}')}
-	    {\|\bs{r} - \bs{r}'\|} \ud \bs{r}', \qquad \sigma = \alpha, \beta
-\end{equation}
-\begin{equation}
-    \hat{F}_{HF}^\sigma = -\frac{1}{2}\nabla^2 + v_{nuc}(\bs{r}) + v_{el}(\bs{r}) - \hat{K}^\sigma 
-\end{equation}
-and the unrestricted wave function is the determinant constructed by the $N_\alpha$ and 
-$N_\beta$ lowest energy eigenfunctions of the operators $\hat{F}_{HF}^\alpha$ and 
-$\hat{F}_{HF}^\beta$, respectively
-\begin{equation}
-    \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = 
-    |\orbital_1^\alpha\cdots\orbital_{N_\alpha}^\alpha\orbital_1^\beta\cdots\orbital_{N_\beta}^\beta\rangle
-\end{equation}
+As both the electronic potential $v_{el}$ and the exchange operator $\hat{K}$ depend on the set of
+occupied orbitals, we have a set of coupled non-linear differential equations that needs to
+be solved iteratively until we have a self-consistent solution. The main deficiancy of such
+a Self-Consistent Field (SCF) approximation is that each electron only interacts with the average field
+created by the other electrons. While this is a good approximation for the electron's interaction
+with the slow moving nuclei, the instantaneous correlation is much more important between two electrons,
+and needs to be taken into account if high precision is required. There exists several post-Hartree-Fock
+methods that model this missing correlation energy, including configuration interaction and coupled-cluster
+theory, but these will not be discussed in this thesis.
 
 \section{Density Functional Theory} \label{sec:DFT}
 \begin{equation}
@@ -392,7 +460,7 @@ $\epsilon_i$ (or in general, the Fock matrix $F_{ij}$ in a non-canonical solutio
 these to calculate the electronic energy of the molecular system. In addition we have the
 constant nuclear repulsion energy
 \begin{equation}
-    E_{nuc} = \sum_{I>J} \frac{Z_IZ_J}{\|\bs{R}_I-\bs{R}_J\|}
+    \hat{V}_{n-n} = \sum_{I>J} \frac{Z_IZ_J}{\|\bs{R}_I-\bs{R}_J\|}
 \end{equation}
 The goal of this section is to rewrite the expressions given above into something better 
 suited for evaluation in the multiwavelet framework. In particular this means to avoid
@@ -406,10 +474,10 @@ number of orbitals
 \begin{align}
     E	&= f \sum_i \langle \orbital_i|\hat{h}|\orbital_i \rangle
 	    + \frac{f}{2} \sum_i \langle \orbital_i|f\hat{J} - \hat{K}|\orbital_i \rangle\\
-	&= f \sum_i \langle \orbital_i|T|\orbital_i \rangle
+	&= f \sum_i \langle \orbital_i|\hat{T}|\orbital_i \rangle
 	    + f \sum_i \langle \orbital_i|v_{nuc}|\orbital_i \rangle
 	    + \frac{f}{2} \sum_i \langle \orbital_i|v_{el} - \hat{K}|\orbital_i \rangle \\
-	&= f \sum_i \langle \orbital_i|T - \frac{1}{2}\hat{K}|\orbital_i \rangle
+	&= f \sum_i \langle \orbital_i|\hat{T} - \frac{1}{2}\hat{K}|\orbital_i \rangle
 	    + \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud\bs{r}
 	    + \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
 \end{align}
@@ -438,7 +506,7 @@ The energy in Kohn-Sham DFT was given through the energy functionals in Eq.~(\re
     E[\rho] = T_s[\rho] + V_{en}[\rho] + J[\rho] + E_{xc}[\rho]
 \end{equation}
 \begin{equation}
-    E = f \sum_i \langle \orbital_i|T|\orbital_i \rangle
+    E = f \sum_i \langle \orbital_i|\hat{T}|\orbital_i \rangle
 	+ \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud\bs{r}
 	+ \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
 	+ \int F_{xc} \ud\bs{r}
