@@ -188,22 +188,23 @@ general, the Krylov update will not conserve the norm of the orbital, so an
 additional normalization step should be added at this point.
 
 \subsection{Algorithms}
-%\begin{algorithm}
-\begin{alltt}
-01 Given initial orbital \(\varphi\sp{0}\) and energy \(E\sp{0}\)
-02 loop1: while \(\varepsilon > \) threshold
-02     Construct Helmholtz operator \(\hat{H}\sp{n}\sb{\mu}\) using \(\mu = \sqrt{-2E\sp{n}}\)
-03     Multiply orbital \(\varphi\sp{n}\) with potential
-04     Apply Helmholtz operator Eq.(\ref{eq:helmholtz})
-05     Calculate orbital update \(\Delta\tilde{\varphi}\sp{n} = \tilde{\varphi}\sp{n+1}-\varphi\sp{n}\)
-11     Calculate orbtial error \(\varepsilon^2 = \|\Delta\tilde{\varphi}\sp{n}\|\) 
-06     Calculate energy update \(\Delta{E}\sp{n}\) from Eq.(\ref{eq:energy_update})
-07     Calculate KAIN updates \(\delta\tilde{\varphi}\sp{n}\) and \(\delta{E}\sp{n}\) from Eq.(\ref{KAIN_update}) 
-08     Update orbital \(\tilde{\varphi}\sp{n+1} = \varphi\sp{n} + \delta\tilde{\varphi}\sp{n}\)
-09     Update energy \(E\sp{n+1} = E\sp{n}+\delta{E}\sp{n}\)
-10     Normalize orbital \(\varphi\sp{n+1} = \tilde{\varphi}\sp{n+1}/\|\tilde{\varphi}\sp{n+1}\|\)
-11 end loop
-\end{alltt}
+\begin{algorithm}
+\begin{algorithmic}[1]
+\STATE Given initial orbital $\orbital^0$ and energy $E^0$
+\WHILE {$\varepsilon >$ threshold}
+    \STATE Construct Helmholtz operator $\hat{H}^{\mu}$ using $\mu = \sqrt{-2E^n}$
+    \STATE Multiply orbital $\orbital^n$ with potential
+    \STATE Apply Helmholtz operator Eq.(\ref{eq:helmholtz})
+    \STATE Calculate orbital update $\Delta\tilde{\orbital}^n = \tilde{\orbital}^{n+1}-\orbital^n$
+    \STATE Calculate orbtial error $\varepsilon^2 = \|\Delta\tilde{\orbital}n\|$ 
+    \STATE Calculate energy update $\Delta{E}^n$ from Eq.(\ref{eq:energy_update})
+    \STATE Calculate KAIN updates $\delta\tilde{\orbital}^n$ and $\delta{E}^n$ from Eq.(\ref{KAIN_update}) 
+    \STATE Update orbital $\tilde{\orbital}^{n+1} = \orbital^n + \delta\tilde{\orbital}^n$
+    \STATE Update energy $E^{n+1} = E^n+\delta{E}^n$
+    \STATE Normalize orbital $\orbital^{n+1} = \tilde{\orbital}^{n+1}/\|\tilde{\orbital}^{n+1}\|$
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
 
 There are two important things to note with the KAIN solver when there is more 
 than one orbital. Firstly, as the orbital energies are updated in each iteration, 
@@ -223,28 +224,31 @@ although this is not strictly necessary to achieve convergence.
  
 With these extensions, the optimization algorithm for many-electron systems 
 are as follows 
-\begin{alltt}
-01 Given initial orbitals \(\varphi\sb{i}\sp{0}\) and energies \(\epsilon\sb{i}\sp{0}\) (assuming diagonal KS matrix)
-02 loop1: while \(\varepsilon > \) threshold
-03     Calculate electron density Eq.(\ref{eq:molDens})
-04     Calculate effective potential Eq.(\ref{eq:effPot})
-05     loop2: for each orbital \(i = 1,...,N\)
-06         Construct Helmholtz operator \(\hat{H}\sp{n}\sb{\mu}\) using \(\mu = \sqrt{-2\epsilon\sb{i}\sp{n}}\)
-07         Multiply orbital \(\varphi\sb{i}\sp{n}\) with effective potential
-08         Apply Helmholtz operator Eq.(\ref{eq:helmholtz})
-09         Calculate orbital update \(\Delta\tilde{\varphi}\sb{i}\sp{n} = \tilde{\varphi}\sb{i}\sp{n+1}-\varphi\sb{i}\sp{n}\)
-10     end loop2
-11     Calculate orbtial error \(\varepsilon\sp{2} = \sum\sb{i} \|\Delta\tilde{\varphi}\sb{i}\sp{n+1}\|\) 
-12     Calculate effective potential update
-13     Calculate KS matrix update from Eq.(\ref{eq:KS_update})
-14     Diagonalize KS matrix
-15     Rotate KAIN history
-16     Calculate KAIN updates \(\delta\tilde{\varphi}\sb{i}\sp{n+1}\) and \(\delta{\epsilon}\sb{i}\sp{n+1}\) from Eq.(\ref{KAIN_update}) 
-17     Update orbitals \(\tilde{\varphi}\sb{i}\sp{n+1} = \varphi\sb{i}\sp{n} + \delta\tilde{\varphi}\sb{i}\sp{n}\)
-18     Update energies \(\epsilon\sb{i}\sp{n+1} = \epsilon\sb{i}\sp{n} + \delta{\epsilon}\sb{i}\sp{n}\)
-19     Orthonormalize orbitals (Gram-Schmidt)
-20 end loop1
-\end{alltt}
+
+\begin{algorithm}
+\begin{algorithmic}[1]
+\STATE Given initial orbitals $\orbital_i^0$ and energies $\epsilon_i^0$ (assuming diagonal KS matrix)
+\WHILE {$\varepsilon >$ threshold}
+    \STATE Calculate electron density Eq.(\ref{eq:molDens})
+    \STATE Calculate effective potential Eq.(\ref{eq:effPot})
+    \FOR{each orbital $i = 1,...,N$}
+	\STATE Construct Helmholtz operator $\hat{H}^{\mu}$ using $\mu = \sqrt{-2\epsilon_i^n}$
+	\STATE Multiply orbital $\orbital_i^n$ with effective potential
+	\STATE Apply Helmholtz operator Eq.(\ref{eq:helmholtz})
+	\STATE Calculate orbital update $\Delta\tilde{\orbital}_i^n = \tilde{\orbital}_i^{n+1}-\orbital_i^n$
+    \ENDFOR
+    \STATE Calculate orbital error $\varepsilon^2 = \sum_i \|\Delta\tilde{\orbital}_i^{n+1}\|$
+    \STATE Calculate effective potential update
+    \STATE Calculate KS matrix update from Eq.(\ref{eq:KS_update})
+    \STATE Diagonalize KS matrix
+    \STATE Rotate KAIN history
+    \STATE Calculate KAIN updates $\delta\tilde{\orbital}_i^{n+1}$ and $\delta{\epsilon}_i^{n+1}$ from Eq.(\ref{KAIN_update}) 
+    \STATE Update orbitals $\tilde{\orbital}_i^{n+1} = \orbital_i^n + \delta\tilde{\orbital}_i^n$
+    \STATE Update energies $\epsilon_i^{n+1} = \epsilon_i^n + \delta{\epsilon}_i^n$
+    \STATE Orthonormalize orbitals (Gram-Schmidt)
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
 
 \pagebreak
 

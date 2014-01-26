@@ -1,3 +1,6 @@
+%TODO Discuss chemical accuracy in relation to HF and KS approximations as well as basis sets
+%TODO Mention DFAs at the end of exchange-correlation subsection
+%TODO AOs ideal for fast qualitative numbers, struggle with high-accuracy calculations
 \chapter{Electronic structure theory}
 In this chapter we present the equations that govern chemical systems, in particular
 the electronic stucture of atoms and molecules. At the molecular length scale, nature
@@ -11,15 +14,14 @@ a work that has been given invaluable support by the remarkable increase in
 computational power that has taken place since the advent of the electronic computer 
 more than halv a century ago.
 
-This chapter will give an introduction to the Self-Consistent Field (SCF)
-approximations that are commonly employed in computational chemistry. We will start with a
-traditional presentation of the orbital based methods of Hartree-Fock and Kohn-Sham 
-Density Functional Theory, where the aim of the chapter
-is to rewrite the equations into their less familiar integral formulation,
-a formulation much better suited for the treatment in the multiwavelet framework 
-presented in chapter \ref{chap:math}. Algorithms for how to solve these equations
-using the mathematical tools as implemented in chapter \ref{chap:implementation} 
-is the topic of publication 3.
+This chapter will give an introduction to the Self-Consistent Field (SCF) approximations 
+that are commonly employed in computational chemistry. We will start with a traditional 
+presentation of the orbital based methods of Hartree-Fock and Kohn-Sham Density Functional 
+Theory, where the aim of the chapter is to rewrite the equations into their less familiar 
+integral form, a formulation much better suited for the treatment in the multiwavelet 
+framework presented in chapter \ref{chap:math}. Algorithms for how to solve these equations 
+using the mathematical tools as implemented in chapter \ref{chap:implementation} is the 
+topic of publication 3.
 
 \section{The molecular Schr\"{o}dinger equation}\label{sec:schrodinger}
 The physical state of a quantum system influenced by potentials that do not change
@@ -39,7 +41,8 @@ each corresponding to a possible state of the system.
 
 The wave function contains all the information that can possibly be extracted from the 
 physical system. For each physical observable $\Omega$ there is an associated mathematical 
-operator $\hat{\Omega}$, such that the expected value of an experimental measurement is given by
+operator $\hat{\Omega}$, such that the expectation value of an experimental measurement is 
+given by
 \begin{equation}
     \langle \hat{\Omega}\rangle = \frac{\langle\Wavefunction|\hat{\Omega}|\Wavefunction\rangle}
     {\langle\Wavefunction|\Wavefunction\rangle}
@@ -49,7 +52,7 @@ wave function by solving the Schr\"{o}dinger equation (\ref{eq:mol_schr}). For a
 the Hamiltonian contains kinetic $\hat{T}$ and potential $\hat{V}$ energy of the 
 electrons and nuclei that make up the system
 \begin{equation}
-    \hat{H} = \hat{T}_{nuc} + \hat{T}_{el} + \hat{V}_{n-n} + \hat{V}_{e-e} + \hat{V}_{n-e}
+    \hat{H} = \hat{T}_{nuc} + \hat{T}_{el} + \hat{V}_{nn} + \hat{V}_{ee} + \hat{V}_{ne}
 \end{equation}
 Analytical solutions exists only for the one- and two-particle problems, and approximations are
 inevitable if we want to be able to treat more interresting chemical systems. 
@@ -64,7 +67,7 @@ instantaneous correlation between the electrons and the nuclei, and we can separ
 kinetic energy from an electronic Hamiltonian
 \begin{align}
     \hat{H} &= \hat{T}_{nuc} + \hat{H}_{el}\\
-    \hat{H}_{el} &= \hat{T}_{el} + \hat{V}_{n-e} + \hat{V}_{e-e} + \hat{V}_{n-n}
+    \hat{H}_{el} &= \hat{T}_{el} + \hat{V}_{ne} + \hat{V}_{ee} + \hat{V}_{nn}
 \end{align}
 In atomic units\footnote{$e=m_e=\hbar=4\pi\epsilon_0=1$}, using uppercase indices for the
 nuclei and lowercase indices for the electrons, we have the electron kinetic energy
@@ -73,15 +76,15 @@ nuclei and lowercase indices for the electrons, we have the electron kinetic ene
 \end{equation}
 the electron-nuclear attraction
 \begin{equation}
-    \hat{V}_{n-e} = -\sum_{i,I} \frac{Z_I}{\|\bs{r}_i-\bs{R_I}\|}
+    \hat{V}_{ne} = -\sum_{i,I} \frac{Z_I}{\|\bs{r}_i-\bs{R_I}\|}
 \end{equation}
 the electron-electron repulsion
 \begin{equation}
-    \hat{V}_{e-e} = \sum_{i>j} \frac{1}{\|\bs{r}_j-\bs{r}_i\|}
+    \hat{V}_{ee} = \sum_{i>j} \frac{1}{\|\bs{r}_j-\bs{r}_i\|}
 \end{equation}
 and finally the nuclear-nuclear repulsion
 \begin{equation}
-    \hat{V}_{n-n} = \sum_{I>J} \frac{Z_IZ_J}{\|\bs{R}_I-\bs{R_J}\|}
+    \hat{V}_{nn} = \sum_{I>J} \frac{Z_IZ_J}{\|\bs{R}_I-\bs{R_J}\|}
 \end{equation}
 Within the Born-Oppenheimer approximation, the last term is a simple additive constant 
 and is usually left out when solving the electronic problem
@@ -102,7 +105,7 @@ The reason for this is that for most chemical systems the ground state is the on
 significantly populated under normal laboratory conditions, and hence, most chemical 
 phenomena can be explained in terms of properties of the electronic ground state. The way to
 calculate the ground state is usually to exploit the variational principle, which states that
-for a given Hamiltonian $H$ with true ground state $\wavefunction_0$, we have, for an arbitrary
+for a given Hamiltonian $\hat{H}$ with true ground state $\wavefunction_0$, we have for an arbitrary
 trial wave function $\tilde{\wavefunction}$
 \begin{equation}
     \label{eq:var_princ}
@@ -121,8 +124,8 @@ electronic Sch\"{o}dinger equation is perhaps the high dimensionality of the pro
 a system containing $N$ electrons, the wave function is a $3N$-dimensional scalar function 
 (disregarding spin). The common way to approach such high-dimensional problems is by
 approximating the full $d$-dimensional function in terms of products of functions of lower 
-dimensionality. In chemistry it is convenient to use one-particle function, called spin-orbitals,
-which depend on the coordinates of a single electron
+dimensionality. In chemistry it is convenient to use one-particle functions $\orbital_i$, 
+called spin-orbitals, which depend on the coordinates of a single electron
 \begin{equation}
     \label{eq:orb_exp}
     \wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N) = \sum_m c_m 
@@ -134,7 +137,7 @@ Unfortunately, the convergence of such expansions is not very good, and a large 
 of terms is usually required in order to obtain high accuracy. One way of improving
 the convergence is to include two-particle functions in the expansion. Such approaches,
 known as \emph{explicitly correlated methods}\cite{klopper,valeev}, will not be discussed
-further at this point, and in the following we will use wave functions constructed as a 
+further in this thesis, and in the following we will use wave functions constructed as a 
 single Slater determinant.
 
 \subsection{Slater determinant}
@@ -195,47 +198,56 @@ to orbital variations
 \begin{equation}
     E_0 = \mymin{\wavefunction}\ E[\wavefunction]
 \end{equation}
-following the variational principle of Eq.~(\ref{eq:var_princ}). By imposing the constraint 
-that the orbitals remain orthonormal $\langle\orbital_i|\orbital_j\rangle = \delta_{ij}$
-by means of Lagrange multipliers, we arrive at the Hartree-Fock equations
+following the variational principle of Eq.~(\ref{eq:var_princ}). 
+In the following we will assume that we have a closed-shell system, so that the $N$ electrons
+are grouped into $N/2$ pairs sharing the same spatial function, but with opposite spins
 \begin{equation}
-    \hat{F}\orbital_i(\bs{x}) = \epsilon_i \orbital_i(\bs{x})
+    \orbital_i^\sigma(\bs{x}) = \orbital_i(\bs{r})\sigma(s), \qquad \sigma = \alpha,\beta
+\end{equation}
+By imposing the constraint 
+that the space orbitals remain orthonormal $\langle\orbital_i|\orbital_j\rangle = \delta_{ij}$
+by means of Lagrange multipliers, the energy minimization yields the Hartree-Fock equations
+\begin{equation}
+    \hat{F}\orbital_i(\bs{r}) = \epsilon_i \orbital_i(\bs{r})
 \end{equation}
 where the Fock operator is given as
 \begin{equation}
-    \hat{F} = \hat{h} + \sum_j^N \Big(\hat{J}_j - \hat{K}_j\Big)
+    \hat{F} = \hat{h} + \sum_j^{N/2} \Big(2\hat{J}_j - \hat{K}_j\Big)
 \end{equation}
-The Hartree-Fock wave function is then obtained as the Slater determinant constructed by 
-the $N$ lowest energy eigenfunctions $\orbital_i$ of the Fock operator.
-
+The (restricted) Hartree-Fock wave function is then obtained as the Slater determinant constructed 
+by the $N/2$ lowest energy eigenfunctions $\orbital_i$ of the Fock operator, each appearing 
+twice with paired spins
+\begin{equation}
+    \wavefunction = |\orbital_1^\alpha\orbital_1^\beta\cdots\orbital_{N/2}^\alpha\orbital_{N/2}^\beta\rangle
+\end{equation}
 Some of the terms included in the Fock operator can be expressed as multiplicative
 potentials instead of operators. The core Hamiltonian $\hat{h}$ includes the scalar 
 electrostatic potential arising from the nuclear charges
 \begin{equation}
     v_{nuc}(\bs{r}) = \sum_{I} \frac{Z_I}{\|\bs{r} - \bs{R}_I\|}
 \end{equation}
-and the sum of the Coulomb operators is nothing but the scalar electrostatic potential
-arising from all electrons of the system
+and the sum of the Coulomb operators is the potential arising from all electrons of the system
 \begin{equation}
-    v_{el}(\bs{r}) = \sum_j^N \hat{J}_j = \sum_j^N \int \frac{|\orbital_j(\bs{x}')|^2}
-	{\|\bs{r} - \bs{r}'\|} \ud \bs{x}'
+    v_{el}(\bs{r}) = \sum_j^{N/2} 2\hat{J}_j = 2 \sum_j^{N/2} \int \frac{|\orbital_j(\bs{r}')|^2}
+	{\|\bs{r} - \bs{r}'\|} \ud \bs{r}'
 \end{equation}
-If we now collect the sum of exchange operators into a single operator
+If we now collect the exchange operators into a single operator
 \begin{equation}
-    \hat{K}\orbital_i(\bs{x}) = \sum_j^N \hat{K}_j \orbital_i(\bs{x}) 
-	= \sum_j^N \orbital_j (\bs{x}) \int \frac{\orbital_j^{\ast}(\bs{x}')\orbital_i(\bs{x}')}
-	    {\|\bs{r} - \bs{r}'\|} \ud \bs{x}'
+    \label{eq:HF_exchange}
+    \hat{K}\orbital_i(\bs{r}) = \sum_j^{N/2} \hat{K}_j \orbital_i(\bs{r}) 
+	= \sum_j^{N/2} \orbital_j (\bs{r}) \int \frac{\orbital_j^{\ast}(\bs{r}')\orbital_i(\bs{r}')}
+	    {\|\bs{r} - \bs{r}'\|} \ud \bs{r}'
 \end{equation}
 we can write the Hartree-Fock equations as
 \begin{equation}
     \label{eq:HF_equations}
-    \Big[-\frac{1}{2}\nabla^2 + v_{nuc}(\bs{r}) + v_{el}(\bs{r}) - \hat{K}\Big]\orbital_i(\bs{x}) 
-	= \epsilon_i \orbital_i(\bs{x})
+    \Big[-\frac{1}{2}\nabla^2 + v_{nuc}(\bs{r}) + v_{el}(\bs{r}) - \hat{K}\Big]\orbital_i(\bs{r}) 
+	= \epsilon_i \orbital_i(\bs{r})
 \end{equation}
 As both the electronic potential $v_{el}$ and the exchange operator $\hat{K}$ depend on the set of
-occupied orbitals, we have a set of coupled non-linear differential equations that needs to
+occupied orbitals, we have a set of coupled non-linear differential equations that need to
 be solved iteratively until we have a self-consistent solution. The main deficiancy of such
-a Self-Consistent Field (SCF) approximation is that each electron only interacts with the average field
+a self-consistent field (SCF) approximation is that each electron only interacts with the average field
 created by the other electrons. While this is a good approximation for the electron's interaction
 with the slow moving nuclei, the instantaneous correlation is much more important between two electrons,
 and needs to be taken into account if high precision is required. There exists several post-Hartree-Fock
@@ -243,69 +255,107 @@ methods that model this missing correlation energy, including configuration inte
 theory, but these will not be discussed in this thesis.
 
 \section{Density Functional Theory} \label{sec:DFT}
+We have seen that the main computational challenge in solving the Schr\"{o}dinger equation is its high
+dimensionality, and that by introducing one-particle orbitals the $3N$-dimensional differential equation
+can be separated into $N$ ($N/2$ for a closed-shell system) coupled three-dimensional equations. Hohenberg 
+and Kohn\cite{Hohenberg-Kohn:1964} 
+showed that the complexity can be reduced even further by proving that the only quantity that is really
+needed in order to determine the system uniquely is the three-dimensional electron density
 \begin{equation}
     \rho(\bs{r}_1) = N \int |\wavefunction(\bs{x}_1,\bs{x}_2,\dots,\bs{x}_N)|^2 
 	\ud s_1 \ud \bs{x}_2 \cdots \ud \bs{x}_N
 \end{equation}
+and that the true energy of the system can be expressed in terms of a universal energy functional
 \begin{equation}
     E[\rho] = T[\rho] + V_{ne}[\rho] + V_{ee}[\rho]
 \end{equation}
-\begin{align}
-    V_{ne}[\rho] &= \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud \bs{r}\\
-    F[\rho] &= T[\rho] + V_{ee}[\rho]
-\end{align}
+where the ground state density can be obtained by minimizing the energy
 \begin{equation}
     E_0 = \mymin{\rho}\ E[\rho]
 \end{equation}
 with the constraints that the density is everywhere positive and integrates to the number
-of electrons.
+of electrons. Within the Born-Oppenheimer approximation the electron-nuclear interaction
+energy is known as the classical electrostatic energy between charge densities
+\begin{equation}
+    V_{ne}[\rho] = \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud \bs{r}
+\end{equation}
+but the functional form of the kinetic and electron-electron energies are not known for quantum
+mechanical densities (as we have seen in the previous section, the quantum mechanical interaction 
+between electrons includes both exchange and correlation energy, in addition to the classical
+electrostatic interaction), and the fundamental problem in density functional theory 
+(DFT) is to find good approximations for these energy functionals, either based on theoretical 
+considerations, or semi-empirically by fitting parameters to experimental data.
 
-\subsection{Kohn-Sham equations}
+\subsection{The Kohn-Sham equations}
+The idea of DFT appears to be very attractive, as we only need to solve one three-dimensional equation
+for the electron density. However, it turns out to be very difficult to find good approximations
+for the kinetic energy functional, and according to the virial theorem this energy is of the order of 
+the total energy of the system, and thus needs to be accurately represented. To circumvent this 
+problem, Kohn and Sham\cite{Kohn-Sham:1965} proposed to express the density in terms of one-particle functions,
+assuming a closed shell system and double occupancy
 \begin{equation}
     \rho(\bs{r}) = 2 \sum_i^{N/2} | \orbital_i(\bs{r})|^2
 \end{equation}
+thus reintroducing the orbital notion of Hartree-Fock theory. The motivation behind this is that the
+kinetic energy is known for a set of (non-interacting) orbitals as
 \begin{equation}
-    F[\rho] = T_s[\rho] + J[\rho] + E_{xc}[\rho]
+    T_s[\rho] = 2 \sum_i^{N/2} \langle \orbital_i | -\frac{1}{2}\nabla^2 | \orbital_i \rangle
 \end{equation}
+However, this is not equal to the real kinetic energy of the (interacting) system, and we are missing
+a small part of the total energy $T[\rho] - T_s[\rho]$. We can similarly extract the known classical 
+part from the density's interaction with itself
 \begin{equation}
-    T_s[\rho] = \sum_i^{N/2} \langle \orbital_i | -\frac{1}{2}\nabla^2 | \orbital_i \rangle
+    J[\rho] = \frac{1}{2}\int\int\frac{\rho(\bs{r})\rho(\bs{r}')}{\|\bs{r}-\bs{r}'\|} \ud\bs{r}\ud\bs{r}' 
+	= \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud \bs{r}
 \end{equation}
-\begin{equation}
-    J[\rho] = \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud \bs{r}
-\end{equation}
+where again we are missing a small part of the total energy $V_{ee}[\rho] - J[\rho]$. The custom in
+Kohn-Sham theory is now to collect the missing parts into a single exchange-correlation functional
 \begin{equation}
     E_{xc}[\rho] = T[\rho] - T_s[\rho] + V_{ee}[\rho] - J[\rho]
 \end{equation}
+and we get the total Kohn-Sham energy expressed as
 \begin{equation}
     \label{eq:KS-energy}
     E[\rho] = T_s[\rho] + V_{en}[\rho] + J[\rho] + E_{xc}[\rho]
 \end{equation}
-leads to the Euler equation
+Minimizing this energy expression with respect to the density leads to the Euler equation
 \begin{equation}
+    \label{eq:KS-euler}
     \mu = \frac{\delta T_s[\rho]}{\delta \rho(\bs{r})} + v_{eff}(\bs{r})
 \end{equation}
 where the chemical potential $\mu$ is a Lagrange multiplier that fixes the number of 
-electrons and the effective potential is given by
+electrons, and the effective potential is given as functional derivatives
 \begin{align}
     v_{eff}(\bs{r}) 
 	&= \frac{\delta V_{en}[\rho]}{\delta \rho(\bs{r})}
 	+ \frac{\delta J[\rho]}{\delta \rho(\bs{r})}
 	+ \frac{\delta E_{xc}[\rho]}{\delta \rho(\bs{r})}\\
+	\label{eq:effective_pot}
 	&= v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}(\bs{r})
 \end{align}
-The Fock operator for the system of non-interacting electrons influenced by an effective
-potential is given simply as
+The Euler equation (\ref{eq:KS-euler}) describes a system of non-interacting electrons moving in an 
+effective potential $v_{eff}$, and the Hamiltonian for such a system is given trivially as
 \begin{equation}
-    \hat{F}_{KS} = -\sum_i^{N/2} \frac{1}{2}\nabla_i^2 + \sum_i^{N/2} v_{eff}(\bs{r}_i)
+    \hat{H} = -\sum_i^{N/2} \frac{1}{2}\nabla_i^2 + \sum_i^{N/2} v_{eff}(\bs{r}_i)
 \end{equation}
-and is also called the Kohn-Sham operator. As there are no couplings between the electrons, 
-this operator is separable, and the exact wave function is given by a single determinant 
-constructed by the $N/2$ lowest energy eigenfunctions of the Kohn-Sham operator
+This operator is separable and the exact wave function is a single determinant constructed 
+by the $N/2$ lowest energy eigenfunctions of the Fock (or Kohn-Sham) operator
 \begin{equation}
+    \hat{F} = -\frac{1}{2}\nabla^2 + v_{eff}(\bs{r})
+\end{equation}
+each appearing twice with paired spins, and the minimization problem of the DFT Euler equation is 
+reduced to solving the Kohn-Sham equations
+\begin{equation}
+    \label{eq:KS_equations}
     \Big[-\frac{1}{2}\nabla^2 + v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}(\bs{r})\Big] 
 	\orbital_i(\bs{r}) = \epsilon_i \orbital_i(\bs{r})
 \end{equation}
-where each orbital appears in the determinant with $\alpha$ and $\beta$ spins.
+We see that by reintroducing orbitals we abandon the hope of expressing the problem in terms of
+a single three-dimensional equation, and again we get a set of $N/2$ coupled non-linear equations 
+for the orbitals. As the effective potential in the Kohn-Sham operator depends on the density, 
+and thus on the orbitals, Kohn-Sham DFT is also referred to as an SCF method, and given 
+the similarity with the Hartree-Fock equations (\ref{eq:HF_equations}), the same techniques 
+can be used to solve both problems. 
 
 \subsection{The Exchange-Correlation potential}
 The exchange-correlation energy functional is given as an integral over an energy
@@ -318,10 +368,10 @@ alone $F_{xc}(\rho)$, in the generalized gradient approximation (GGA) it is a fu
 the density and its gradient $F_{xc}(\rho, |\nabla\rho|)$, while in meta-GGA's, higher order 
 derivatives are introduced $F_{xc}(\rho, |\nabla\rho|, \nabla^2\rho, \cdots)$. Hybrid 
 functionals, such as the very popular B3LYP\cite{B3LYP}, are GGA's with a certain amount of
-exact Hartree-Fock exchange, evaluated as in Eq.~(\ref{eq:HFX}) using Kohn-Sham orbitals.
+exact Hartree-Fock exchange, evaluated as in Eq.~(\ref{eq:HF_exchange}) using Kohn-Sham orbitals.
 
-The exchange-correlation potential was implicitly defined in Eq.~(\ref{eq:XXX}) as the
-functional derivative of the exchange-correlation energy with respect to the density
+The exchange-correlation potential was implicitly defined in Eq.~(\ref{eq:effective_pot}) 
+as the functional derivative of the exchange-correlation energy with respect to the density
 \begin{equation}
     v_{xc} = \frac{\delta E_{xc}[\rho]}{\delta \rho} 
 	= \frac{\delta}{\delta \rho} \int F_{xc} \ud \bs{r}
@@ -336,122 +386,349 @@ while a second derivative of $F_{xc}$ is required for GGA's
 	\nabla\cdot\frac{\partial F_{xc}}{\partial\nabla\rho}
 \end{equation}
 
-\subsection{Spin-unrestricted Kohn-Sham}
-The extension to spin-unrestricted and open-shell systems is straightforward. In this case the
-$\alpha$ and $\beta$ electrons occupy different spatial orbitals, $\orbital^\alpha$ and 
-$\orbital^\beta$, and we define the corresponding spin densities
-\begin{equation}
-    \rho^{\sigma}(\bs{r}) = 
-	\sum_{i=1}^{N_{\sigma}} |\phi_i^{\sigma}(\bs{r})|^2, \qquad \sigma = \alpha, \beta
-\end{equation}
-All spin effects are included in the exchange-correlation potential, which in this case will 
-depend on the spin densities and possibly their gradients, and the $\alpha$ and $\beta$ electrons 
-will experience different effective potentials
-\begin{equation}
-    v_{eff}^{\sigma} (\bs{r}) = 
-	v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}^{\sigma}(\bs{r}), \qquad \sigma = \alpha, \beta
-\end{equation}
-The nuclear potential is the same as before, whereas the electronic potential is obtained
-from the total electron density
-\begin{equation}
-    v_{el}(\bs{r}) = \int \frac{\rho^\alpha(\bs{r}') + \rho^\beta(\bs{r}')}
-	{\|\bs{r}-\bs{r}'\|} \ud \bs{r}'
-\end{equation}
-This leads to different Kohn-Sham operators for the different spins
-\begin{equation}
-    \hat{F}_{KS}^\sigma = -\sum_i^{N_\sigma} \frac{1}{2}\nabla_i^2 + 
-	\sum_i^{N_\sigma} v_{eff}^\sigma(\bs{r}_i), \qquad \sigma = \alpha, \beta
-\end{equation}
-and a single determinant wave function is constructed by the $N_\alpha$ and $N_\beta$ 
-lowest energy eigenfunctions of the operators $\hat{F}_{KS}^\alpha$ and 
-$\hat{F}_{KS}^\beta$, respectively.
+%\subsection{Spin-unrestricted Kohn-Sham}
+%The extension to spin-unrestricted and open-shell systems is straightforward. In this case the
+%$\alpha$ and $\beta$ electrons occupy different spatial orbitals, $\orbital^\alpha$ and 
+%$\orbital^\beta$, and we define the corresponding spin densities
+%\begin{equation}
+%    \rho^{\sigma}(\bs{r}) = 
+%	\sum_{i=1}^{N_{\sigma}} |\phi_i^{\sigma}(\bs{r})|^2, \qquad \sigma = \alpha, \beta
+%\end{equation}
+%All spin effects are included in the exchange-correlation potential, which in this case will 
+%depend on the spin densities and possibly their gradients, and the $\alpha$ and $\beta$ electrons 
+%will experience different effective potentials
+%\begin{equation}
+%    v_{eff}^{\sigma} (\bs{r}) = 
+%	v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}^{\sigma}(\bs{r}), \qquad \sigma = \alpha, \beta
+%\end{equation}
+%The nuclear potential is the same as before, whereas the electronic potential is obtained
+%from the total electron density
+%\begin{equation}
+%    v_{el}(\bs{r}) = \int \frac{\rho^\alpha(\bs{r}') + \rho^\beta(\bs{r}')}
+%	{\|\bs{r}-\bs{r}'\|} \ud \bs{r}'
+%\end{equation}
+%This leads to different Kohn-Sham operators for the different spins
+%\begin{equation}
+%    \hat{F}_{KS}^\sigma = -\sum_i^{N_\sigma} \frac{1}{2}\nabla_i^2 + 
+%	\sum_i^{N_\sigma} v_{eff}^\sigma(\bs{r}_i), \qquad \sigma = \alpha, \beta
+%\end{equation}
+%and a single determinant wave function is constructed by the $N_\alpha$ and $N_\beta$ 
+%lowest energy eigenfunctions of the operators $\hat{F}_{KS}^\alpha$ and 
+%$\hat{F}_{KS}^\beta$, respectively.
+
+\pagebreak
 
 \section{Basis sets in computational chemistry}
+Even with the approximations presented in the previous sections, the SCF equations are still
+to complicated to be solved analytically for many-electron systems, and we rely on numerical
+solution algorithms in order to make the theoretical methods useful. As computers work in finite
+arithmetic using floating point numbers of finite accuracy, we need to distretize the problem 
+in one way or another. This can be done either by representing functions as a collection of
+point values on a grid with some kind of regularity, where for instance differential operators
+can be defined through finite differences, or by expanding the solution in terms of a set of 
+basis functions $\AO_p$, on which the effect of the involved operators is known
+\begin{equation}
+    \label{eq:basis_exp}
+    f(\bs{r}) = \sum_p^\infty c_p \AO_p(\bs{r}) \approx \sum_p^N c_p \AO_p(\bs{r})
+\end{equation}
+The equality in Eq.~(\ref{eq:basis_exp}) holds for any function $f$ in a certain set (e.g. $L^2$ 
+for square integrable functions) if the basis is complete in that set, but this usually requires 
+an infinite expansion. In practice, the expansion is truncated at some point, yielding an 
+approximation of the given function, and the problem is discretized in the sense that we are 
+trying to determine a finite number of expansion coefficients $c_p$. 
+
+In principle any set of linearly independent functions can be used as a basis, but there are
+certain properties that we want from the basis for it to be computationally attractive\cite{Losilla}
+\begin{itemize}
+    \item \bs{Accuracy}\\
+	The basis set must be able to represent the target functions faithfully, and provide
+	results that are sufficiently accurate for a given purpose.
+    \item \bs{Compactness}\\
+	For a given accuracy, the size of the basis set should be as small as possible.
+    \item \bs{Efficiency}\\
+	The mathematical operations that involve the basis functions should be performed as 
+	fast as possible.
+    \item \bs{Systematicity}\\
+	The basis set should depend on a set of parameters that can be modified such that the 
+	accuracy of a given calculation will improve.
+    \item \bs{Universality}\\
+	The performance, in terms of accuracy and efficiency, should be adequate to model a large 
+	variety of properties and systems.
+\end{itemize}
+It turns out that no basis can give you all these properties at once, so we have to make some 
+kind of compromise when choosing a basis set for a certain problem, and the choice will often 
+depend on known analytical properties of the solution. For instance, it is known that the ground
+state wave function fulfils the cusp condition\cite{cusp}
+\begin{equation}
+    \frac{\partial \wavefunction}{\partial |\bs{r}_i - \bs{R}_I|}\bigg|_{\bs{r}_i=\bs{R}_I} 
+	= -Z_I\wavefunction\big|_{\bs{r}_i=\bs{R}_I}
+\end{equation}
+which means that the wave function is continous, but not differentiable at the nuclear positions.
+Similar cusps appear in the wave function when the coordinate of two electrons coincide, as well 
+as for the molecular orbitals and the electron density at the nuclear positions. Specifically, the
+behavior of the density close to a nucleus is known to be
+\begin{equation}
+    \rho(\bs{r}) \sim e^{-2Z_k|\bs{r}-\bs{R}_k|}, \qquad |\bs{r}-\bs{R}_k| \ll 1
+\end{equation}
+while it decays exponentially at long distances 
+\begin{equation}
+    \rho(\bs{r}) \sim e^{-2\sqrt{2I}|\bs{r}-\bs{R}_k|}, \qquad |\bs{r} - \bs{R}_k| \gg 1
+\end{equation}
+where $I$ is the ionization potential. Similar conditions apply for the molecular orbitals.
+
+\subsection{Atom-centered basis functions}
+It is desireable to use basis functions with the same asymptotic behavior as the density in order 
+to get efficient representations, using localized functions centered at the nuclear positions, with 
+a short range cusp and an exponential tail. Furthermore, the chemical notion of a molecule being 
+a collection of atoms suggests that a reasonable approach would be to express the molecular orbitals 
+(MOs) as linear combinations of atomic orbitals (LCAO)
+\begin{equation}
+    \orbital_i(\bs{r}) = \sum_I\sum_p^{M_I} c_{ip}\AO_p(\bs{r}-\bs{R}_I) 
+\end{equation}
+where the atomic orbitals (AOs) are atom centered functions similar to the eigenfunctions of the 
+hydrogen atom. Even if the presence of several nuclei in a molecule breaks the angular symmetry
+around each atom, the nuclear potential is so steep that the symmetry is to a large extent retained
+in the vicinity of the nucleus. The AOs are thus chosen to be spherically symmetric functions that 
+can be separated into an angular part, in the form of spherical harmonics $Y_{lm}(\theta,\varphi)$, 
+and a radial part $R(r)$
+\begin{equation}
+    \AO_p (\bs{r}) = R_p(r)Y_{l_p,m_p}(\theta,\varphi)
+\end{equation}
+This basis can approach completeness either in the angular part, by increasing the maximum angular 
+momentum $L$ in the spherical harmonics, or in the radial part by adding more linearly independent
+radial functions. It is well established that the convergence in the angular part is exponential
+($\sim e^{-\sqrt{L}}$) for Hartree-Fock energies (for post-Hartree-Fock methods the convergence is much 
+slower $\sim L^{-3}$), which means that very large $L$ is typically not needed for SCF calculations. 
+
+By choosing exponential radial functions
+\begin{equation}
+    R_p^{STO}(r) = N_pr^{n_p}e^{-\xi_p r}
+\end{equation}
+we get the so-called Slater type orbitals (STO), which have the correct asymptotic behavior. This
+means that the basis is rather efficient for describing molecular orbitals and densities, leading
+to compact representations and fairly rapid basis set convergence also for the radial part.
+The main problem, however, with STOs is numerical efficiency. In Hartree-Fock calculations the
+main bottleneck is the evaluation of three- and four-center two-electron integrals in the form
+\begin{equation}
+    g_{pqrs} = \int\int \AO_p(\bs{r}_1)\AO_q(\bs{r}_1)\frac{1}{\|\bs{r}_1-\bs{r}_2\|}
+	\AO_r(\bs{r}_2)\AO_s(\bs{r}_2) \ud\bs{r}_1\ud\bs{r}_2
+\end{equation}
+for which there exist no analytical formula in the case of STOs. For this reason, the main
+applications for the STO basis is for small systems (atoms and diatomics) where high accuracy
+is required, or for density functional methods that do not include exact exchange, and where 
+the Coulomb energy is calculated using an auxiliary basis and density fitting\cite{dens_fit}.
+
+The computational efficiency of the evaluation of two-electron integrals can be dramatically 
+improved by choosing Gaussian type orbitals (GTOs), where the radial functions have the form
+\begin{equation}
+    R_p^{GTO}(r) = N_pr^{n_p}e^{-\xi_p r^2}
+\end{equation}
+In this case the integrals can be calculated analytically using the Gaussian product rule and
+highly efficient recursion relations\cite{something}. However, the $r^2$ dependence in the 
+exponential makes the GTOs inferior to the STOs in describing molecular orbitals and densities,
+as they do not have the correct asymptotic behavior: at the nucleus the GTO has zero slope instead
+of a cusp, and it falls off too rapidly at long distances. This means that much larger basis sets
+are required for a given accuacy, but this is more than compensated for in terms of computational
+efficiency by the ease of which the required integrals can be calculated. Furthermore, by using
+contracted GTOs, where each basis function can contain several primitive Gaussians
+\begin{equation}
+    R_p^{cGTO}(r) = r^{n_p}\sum_ja_{pj}e^{-\xi_{pj} r^2}
+\end{equation}
+where the coefficients $a_{pj}$ are kept fixed, we can to a large degree compensate for the incorrect
+asymptotic behavior, while keeping the number of variational parameters that need to be optimized as
+low as possible. The computational efficiency of the cGTO bases have made them by far the most
+popular choice in computational chemistry. The parameters (contraction coefficients and exponents)
+of the basis are preoptimized, usually based on atomic calculations, and there are two main
+families of bases (Dunning\cite{dunning} and Pople\cite{pople}) that are systematized in sequences
+of increasing accuracy (and consequently increasing computational cost). 
+
+A rigorous systematicity, however, holds only for smaller systems in the lower-quality end of the basis
+set ladder. When the number of basis functions grows, the basis sets become overcomplete, and linear
+dependencies appear, leading to numerical instabilities, poorly conditioned equations and poor
+convergence of iterative methods. This also affects the minimum error attainable, making it difficult 
+to approach the basis set limit for a given level of theory.
+
+Another problem of atom-centered basis sets is their lack of universality. The preoptimization of the
+parameters biases the results towards a particular property, making it difficult to judge the quality 
+of the calculation of others.
+
+\subsection{Plane wave basis functions}
+Rather than using localized AO-like basis functions that are trying to model each atom separately,
+and forming molecular orbitals through LCAOs, one can start with basis functions that are aimed directly
+at the full system. This approach is most appropriate for modelling infinite systems represented by
+a unit cell with periodic boundary conditions, such as metals where the valence electrons are delocalized
+and thus well represented by solutions of the free electron Sch\"{o}dinger equation. The three-dimensional 
+plane wave basis is usually written in terms of complex exponentials
+\begin{equation}
+    \AO_p(\bs{r}) = e^{i\bs{k}_p\cdot\bs{r}}
+\end{equation}
+where the wave vector $\bs{k}$ gives the oscillation frequency and is related to the energy of the basis
+function. The size of the basis is determined by the sampling resolution in $k$-space (spacing between 
+$k$-vectors) and the highest energy $\bs{k}$-vector included, which depend on the size of the unit cell,
+and is usually significantly larger than the size of typical Gaussian basis sets. 
+
+Plane waves can in principle be used
+for non-periodic systems as well, by placing the molecule in a sufficiently large unit cell where its 
+interaction with its own image in the neighboring cells can be neglected. However, placing a small
+molecule in a large unit cell requires disproportionally many basis functions, and the molecule is 
+represented much more efficiently using localized atomic orbitals.
+
+The plane wave basis is also ill-suited to represent the core region of atoms, where many rapidly oscillating 
+functions are required, and especially the singularity in the nuclear potential, which is almost impossible
+to describe in this basis. On the other hand, plane waves are ideal for representing the smooth density of
+delocalized valence electrons, and are usually used in connection with pseudopotentials, where the 
+effect of the core electrons are combined with the nuclear charges to give an \emph{effective core
+potential}, and only the valence electrons are treated explicitly. This, in combination with the
+fast Fourier transform (FFT), have made plane wave methods the preferred choice for the treatment of 
+many-particle problems of condensed phases. 
+
+\subsection{Real-space representations}
+Most of the problems connected with atom-centered basis sets are related to their global support,
+and these issues can be adressed using numerical real-space methods. In these methods each expansion
+coefficient is usually directly related to the function value at a certain grid point in space, and
+a systematic improvement of the accuracy is readily obtained by decreasing the spacing between the 
+grid points. The finite element (FE) basis is considered a real-space method even if the representations
+are given through basis set expansions. The reason for this is that the basis is grouped into a small
+number of $n$ functions sharing the same compact support, disjoint from the support of all other basis 
+functions, making them responsible for the function representation in a certain region of real space.
+The expansion coefficients are usually obtained through numerical quadrature, which means that the $n$
+functions are related to $n$ point values. Moreover, using interpolating polynomials each basis function 
+is directly connected to a single grid point.
+
+While the FE basis solves the problems of the AO basis concerning systematicity, universality and 
+attainable accuracy, it takes a heavy blow when it comes to compactness of the representation. 
+Originally, the FE bases required a uniform grid, making them highly inefficient for the treatment of
+multiscale problems like the electronic structure of molecules, where high precision requires 
+high resolution in the nuclear region. A uniform grid will in this case result in an excessive 
+overrepresentation of the much smoother interatomic region, making accurate calculations very 
+computationally demanding, even if the fundamental mathematical operations involving the polynomial
+basis are very efficient. 
+
+Due to the high cost of real-space methods, applications in electronic structrure calculations are few
+and far between, and for a long time they were limited to benchmarking calculations on small systems 
+of high symmetry\cite{Laakonen}. Some attempts have been made to overcome this problem, either by 
+removing the high frequency core region by means of pseudopotentials, or by combining the FE basis 
+with another basis of AO type with complementary properties that is able to treat the nuclear region 
+more efficiently\cite{Watson,Sundholm}. Another approach, which is the one persued in this work,
+that is applicable to all-electron calculations of systems of arbitrary geometries, is based on 
+multiresolution analysis and the multiwavelet basis. This approach, that was pioneered by Harrison and 
+coworkers\cite{Harrison:2004} some ten years ago, allows for strict error control using adaptive 
+non-uniform grids. 
 
 \section{Integral formulation}
-Although the differential form in Eq.~(\ref{eq:diff_schrodinger}) is most 
-commonly used, it is not very well suited for solution in the multiwavelet 
-basis \cite{Harrison}, and differential operators (in particular higher 
-order operators) should be avoided in order to maintain high accuracy. 
-Kalos \cite{Kalos} showed in 1962 that the Schr\"{o}dinger equation can 
-be formulated as an integral equation, using the Helmholtz Green's functions 
+The discretization of the Hartree-Fock (\ref{eq:HF}) and Kohn-Sham (\ref{eq:KS})
+equations using the atom-centered basis leads to the Roothaan-Hall\cite{roothaan,hall} matrix 
+equations that are solved iteratively using standard convergence acceleration techniques like
+the direct inversion of the iterative subspace (DIIS)\cite{diis}. This approach is not appropriate
+for the FE and multiwavelet bases due to the high number of basis functions involved. Moreover,
+in a discontinuous basis, order differential operators (especially higher order operators like
+the kinetic energy) should be avoided in order to maintain high accuracy\cite{Harrison:2004}.
 
+Following Harrison \etal\cite{Harrison:2004}, we use Kalos'\cite{Kalos} integral formulation of the 
+Schr\"{o}dinger equation, and in the following we rewrite the Hartree-Fock (\ref{eq:HF}) and 
+Kohn-Sham (\ref{eq:KS}) equations into their integral form, using the integral convolution operators
 \begin{equation}
-    g(\bs{r}) = \int K(\bs{r}-\bs{r}') f(\bs{r}') \ud\bs{r}
+    g(\bs{r}) = \hat{G}\big[f\big](\bs{r}) \mydef \int G(\bs{r}-\bs{r}') f(\bs{r}') \ud\bs{r}'
 \end{equation}
-using the Poisson and bound-state Helmholtz integral kernels
-\begin{equation}
-    P(\bs{r}-\bs{r}') = \frac{1}{4\pi\|\bs{r}-\bs{r}'\|} \qquad
-    H^\mu(\bs{r}-\bs{r}') = \frac{e^{-\mu\|\bs{r}-\bs{r}'\|}}{4\pi\|\bs{r}-\bs{r}'\|}
-\end{equation}
-
-\subsection{One-electron systems}
+that were presented in chapter \ref{chap:implementation}, where we specifically described
+the implementation of the Poisson, the bound-state Helmholtz and the first order derivative 
+operators, with respective integral kernels
 \begin{align}
-    \big[-\frac{1}{2}\nabla^2+v_{nuc}(\bs{r})\big]\wavefunction(\bs{r}) &= E \wavefunction(\bs{r})\\
-    \big[-\nabla^2 - 2E\big]\wavefunction(\bs{r}) &= -2v_{nuc}(\bs{r}) \wavefunction(\bs{r})\\
-    \wavefunction(\bs{r}) &= -2\int H^{\mu}(\bs{r}-\bs{r}')v_{nuc}(\bs{r}') 
-	\wavefunction(\bs{r}') \ud \bs{r}'\\
-    \label{eq:int_schrodinger}
-    \wavefunction &= -2 \hat{G}_{\mu}\big[v_{nuc}\wavefunction\big]
+    P(\bs{r}-\bs{r}') &= \frac{1}{4\pi\|\bs{r}-\bs{r}'\|}\\
+    H^\mu(\bs{r}-\bs{r}') &= \frac{e^{-\mu\|\bs{r}-\bs{r}'\|}}{4\pi\|\bs{r}-\bs{r}'\|}\\
+    D(x-x') &= \frac{\ud}{\ud x} \sqrt{\frac{\beta}{\pi}}e^{-\beta (x-x')^2} 
 \end{align}
-with $\mu = \sqrt{-2E}$.
+The Poisson operator $\hat{P}=\big[-\nabla^2\big]^{-1}$ will be used in the calculation of 
+electrostatic potentials as well as the Hartree-Fock exchange operator, the Helmholtz 
+operator $\hat{H}^\mu=\big[-\nabla^2-\mu^2\big]^{-1}$ appears in
+the integral formulation of the Hartree-Fock and Kohn-Sham equations, and the derivative
+operator $\hat{D}^x$ is needed for the calculation of exchange-correlation potentials using
+GGA functionals.
 
-
-\subsection{Many-electron systems}
-
+The Hartree-Fock (\ref{eq:HF}) and Kohn-Sham (\ref{eq:KS}) equations were presented in their
+canonical form
 \begin{equation}
-    F_{ij} = \langle \orbital_i | \hat{F} | \orbital_j \rangle
+    \hat{F}|\orbital_i\rangle = \epsilon_i |\orbital_i\rangle
 \end{equation}
+in which the Fock matrix is diagonal
 \begin{equation}
-    \hat{F}| i \rangle	
-	= \Big[\sum_j |j \rangle\langle j|\Big] \hat{F}|i \rangle 
-	= \sum_j F_{ji} |j \rangle
+    F_{ij} = \langle \orbital_i | \hat{F} | \orbital_j \rangle = \delta_{ij}\epsilon_i
 \end{equation}
+Solving these equations will give the natural, delocalized molecular orbitals
+which are eigenfunctions of the given Fock (or Kohn-Sham) operator. However, as the energy of
+the system is invariant with respect to unitary transformations among the occupied orbitals,
+we can express the equations in non-canonical form
+\begin{equation}
+    \hat{F}| \orbital_i \rangle	
+	= \Big[\sum_j |\orbital_j \rangle\langle \orbital_j|\Big] \hat{F}|\orbital_i \rangle 
+	= \sum_j F_{ji} |\orbital_j \rangle
+\end{equation}
+for an arbitrary set of orbitals which are related to the canonical eigenfunctions by a
+unitary transformation. This generalization might seem like an unnecessary complication of
+the problem, but in fact it is possible to find unitary transformations for which the resulting 
+orbitals are localized in space, leading to more compact real-space representations as well
+as faster convergence for bigger systems and prospects of low-scaling algorithms. We will in
+the following present the non-canonical Hartree-Fock and Kohn-Sham equations in their integral 
+form. 
 
-\subsubsection{Kohn-Sham DFT}
-\begin{align}
-    \big[-\frac{1}{2}\nabla^2+v_{eff}(\bs{r})\big]\orbital_i(\bs{r}) 
-	    &= \sum_j F_{ji} \orbital_j(\bs{r})\\
-    \big[-\nabla^2 - 2\lambda\big]\orbital_i(\bs{r}) &= -2\Big[v_{eff}(\bs{r}) \orbital_i(\bs{r})
-	    + \sum_j \big(\lambda\delta_{ij} - F_{ji}\big) \orbital_j(\bs{r})\Big]\\
-    \orbital_i &= -2\hat{G}_\mu\Big[v_{eff} \orbital_i + 
-	\sum_j \big(\lambda\delta_{ij} - F_{ji}\big) \orbital_j\Big]
-\end{align}
-where $\mu = \sqrt{-2\lambda}$. This general expression can be simplified in many ways.
-By using the canonical orbitals, e.i. the eigenfunctions of the Fock operator, the 
-Fock matrix is diagonal $F_{ji} = \epsilon_i\delta_{ij}$ and the expression reduces to
+\subsection{Hartree-Fock equations}
+The electronic potential that is given in Eq.~(\ref{eq:el_pot}) is calculated from the electron 
+density through the application of the Poisson operator
 \begin{equation}
-    \orbital_i = -2\hat{G}_\mu\Big[v_{eff} \orbital_i + 
-	\big(\lambda - \epsilon_{i}\big) \orbital_i\Big]
+    v_{el}(\bs{r}) = \hat{P}\big[\rho\big](\bs{r})
 \end{equation}
-Furthermore, choosing $\lambda = \epsilon_i$, we get $N$ separated orbital equations similar 
-to Eq.~(\ref{eq:int_schrodinger}) (still implicitly coupled through the effective potential)
-\begin{equation}
-    \orbital_i = -2 \hat{G}_{\mu_i}\Big[v_{eff}\orbital_i\Big]
-\end{equation}
-with $\mu_i = \sqrt{-2\epsilon_i}$.
-
-\subsubsection{Hartree-Fock}
-denoting the total Coulomb potential experienced by the electrons as
+and we denote the total Coulomb potential experienced by the electrons as
 \begin{equation}
     v_{coul}(\bs{r}) = v_{nuc}(\bs{r}) + v_{el}(\bs{r})
 \end{equation}
+The exchange operator can also be expressed in terms of the Poisson operator
 \begin{equation}
-    \big[-\frac{1}{2}\nabla^2+v_{coul}(\bs{r})-\hat{K}\big]\orbital_i(\bs{r}) 
-	    = \sum_j F_{ji} \orbital_j(\bs{r})
+    \hat{K}\orbital_i(\bs{r}) = \sum_j^N \orbital_j(\bs{r}) \hat{P}\big[\orbital_i\orbital_j\big](\bs{r})
 \end{equation}
-can be rewritten in terms of the integral operator $\hat{G}_\mu$ in the same way as the Kohn-Sham
-equations above
-\begin{equation}
-    \orbital_i = -2\hat{G}_\mu\Big[\big(v_{coul} - \hat{K}\big)\orbital_i + 
+Furthermore, we can rearrange the Hartree-Fock equations so that they can be expressed in terms of the
+Helmholtz operator
+\begin{align}
+    \Big[-\frac{1}{2}\nabla^2+v_{coul}(\bs{r})+\hat{K}\Big]\orbital_i(\bs{r}) 
+	    &= \sum_j F_{ji} \orbital_j(\bs{r})\\
+    \big[-\nabla^2 - 2\lambda\big]\orbital_i(\bs{r}) &= -2\Big[\big(v_{coul}(\bs{r})-\hat{K}\big) 
+	    \orbital_i(\bs{r}) + \sum_j \big(\lambda\delta_{ij} - F_{ji}\big) \orbital_j(\bs{r})\Big]\\
+    \orbital_i &= -2\hat{H}^\mu\Big[\big(v_{coul} - \hat{K}\big) \orbital_i + 
 	\sum_j \big(\lambda\delta_{ij} - F_{ji}\big) \orbital_j\Big]
-\end{equation}
-with $\mu = \sqrt{-2\lambda}$. This expression can again be simplified by choosing
-canonical orbitals and $\lambda = \epsilon_i$, which leads to separated orbital equations
+\end{align}
+where $\mu = \sqrt{-2\lambda}$. This general expression can be simplified in many ways. By using the 
+canonical orbitals, the Fock matrix is diagonal $F_{ji} = \epsilon_i\delta_{ij}$ and the expression 
+reduces to
 \begin{equation}
-    \orbital_i = -2 \hat{G}_{\mu_i}\Big[\big(v_{coul} - \hat{K}\big)\orbital_i\Big]
+    \orbital_i = -2\hat{H}^\mu\Big[\big(v_{coul} - \hat{K}\big) \orbital_i + 
+	\big(\lambda - \epsilon_{i}\big) \orbital_i\Big]
 \end{equation}
-with $\mu_i = \sqrt{-2\epsilon_i}$.
+Furthermore, choosing $\lambda = \epsilon_i$, we get $N$ separated orbital equations
+\begin{equation}
+    \orbital_i = -2 \hat{H}^{\mu_i}\Big[\big(v_{coul} - \hat{K}\big)\orbital_i\Big]
+\end{equation}
+with $\mu_i = \sqrt{-2\epsilon_i}$. The equations are still implicitly coupled through the electronic
+potential and the exchange operator, and need to be solved self-consistently by iterative methods. Note 
+that both the orbitals $\orbital_i$ and their corresponding energy $\epsilon_i$ are unknowns in the
+equations, and must be determined simultaneously.
+
+\subsection{Kohn-Sham DFT}
+In the Kohn-Sham equations the exchange operator is replaced by the exchange-correlation potential,
+which for a given functional can be calculated from Eqs.~(\ref{eq:LDA}) and (\ref{eq:GGA}) for LDAs 
+and GGAs, respectively, using the gradient operator $\big(\hat{D}^x, \hat{D}^y, \hat{D}^z\big)$ in
+case of the latter. Following the same procedure as for the Hartree-Fock equations we get
+\begin{align}
+    \Big[-\frac{1}{2}\nabla^2+v_{eff}(\bs{r})\Big]\orbital_i(\bs{r}) 
+	    &= \sum_j F_{ji} \orbital_j(\bs{r})\\
+    \orbital_i &= -2\hat{H}^\mu\Big[v_{eff} \orbital_i + 
+	\sum_j \big(\lambda\delta_{ij} - F_{ji}\big) \orbital_j\Big]
+\end{align}
+where $\mu = \sqrt{-2\lambda}$. This expression can again be simplified by using the canonical orbitals
+and choosing $\lambda = \epsilon_i$, in which case we get $N/2$ separated equations
+\begin{equation}
+    \orbital_i = -2 \hat{H}^{\mu_i}\Big[v_{eff}\orbital_i\Big]
+\end{equation}
+where $\mu_i = \sqrt{-2\epsilon_i}$. Again, the equations are coupled through the effective potential,
+and are solved self-consistently with respect to the orbitals and energies.
 
 \subsection{Calculation of energy}
 We will now assume that the Hartree-Fock or Kohn-Sham equations have been solved to obtain
@@ -467,35 +744,34 @@ suited for evaluation in the multiwavelet framework. In particular this means to
 the application of the kinetic energy operator, which is a second derivative.
 
 \subsubsection{Hartree-Fock}
-The energy of a Slater determinant wave function was given in Eq.~(\ref{eq:det_energy}).
-Introducing the orbital occupation $f$ we get a general expression for
-both restricted ($f=2$) and unrestricted ($f=1$) Hartree-Fock, where the sums runs over the
-number of orbitals
+The energy of a Slater determinant wave function was given in Eq.~(\ref{eq:det_energy}), 
+which can be expressed in the following way, assuming a closed-shell system and doubly
+occupied orbitals
 \begin{align}
-    E	&= f \sum_i \langle \orbital_i|\hat{h}|\orbital_i \rangle
-	    + \frac{f}{2} \sum_i \langle \orbital_i|f\hat{J} - \hat{K}|\orbital_i \rangle\\
-	&= f \sum_i \langle \orbital_i|\hat{T}|\orbital_i \rangle
-	    + f \sum_i \langle \orbital_i|v_{nuc}|\orbital_i \rangle
-	    + \frac{f}{2} \sum_i \langle \orbital_i|v_{el} - \hat{K}|\orbital_i \rangle \\
-	&= f \sum_i \langle \orbital_i|\hat{T} - \frac{1}{2}\hat{K}|\orbital_i \rangle
+    E	&= \sum_i^{N/2} 2\langle \orbital_i|\hat{h}|\orbital_i \rangle
+	    + \frac{1}{2} \sum_i^{N/2} 2\langle \orbital_i|2\hat{J} - \hat{K}|\orbital_i \rangle\\
+	&= \sum_i^{N/2} 2\langle \orbital_i|\hat{T}|\orbital_i \rangle
+	    + \sum_i^{N/2} 2\langle \orbital_i|v_{nuc}|\orbital_i \rangle
+	    + \sum_i^{N/2} \langle \orbital_i|v_{el} - \hat{K}|\orbital_i \rangle \\
+	&= \sum_i^{N/2} \langle \orbital_i|2\hat{T} - \hat{K}|\orbital_i \rangle
 	    + \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud\bs{r}
 	    + \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
 \end{align}
 The kinetic energy operator can be avoided by making the following observation:
 \begin{align}
-    \label{eq:sum_orb_en}
-    f \sum_i F_{ii} &= f \sum_i \langle\orbital_i|\hat{T} + v_{nuc} + v_{el} - \hat{K}|\orbital_i\rangle\\
-		    &= f \sum_i \langle\orbital_i|\hat{T} - \hat{K}|\orbital_i\rangle
+    \label{eq:sum_orb_HF}
+    \sum_i^{N/2} 2 F_{ii} &= \sum_i^{N/2} 2\langle\orbital_i|\hat{T}+v_{nuc}+v_{el}-\hat{K}|\orbital_i\rangle\\
+		    &= \sum_i^{N/2} 2\langle\orbital_i|\hat{T} - \hat{K}|\orbital_i\rangle
 		     + \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud\bs{r}
 		     + \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
 \end{align}
-All terms in Eq.~(\ref{eq:sum_orb_en}) are invariant under unitary transformations of the orbitals,
+All terms in Eq.~(\ref{eq:sum_orb_HF}) are invariant under unitary transformations of the orbitals,
 and in a canonical orbital solution the left hand side is the sum over orbital energies $\epsilon_i$.
-Comparing the expressions in Eqs.~(\ref{eq:energy_exp_HF}) and (\ref{eq:sum_orb_en}) we see that
+Comparing the expressions in Eqs.~(\ref{eq:energy_exp_HF}) and (\ref{eq:sum_orb_HF}) we see that
 the total electronic energy can be calculated as
 \begin{equation}
-    E = f \sum_i F_{ii} - \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
-	- \frac{f}{2} \sum_i \langle\orbital_i|\hat{K}|\orbital_i\rangle
+    E = 2 \sum_i^{N/2} F_{ii} - \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
+	- \sum_i^{N/2} \langle\orbital_i|\hat{K}|\orbital_i\rangle
 \end{equation}
 without the need of applying the kinetic energy operator, given the orbitals and Fock matrix that
 solves the Hartree-Fock equations.
@@ -505,22 +781,48 @@ The energy in Kohn-Sham DFT was given through the energy functionals in Eq.~(\re
 \begin{equation}
     E[\rho] = T_s[\rho] + V_{en}[\rho] + J[\rho] + E_{xc}[\rho]
 \end{equation}
+which for a closed-shell system with double occupancy gives
 \begin{equation}
-    E = f \sum_i \langle \orbital_i|\hat{T}|\orbital_i \rangle
+    \label{eq:energy_exp_KS}
+    E = \sum_i^{N/2} 2\langle \orbital_i|\hat{T}|\orbital_i \rangle
 	+ \int \rho(\bs{r})v_{nuc}(\bs{r}) \ud\bs{r}
 	+ \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
 	+ \int F_{xc} \ud\bs{r}
 \end{equation}
+The trace of the Kohn-Sham matrix is given as
 \begin{align}
-    f \sum_i F_{ii} &= f \sum_i \langle\orbital_i|\hat{T} + v_{eff}|\orbital_i\rangle\\
-		    &= f \sum_i \langle\orbital_i|\hat{T}|\orbital_i\rangle
-		     + \int \rho(\bs{r})\big(v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}(\bs{r})\big) \ud\bs{r}
+    \sum_i^{N/2} 2F_{ii} &= \sum_i^{N/2} 2\langle\orbital_i|\hat{T} + v_{eff}|\orbital_i\rangle\\
+    \label{eq:sum_orb_KS}
+		    &= \sum_i^{N/2} 2\langle\orbital_i|\hat{T}|\orbital_i\rangle
+		     + \int \rho(\bs{r})\Big[v_{nuc}(\bs{r}) + v_{el}(\bs{r}) + v_{xc}(\bs{r})\Big] \ud\bs{r}
 \end{align}
+Combining Eqs.~(\ref{eq:energy_exp_KS}) and (\ref{eq:sum_orb_KS}) gives an expression without
+kinetic energy
 \begin{equation}
-    E = f \sum_i F_{ii} - \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
+    E = 2 \sum_i^{N/2} F_{ii} - \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
 	+ \int F_{xc} \ud\bs{r} - \int \rho(\bs{r})v_{xc}(\bs{r}) \ud\bs{r}
 \end{equation}
 where it should be notet that 
 \begin{equation}
     E_{xc}[\rho] = \int F_{xc} \ud\bs{r} \neq \int \rho(\bs{r})v_{xc}(\bs{r}) \ud\bs{r}
 \end{equation}
+
+\section{Iterative solution algorithms}
+We will illustrate the iterative algorithms by looking at a simple one-electron system in which the 
+electron is influenced only by a fixed external potential, which include the $H$ atom, the $He^+$ and 
+$H_2^+$ ions or any other one-electron molecular ion within the Born-Oppenheimer approximation. 
+Following Kalos\cite{kalos} the Scr\"{o}dinger equation can be rewritten in the following way
+\begin{align}
+    \big[-\frac{1}{2}\nabla^2+v_{nuc}(\bs{r})\big]\wavefunction(\bs{r}) &= E \wavefunction(\bs{r})\\
+    \big[-\nabla^2 - 2E\big]\wavefunction(\bs{r}) &= -2v_{nuc}(\bs{r}) \wavefunction(\bs{r})\\
+    \wavefunction(\bs{r}) &= -2\int H^{\mu}(\bs{r}-\bs{r}')v_{nuc}(\bs{r}') 
+	\wavefunction(\bs{r}') \ud \bs{r}'\\
+    \label{eq:int_schrodinger}
+    \wavefunction &= -2 \hat{G}_{\mu}\big[v_{nuc}\wavefunction\big]
+\end{align}
+with $\mu = \sqrt{-2E}$. Eq.~(\ref{eq:int_schrodinger}) defines a fixed-point problem,
+
+\subsection{The power method}
+\subsection{Energy update}
+\subsection{Krylov subspace methods}
+\subsection{Extension to many-electron systems}
