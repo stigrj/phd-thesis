@@ -809,20 +809,194 @@ where it should be notet that
 
 \section{Iterative solution algorithms}
 We will illustrate the iterative algorithms by looking at a simple one-electron system in which the 
-electron is influenced only by a fixed external potential, which include the $H$ atom, the $He^+$ and 
-$H_2^+$ ions or any other one-electron molecular ion within the Born-Oppenheimer approximation. 
-Following Kalos\cite{kalos} the Scr\"{o}dinger equation can be rewritten in the following way
+electron is influenced only by a fixed nuclear potential $\hat{V} = v_{nuc}(\bs{r})$, which include 
+the $H$ atom, the $He^+$ and $H_2^+$ ions or any other one-electron molecular ion within the 
+Born-Oppenheimer approximation. Just as the Hartree-Fock and Kohn-Sham equations presented above, 
+the electronic Scr\"{o}dinger equation is rewritten in integral form
 \begin{align}
-    \big[-\frac{1}{2}\nabla^2+v_{nuc}(\bs{r})\big]\wavefunction(\bs{r}) &= E \wavefunction(\bs{r})\\
-    \big[-\nabla^2 - 2E\big]\wavefunction(\bs{r}) &= -2v_{nuc}(\bs{r}) \wavefunction(\bs{r})\\
-    \wavefunction(\bs{r}) &= -2\int H^{\mu}(\bs{r}-\bs{r}')v_{nuc}(\bs{r}') 
-	\wavefunction(\bs{r}') \ud \bs{r}'\\
-    \label{eq:int_schrodinger}
-    \wavefunction &= -2 \hat{G}_{\mu}\big[v_{nuc}\wavefunction\big]
+    \Big[\hat{T} + \hat{V}\Big]\wavefunction(\bs{r}) &= E\wavefunction(\bs{r})\\
+    \Big[-\frac{1}{2}\nabla^2 + \hat{V}\Big]\wavefunction(\bs{r}) &= E\wavefunction(\bs{r})\\
+    \wavefunction(\bs{r})&=-2\int H^{\mu}(\bs{r}-\bs{r'})\hat{V}(\bs{r}')\wavefunction(\bs{r}')\ud\bs{r}'\\
+    \label{eq:int_schr}
+    \wavefunction &= -2 \hat{H}^{\mu}\Big[\hat{V}\wavefunction\Big]
 \end{align}
-with $\mu = \sqrt{-2E}$. Eq.~(\ref{eq:int_schrodinger}) defines a fixed-point problem,
+with $\mu = \sqrt{-2E}$. This equation needs to be solved with respect to both the wave function
+\wavefunction\ and the energy $E$.
 
 \subsection{The power method}
-\subsection{Energy update}
+Eq.~(\ref{eq:int_schr}) defines a fixed-point problem, and perhaps the simplest procedure to solve 
+such a problem is the power method, where the operator is applied iteratively
+\begin{align}
+    \label{eq:power}
+    \tilde{\wavefunction}^{n+1} &= -2 \hat{H}^{\mu^n}\Big[\hat{V}\wavefunction^n\Big]\\
+    \wavefunction^{n+1} &= \frac{\tilde{\wavefunction}^{n+1}}{\|\tilde{\wavefunction}^{n+1}\|}
+\end{align}
+The tilde on the new wave function denotes that it is no longer normalized, 
+as the operator $\hat{H}^{\mu^n}$ does not conserve the norm when the eigenvalue 
+is not exact\cite{Kalos}. The iteration label on the operator reflects the 
+fact that the operator depends on the energy through $\mu^n = \sqrt{-2E^n}$ 
+which needs to be updated in each iteration.
+
+Such an iteration sequence $\boldsymbol{x}^{n+1} = \hat{O}(\boldsymbol{x}^n)$ will converge to the 
+lowest energy eigenfunction of $\hat{O}$, provided that $\hat{O}$ defines a so-called contraction map. 
+Schneider\cite{Schneider} proves linear convergence of the wave function and quadratic 
+convergence of the energy for a fixed operator $f$. 
+
+\subsection{Energy calculation}
+The energy of the wave function $\wavefunction$ is formally calculated as the expectation value
+\begin{equation}
+    E = \frac{\langle\wavefunction| \hat{T} + \hat{V} | \wavefunction\rangle}
+	{\langle\wavefunction|\wavefunction\rangle} 
+\end{equation}
+where $\hat{T}=-\nabla^2/2$ is the kinetic energy operator, and the potential energy operator in this
+case is the fixed nuclear potential $\hat{V} = v_{nuc}$. As pointed out above, it is desirable to 
+avoid the application of the kinetic operator, so, following Harrison \etal\cite{Harrison:2004}, 
+we exploit the fact that the operator $2\hat{H}^{\mu} = (\hat{T} - E)^{-1}$ in Eq.~\ref{eq:int_schr} is 
+basically the inverse of the kinetic operator, and extract the energy through the application 
+of this operator. Given a wave function $\wavefunction^{n}$ and energy $E^{n}$ (this does not 
+have to be the exact energy of $\wavefunction^{n}$, but it must be the energy used in 
+$\mu^n=\sqrt{-2E^n}$ in the construction of the operator $\hat{H}^{\mu^n}$) at one iteration, 
+we can calculate the (exact) energy $E^{n+1}$ of the wave function $\wavefunction^{n+1}$ at the 
+next iteration as follows
+\begin{align}
+    \tilde{E}^{n+1}
+    &=	\langle\tilde{\wavefunction}^{n+1}| \hat{T}+\hat{V} | \tilde{\wavefunction}^{n+1}\rangle\\
+    &=	\langle\tilde{\wavefunction}^{n+1}|  \hat{T} - E^n  | \tilde{\wavefunction}^{n+1}\rangle
+    +	\langle\tilde{\wavefunction}^{n+1}|  E^n + \hat{V}  | \tilde{\wavefunction}^{n+1}\rangle\\
+    &=	\langle\tilde{\wavefunction}^{n+1}|  \hat{T} - E^n  | 
+	    -2\hat{H}^{\mu^n}\big[\hat{V}\wavefunction^n\big]\rangle
+    +	\langle\tilde{\wavefunction}^{n+1}| E^n + \hat{V} |\tilde{\wavefunction}^{n+1}\rangle\\
+    &= -\langle\tilde{\wavefunction}^{n+1}| \hat{V} |\wavefunction^{n}\rangle
+    +	\langle\tilde{\wavefunction}^{n+1}| E^n + \hat{V} |\tilde{\wavefunction}^{n+1}\rangle\\
+    &= E^{n}\langle\tilde{\wavefunction}^{n+1}|\tilde{\wavefunction}^{n+1}\rangle + 
+	\langle\tilde{\wavefunction}^{n+1}| \hat{V} |\Delta\tilde{\wavefunction}^{n}\rangle\\
+E^{n+1} &= E^{n} + \Delta E^n
+\end{align}
+where $\Delta \tilde{\wavefunction}^{n} \mydef \tilde{\wavefunction}^{n+1} - \wavefunction^{n}$,
+and the energy update is calculated directly from the wave function update
+\begin{equation}
+    \label{eq:energy_update}
+    \Delta E^n = 
+	\frac{\langle\tilde{\wavefunction}^{n+1}| \hat{V} |\Delta\tilde{\wavefunction}^{n}\rangle}
+	{\langle\tilde{\wavefunction}^{n+1}|\tilde{\wavefunction}^{n+1}\rangle}
+\end{equation}
+without having to apply the kinetic energy operator, provided that the update comes directly 
+from the application of the Helmholtz operator. For future reference, we also define the "normalized"
+wave function update 
+\begin{equation}
+    \label{eq:wavefunction_update}
+    \Delta\wavefunction^n = \wavefunction^{n+1} - \wavefunction^n = 
+	\frac{-2\hat{H}^{\mu^n}\big[\hat{V}\wavefunction^n\big]}{\|\tilde{\wavefunction}^{n+1}\|} 
+	- \wavefunction^n
+\end{equation}
+
 \subsection{Krylov subspace methods}
+The fixed-point problem in Eq.~(\ref{eq:int_schr}) can be viewed as finding 
+the roots of the the following residual function
+\begin{equation}
+    f(\wavefunction) =  -2 \hat{H}^{\mu}\big[\hat{V}\wavefunction\big] - \wavefunction
+\end{equation}
+which can be done using Newton's method
+\begin{align}
+    \wavefunction^{n+1}	&= \wavefunction^n - \big[J(\wavefunction^n)\big]^{-1}f(\wavefunction^n)\\
+    \label{eq:newton}
+	&= \wavefunction^n - \big[J(\wavefunction^n)\big]^{-1}
+	    \big(-2\hat{H}^{\mu^n}\big[\hat{V}\wavefunction^n\big] - \wavefunction^n\big)
+\end{align}
+where $J(\wavefunction^n)$ is the Jacobian. Comparing Eq.~(\ref{eq:newton}) with 
+Eq.~(\ref{eq:power_iter}), we can identify the power method as an inexact 
+Newton method where the Jacobian is approximated by $J(\wavefunction) \approx -1$.
+Harrison\cite{Harrison} describes how to make use of the information in the
+iterative history (Krylov subspace) to improve the approximation of the 
+Jacobian in his Krylov Accelerated Inexact Newton (KAIN) method. The method 
+is similar to the more commonly used direct inversion of iterative subspace 
+(DIIS) method of Pulay\cite{Pulay}, but while DIIS is looking for the best 
+step within the iterative subspace, KAIN is using the same information to 
+extrapolate to a step outside the iterative subspace and is thus considered 
+superior to DIIS\cite{Harrison}.
+
+Collecting the wave function and the energy into a vector $\bs{x} = (\wavefunction,E)$ we 
+get the non-linear equation $f(\bs{x}) = \bs{0}$. At a given iteration $n$, we have the 
+current approximation $\bs{x}^n = (\wavefunction^n,E^n)$ and the corresponding residual 
+$f(\bs{x}^n) = (\Delta \wavefunction^n,\Delta E^n)$ defined through 
+Eqs.~(\ref{eq:energy_update}) and (\ref{eq:wavefunction_update}). In the KAIN method the
+new update $\delta\bs{x}^n$ is calculated in terms of the $m$ latest iterations
+\begin{equation}
+    \label{eq:KAIN_update}
+    \delta \bs{x}^n = f(\bs{x}^n) + \sum_{j=1}^m c_j 
+	\big[\left(\bs{x}^{j}-\bs{x}^{n}\right) + \left(f(\bs{x}^j)-f(\bs{x}^{n})\right)\big] 
+\end{equation}
+where the coefficients $c_j$ are obtained by solving the linear system $Ac=b$ 
+\begin{align}
+    A_{ij} &= \langle\bs{x}^n - \bs{x}^i|
+		f(\bs{x}^n) - f(\bs{x}^j)\rangle\\
+    b_{i}   &= \langle\bs{x}^n - \bs{x}^i | f(\bs{x}^n)\rangle
+\end{align}
+The size $m$ of the Krylov subspace is without constraints. The larger it is, 
+the better is the Krylov update, but also the larger is the linear system. In 
+general, the Krylov update will not conserve the norm of the orbital, so an 
+additional normalization step should be added at this point.
+
+\subsection{Algorithm for one-electron systems}
+The single-orbital algorithm is quite straightforward. Starting from an arbitrary initial
+guess for the wave function and the energy, the Helmholtz operator is applied once, the 
+resulting wave function is normalized, and the correction $\Delta\wavefunction^n$ and the 
+corresponding energy update $\Delta E^n$ is calculated as described above. Then the wave function
+and energy are added to the KAIN history
+\begin{equation}
+    \bs{x}^n = \left(\wavefunction^n,E^n\right)\qquad \qquad
+    f(\bs{x}^n) = \left(\Delta\wavefunction^n,\Delta E^n\right)
+\end{equation}
+If the length of the history exceeds some modest number the oldest vector is discarded. 
+New updates are then calculated based on Eq.~(\ref{eq:KAIN_update})
+\begin{equation}
+    \delta \bs{x}^n = \left(\delta\wavefunction^n, \delta E^n\right)
+\end{equation}
+which are added to the previous guess, and the iteration is continued until the norm of the
+wave function update (after the Helmholtz operator application) is below some threshold.
+\begin{algorithm}
+\begin{algorithmic}[1]
+\STATE Given initial wave function $\wavefunction^0$ and energy $E^0$
+\WHILE {$\varepsilon >$ threshold}
+    \STATE Construct Helmholtz operator $\hat{H}^{\mu^n}$ using $\mu^n = \sqrt{-2E^n}$
+    \STATE Multiply wave function $\wavefunction^n$ with potential
+    \STATE Apply Helmholtz operator Eq.(\ref{eq:power}) and normalize
+    \STATE Calculate wave function update $\Delta\wavefunction^n = \wavefunction^{n+1}-\wavefunction^n$
+    \STATE Calculate wave function error $\varepsilon = \|\Delta\wavefunction^n\|$ 
+    \STATE Calculate energy update $\Delta{E}^n$ from Eq.(\ref{eq:energy_update})
+    \STATE Add $\big(\wavefunction^n, E^n\big)$ and $\big(\Delta\wavefunction^n,\Delta E^n\big)$
+	    to KAIN history
+    \STATE Calculate KAIN updates $\big(\delta\tilde{\wavefunction}^n,\delta{E}^n\big)$ from 
+	    Eq.(\ref{eq:KAIN_update}) 
+    \STATE Update wave function 
+	    $\tilde{\wavefunction}^{n+1} = \wavefunction^n + \delta\tilde{\wavefunction}^n$
+    \STATE Update energy $E^{n+1} = E^n+\delta{E}^n$
+    \STATE Normalize wave function 
+	    $\wavefunction^{n+1} = \tilde{\wavefunction}^{n+1}/\|\tilde{\wavefunction}^{n+1}\|$
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
 \subsection{Extension to many-electron systems}
+There are a few important complications when the algorithm is extended to many-electron systems.
+In the self-consistent field approximations we get systems of equations involving one-electron 
+orbitals, like the canonical Kohn-Sham equations
+\begin{equation}
+    \orbital_i = -2 \hat{H}^{\mu_i}\Big[v_{eff}\orbital_i\Big]
+\end{equation}
+These equations can be solved in the same way as the one-electron Schr\"{o}dinger equation presented 
+above, by iterating each equation separately. However, to avoid a collapse of all orbitals into the
+lowest energy eigenfunction, orthogonality between the orbitals must be explicitly enforced. There 
+are many ways in which this can be achieved, but it is convenient to keep the canonical character of 
+the orbitals throughout the optimization, by calculating and diagonalizing the Fock matrix in each 
+iteration. The calculation of the Fock matrix 
+\begin{equation}
+    F_{ij} = \frac{\langle\tilde{\orbital}_i|\hat{T}+\hat{V}|\tilde{\orbital}_i\rangle}
+	{\langle\tilde{\orbital}_i|\tilde{\orbital}_j\rangle}
+\end{equation}
+can be done without the need to apply the kinetic energy operator by the same arguments as for 
+the one-electron wave function, but now the orbital dependence of the effective potential must
+be accounted for as well. Further complication arises in the KAIN solver, especially in the case
+of degeneracies, where the orbitals can mix between iterations, and this is discussed further in
+publication III.
+

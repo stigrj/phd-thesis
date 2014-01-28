@@ -1,3 +1,6 @@
+%TODO Separate kinetic energy discussion from xc
+%TODO Separate MW discussion
+%TODO Be more precise in conclusions regarding applicability of MW vs. SCF formulation
 \chapter{Orbital-Free DFT}
 The orbital-based formulation of density functional theory that was introduced by Kohn and Sham\cite{Kohn-Sham:1965} 
 fifty years ago has been the most widely used method for determining the electronic structure 
@@ -23,7 +26,7 @@ electrons and nuclei $V_{en}$ and between electrons $J$, and the quantum mechani
 accounts for electron exchange and correlation as well as the remaining "interacting" part of the kinetic energy.
 
 \section{Density functionals}
-In the early years of quantum mechanics, some futile attempts was made to model the kinetic and exchange energies
+In the early years of quantum mechanics, some attempts was made to model the kinetic and exchange energies
 as pure density functionals. These models, by the work of Thomas\cite{Thomas:1927}, Fermi\cite{Fermi:1927} and 
 Dirac\cite{Dirac:1929}, 
 are based on theoretical considerations of the three-dimensional particle-in-a-box problem, and are exact for a 
@@ -135,7 +138,7 @@ presented by Jiang \etal\cite{Jiang:2004}.
 In the following we will attempt to solve the OF-DFT Euler equation (\ref{eq:OF-Euler}) in the multiwavelet 
 framework using a modified form of the KS-DFT solver that is presented in publication III. The iterative
 procedure is based on the one-orbital formulation given in Eq.~(\ref{eq:OF-orbital}), and thus relies on the
-von Weiz\"{a}cker kinetic energy functional. The singel orbital is normalized to the number of electrons 
+von Weiz\"{a}cker kinetic energy functional. The single orbital is normalized to the number of electrons 
 $\langle\orbital|\orbital\rangle = N$, so that the density is given as
 \begin{equation}
     \rho(\bs{r}) = |\orbital(\bs{r})|^2
@@ -290,15 +293,18 @@ as is shown by Chan \etal\cite{Chan:2000} using $\lambda=1/5$. However, this par
 that are obtained are not equally accurate (see Ref.\cite{Chan:2000} for details).
 
 \section{Outlook}
-The purpose of this study was not to examine the performance of the given kinetic energy functionals on molecular
-systems, as their inadequacies in this respect are well known, but rather to see whether the multiresolution framework
-is appropriate for the solution of the OF-DFT Euler equation. It seems quite clear that its formulation as a one-orbital 
-Kohn-Sham problem is not appropriate, as the convergence of the iterative solution for many-electron systems 
-is problematic at best, as the Thomas-Fermi contribution had to be introduced very carefully to avoid divergence. However,
-once the full TF potential had been included, high order convergence was not difficult to obtain, and accuracies of $10^{-9}$
-was easily achieved.
+The purpose of this study was not to examine the performance of the given kinetic energy 
+functionals on molecular systems, as their inadequacies in this respect are well known, 
+but rather to see whether the multiresolution framework is appropriate for the solution 
+of the OF-DFT Euler equation. It seems quite clear that its formulation as a one-orbital 
+Kohn-Sham problem is not appropriate, as the convergence of the iterative solution for 
+many-electron systems is problematic at best, as the Thomas-Fermi contribution had to be 
+introduced very carefully to avoid divergence. However, once the full TF potential had 
+been included, high order convergence was not difficult to obtain, and accuracies of 
+$10^{-9}$ was easily achieved.
 
-Given the properties of the multiwavelet basis, which is easily parallelizable for the few global functions that are 
-involved, and with representations that are free of basis set error, this could be the ideal framework for the development 
-of better kinetic energy functionals, but this will require much more robust optimization algorithms. This will be subject
-for further investigation.
+Given the properties of the multiwavelet basis, which is easily parallelizable for the few 
+global functions that are involved, and with representations that are free of basis set error, 
+this could be the ideal framework for the development of better kinetic energy functionals, 
+but this will require much more robust optimization algorithms. This will be subject for 
+further investigation.
