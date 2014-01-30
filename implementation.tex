@@ -558,10 +558,10 @@ the Poisson equation for $d=3$ is given as
 \end{equation}
 
 \subsection{Helmholtz kernel}
-The inhomogeneous Helmholtz equation is a generalization of the Poisson equation,
-and is given in differential form
+The inhomogeneous Helmholtz equation (also called screened Poisson equation) 
+is a generalization of the Poisson equation, and is given in differential form
 \begin{equation}
-    \big(\nabla^2 + \mu^2\big) g(\bs{x}) = -f(\bs{x})
+    \big(\nabla^2 - \mu^2\big) g(\bs{x}) = -f(\bs{x})
 \end{equation}
 The solution can again be expressed as an integral
 \begin{equation}
@@ -571,7 +571,7 @@ using the Helmholtz kernel $H^\mu(\bs{x}-\bs{y})$, which is the Greeen's functio
 satisfying the fundamental equation
 \begin{equation}
     \label{eq:fundamental_helmholtz}
-    \big(\nabla^2 + \mu^2\big) H^\mu(\bs{x}-\bs{y}) = -\delta(\bs{x}-\bs{y})
+    \big(\nabla^2 - \mu^2\big) H^\mu(\bs{x}-\bs{y}) = -\delta(\bs{x}-\bs{y})
 \end{equation}
 with zero boundary conditions at infinity. The Green's function for the Helmholtz 
 equation for $d=3$ is known analytically as
@@ -581,7 +581,7 @@ equation for $d=3$ is known analytically as
 \end{equation}
 
 \subsection{Separation using Gaussians}
-Neither the Poisson nor Helmholtz kernels are separable in the Cartesian coordinates, 
+Neither the Poisson nor the Helmholtz kernel is separable in the Cartesian coordinates, 
 but it is possible to obtain a separated representation as in Eq.~(\ref{eq:sep_rep}) 
 of low rank using Gaussian functions
 \begin{equation}
