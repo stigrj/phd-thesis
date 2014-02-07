@@ -1,180 +1,152 @@
 \chapter{Introduction}
-Wavelet theory is a rather young field of mathematics, first appearing in the
-late 1980s. The initial application was in signal theory \cite{Strang:1996} but in
-the early 90s, wavelet-based methods started to appear for the solution of
-PDEs and integral equations \cite{Beylkin90}\cite{Alpert93}, and in recent 
-years for application in electronic structure calculations
-\cite{Harrison}\cite{Niklasson}\cite{Arias}. The presented work is based on the
-generalization called multiwavelets, which was introduced by Alpert\cite{Alpert}.
 
-The work of this thesis has been contributing in the development of the 
-program package MRChem, which is a code developed at the University of Tromsø 
-\cite{Fossgaard} that is aiming at a fully numerical treatment of molecular 
-systems, based on 
-Density Functional Theory (DFT). There are currently a huge number of these
-program packages available, each with more or less distinct features, and
-what separates MRChem from all of these is the choice of basis functions.
-While traditional computational chemistry programs use Gaussian type basis sets
-for their efficient evaluation of two- and four-electron integrals, MRChem is
-based on the multiresolution wavelet basis.\\
+\section{Numerical analysis and physics in the real world}
+Simplifications and idealization for physics students.
+Many physics students over the years have been struggling to find real world application 
+of beeing able to calculate a cannon ball's trajectory ,
 
-\noindent
-Wavelet theory is a rather young field of mathematics, first appearing in the
-late 1980s. The initial application was in signal theory \cite{Strang} but in
-the early 90s, wavelet-based methods started to appear for the solution of
-PDEs and integral equations \cite{Beylkin90}\cite{Alpert93}, and in recent 
-years for application in electronic structure calculations
-\cite{Harrison}\cite{Niklasson}\cite{Arias}.
+that the bird flying above your head, the violent roar of the water fall, the waves on the oscean, even the
+movement of the moon and the sun across the sky, are all subject to the same fundamental laws of physics.
 
-\subsection*{The Kohn-Sham equations}
-In the Kohn-Sham \cite{Kohn-Sham} formulation of DFT the eigenvalue equations 
-for the electronic structure can be written
+even if teh mathematical description of such real-world phenomena is way too complicated ... 
+it is not difficult to imagine each and every water droplet as a tiny cannon ball 
+floating through empty space, only slightly influenced by all its fellow water droplets, together
+making up the turbulent, unpredictable ...of a water fall.
+
+The bridge between ... is made through numerical analysis, which involves the translation of the
+mathematical equations of the physical laws into the language of the digital computer.
+Most modern applied sciences relies hevily upon numerical analysis and simulations, either for performing
+numerically intensive calculations or for analyzing large amounds of data.
+
+or the 
+The true power with physics, of course, lies in its generality. 
+Numerical simulations and modern applied science.
+Real-world problems too complicated.
+Increasing computational power. Moore's law. Parallel computers.
+
+\section{Theoretical chemistry}
+Chemistry is a branch science studying the composition, structure, properties and change of matter.
+Chemistry as lab/cataloguing science before the itroduction of QM.
+Through QM the complete physical theory became available, but although
+the exact problem is decievingly simply stated for an arbitrary system through the Schr\"{o}dinger equation
 \begin{equation}
-	\label{eq:Kohn-Sham}
-	\lbrack
-	-\frac{1}{2}\nabla^2+V_{eff}(\boldsymbol{r})\rbrack\psi_i(\boldsymbol{r}) =
-	\epsilon_i\psi_i(\boldsymbol{r})
+    \hat{H}\Wavefunction = E\Wavefunction
 \end{equation}
-where the effective potential is the collection of three terms
+its solution for many-body problems is quite the opposite. In fact, whenever the system contains more than 
+two particles the problem \emph{cannot} be solved (at least not in the usual sense in terms of the standard 
+elementary functions of calculus).
+
+
+
+
+Conventional KS/HF calculations routinely used.
+Well known chemical notion of electron orbital, which for simple systems 
 \begin{equation}
-	\label{eq:Veff}
-	V_{eff}(\boldsymbol{r}) =
-	V_{ext}(\boldsymbol{r})+V_{coul}(\boldsymbol{r})+V_{xc}
+    \rho(\bs{r}) = \sum_i^N |\orbital_i(\bs{r})|^2
 \end{equation}
-where the external potential $V_{ext}$ is usually just the electron-nuclear
-attraction, the Coulomb potential $V_{coul}$ is the electron-electron
-repulsion and $V_{xc}$ is the exchange-correlation potential which (in
-principle) includes all non-classical effects. The functional form of $V_{xc}$
-is not known.\\
-
-\noindent
-The nuclear charge distribution is a collection of point charges, and the 
-nuclear potential has the analytical form
+orbital equations
 \begin{equation}
-	V_{nuc}(\boldsymbol{r}) = -\sum_{\alpha=1}^{N_{nuc}}
-	\frac{Z_{\alpha}}{|\boldsymbol{r}-\boldsymbol{r}_{\alpha}|}
+    \hat{F}\orbital_i(\bs{r}) = \epsilon_i\orbital_i(\bs{r})
 \end{equation}
-The electronic charge distribution is given by the Kohn-Sham orbitals
+While the solution of this set of $N$ coupled, non-linear, three-dimensional partial
+differential equations is still a formidable computational task, the complexity of the 
+full $3N$-dimensional Schr\"{o}dinger equation is sufficiently reduced for the numerical 
+solution to be feasable for systems with a remarkable number of particles.
+
+This has been made possible by combining a great deal of chemical intuition into the 
+development of computational methods. In particular, the introduction of the atomic orbital 
+basis in the form of atom-centered Gaussians can be attributed most of the success of modern 
+computational chemistry, by providing efficient and compact representations with a consistent 
+cancellation of errors. 
+
+However, although the Gaussian basis is ideal for obtaining qualitative numbers fast, it 
+struggles when high precision is required. Moreover, as the Gaussian functions extend 
+throughout the entire system, it is difficult to reduce the problem into truly independent 
+tasks that can be easily distributed among several computers and executed simultaneously.
+
+The alternative to the elegant, compact representations using a carefully chosen, preoptimized 
+atomic orbital basis, would be a brute force numerical solution using real-space representations 
+in terms of numerical grids or finite elements. Such an approach would yield robust, unbiased
+results that do not rely on cancellation of errors (but neither would it benefit from it).
+
+It is a well-known fact that the electronic density in molecular systems is rapidly varying 
+in the vicinity of the atomic nuclei, and a usual problem with real-space methods is that an 
+accurate treatment of the system requires high resolution of grid points in the nuclear regions. 
+Keeping this high resolution uniformly througout space would yield unnecessary high accuracy in 
+the interatomic regions, thus the real-space treatment of molecular systems is demanding a 
+\emph{multiresolution} framework in order to achieve numerical efficiency.
+
+\section{Multiwavelets}
+As the theory of wavelets is vast and can be considered a rather advanced topic
+of applied mathematics, it remains unfamiliar to most chemists. However, 
+Alpert's\cite{Alpert} construction of \emph{multiwavelets} is actually
+rather simple. Starting with a small set of orthogonal polynomials 
+$\lbrace\scaling_j\rbrace_{j=0}^k$ of order $\leq k$ on the unit interval, we 
+attempt to represent a given function. If this basis turns out to be too crude 
+to accurately describe the function, we can increase the flexibility by adding
+higher order polynomials (thus increasing the polynomial order $k$), and we
+approach a complete basis (and an exact representation) as $k\rightarrow\infty$.
+
+Alpert shows that there is a second way to approach completeness in this basis.
+Instead of increasing the polynomial order, we split the interval and double 
+the number of basis functions by dilating and translating the original basis 
+to both subintervals
 \begin{equation}
-	\rho(\boldsymbol{r}) = 2\sum_{i=1}^{N_e/2} |\psi_i(\boldsymbol{r})|^2
-\end{equation}
-assuming a closed shell system with double occupancy. The electronic potential 
-is now given as the solution of the Poisson equation
-\begin{equation}
-	\nabla^2 V_{coul}(\boldsymbol{r}) = 4\pi\rho(\boldsymbol{r})
-\end{equation}
-where the orbital-dependence of the potential makes eq.(\ref{eq:Kohn-Sham}) a set
-of non-linear equations that is usually solved self-consistently. 
-The current work will not be concerned with the solution of the Kohn-Sham
-equations, but is rather a precursor to this where some building blocks
-required for the DFT calculations are prepared, in particular the solution of 
-the Poisson equation.
-
-\subsection*{The Poisson equation}
-Solving the Poisson equation for an arbitrary charge distribution is a 
-non-trivial task, and is of major importance in many fields of science, 
-especially in the field of computational chemistry. A huge effort has been put 
-into making efficient Poisson solvers, and usual real-space approaches includes
-finite difference (FD) and finite element (FE) methods. FD is a a grid-based
-method, which is solving the equations iteratively on a discrete grid of 
-pointvalues, while FE is expanding the solution in a basis set, usually by
-dividing space into cubic cells and allocate a polynomial basis to each cell.\\
-
-\noindent
-It is a well-known fact that the electronic density in molecular systems
-is rapidly varying in the vicinity of the atomic nuclei, and a usual problem
-with real-space methods is that an accurate treatment of the system requires
-high resolution of gridpoints (FD) or cells (FE) in the nuclear regions.
-Keeping this high resolution uniformly througout space would yield unnecessary
-high accuracy in the interatomic regions, and the solution of the Poisson
-equation for molecular systems is demanding a \emph{multiresolution} framework 
-in order to achieve numerical efficiency.\\
-
-\noindent
-There are ways of resolving these issues using multigrid techniques, and a nice
-overview of these methods is given by Beck \cite{Beck}, but this thesis is 
-concerned with a third way of doing real-space calculations, one where the
-multiresolution character is inherent in the theory, namely using wavelet
-bases.\\
-
-\noindent
-At this point MRChem is basically a Poisson solver. It has the capabilities of 
-representing arbitrary functions in the multiwavelet basis, and calculate the 
-potential originating from these functions. This is the result of the work by
-\cite{Fossgaard}. The current work includes the
-implementation of some basic arithmetic operations involving these function
-representations, where the space adaptivity of the grid and strict error
-control will be important topics. We will also look at some possible 
-optimizations of the existing code, where computational efficiency, memory
-requirements and linear scaling with respect to system size will be important.
-\\
-
-\noindent
-The thesis is split in two parts; theory and implementation. The theory part
-gives a brief overview of the mathematical theory of multiwavelets, from the
-basic concept of multiresolution analysis, to the representation of functions 
-and operators in the multiwavelet basis, and ultimately to the solution of the
-Poisson equation. The implementation part gives a short description of the
-data structures and algorithms used in the MRChem program, and some details of
-how the mathematical theory is implemented in practice. Some numerical results
-are given to show the capabilities and performances of the code.
-
-
-\subsection{Multiwavelets}
-In the construction of the multiwavelet basis we start with a simple set of 
-orthogonal polynomials $\lbrace\phi_j\rbrace_{j=0}^k$ of order $k$ on the unit 
-interval. This can be e.g. the Legendre polynomials shifted to the unit interval. 
-If this basis turns out to be too crude to accurately describe the function, we 
-split the interval and double the number of basis functions by dilating and 
-translating the original basis to both subintervals
-\begin{equation}
-    \phi_{j,l}^1(x) = 2^{1/2}\phi_j(2x - l), \qquad l = 0,1
+    \scaling_{j,l}^1(x) = 2^{1/2}\scaling_j(2x - l), \qquad l = 0,1
 \end{equation}
 The polynomials are defined only on their respective intervals, so basis functions 
 at different translations are by construction orthogonal. The splitting procedure 
 can be continued until we have reached a scale $n$ where we are satisfied with the 
 accuracy of the representation. At this level of refinement the unit interval has 
-been split in $2^n$ intervals, each of size $2^{-n}$ containing a dilated and 
+been split into $2^n$ intervals, each of size $2^{-n}$ containing a dilated and 
 translated version of the original $k$-order basis
 \begin{equation}
-    \label{eq:two_scale}
-    \phi_{j,l}^n(x) = 2^{n/2}\phi_j(2^nx - l), \qquad l = 0,\dots,2^n-1
+    \scaling_{j,l}^n(x) = 2^{n/2}\scaling_j(2^nx - l), \qquad l = 0,\dots,2^n-1
 \end{equation}
-These are the so-called scaling functions, and they span the scaling space 
-$\scalingspace{n}$. This basis can be used to represent any square integrable 
-function to any finite accuracy by adjusting the polynomial order $k$ and/or the 
-level of refinement $n$. With this construction, it is easy to verify that each 
-scaling space is fully contained in all scaling spaces of higher resolution, and 
-we have the following relation
+This basis can be used to represent any square integrable function to any finite 
+accuracy by adjusting the polynomial order $k$ and/or the level of refinement $n$. 
+
+The construction in three dimensions is similar, where at refinement level $n$
+the unit cube has been uniformly divided into $2^{3n}$ subcubes, each containing
+a polynomial basis of $(k+1)^3$ functions constructed by tensor products of the
+one-dimensional basis functions
 \begin{equation}
-    \label{eq:MRA}
-    \scalingspace{0} \subset \scalingspace{1} \subset \ldots
-    \subset \scalingspace{n} \subset \ldots
+    \scalingnd^n_{ijk}(x,y,z) = \scaling^n_i(x)\scaling^n_j(y)\scaling^n_k(z)
 \end{equation}
-In addition to scaling functions, the multiwavelet basis consists of another set 
-of piecewise polynomials, the wavelet functions $\psi_{j,l}^n$, that span the 
-wavelet space $\waveletspace{n}$. This space is defined as the orthogonal 
-complement of $\scalingspace{n}$ in $\scalingspace{n+1}$
-\begin{equation}
-    \label{eq:wavelet-def}
-    \waveletspace{n} \oplus \scalingspace{n} = \scalingspace{n+1}
-\end{equation}
-The wavelet functions satisfy the same two-scale relation as the scaling functions 
-in Eq.~(\ref{eq:two_scale}).
-\\
-\\
-\noindent
-The extension to three dimensions is done using a standard tensor-product structure, 
-where we get a basis of $(k+1)^3$ pure scaling functions on each cubic cell 
-\begin{equation}
-    \label{eq:tensor_basis}
-    \Phi^n_{ijk}(x,y,z) = \phi^n_i(x)\phi^n_j(y)\phi^n_k(z)
-\end{equation}
-and we note that from the definition of the wavelet space in Eq.~(\ref{eq:wavelet-def}) 
-we get a total of $(2^3-1)(k+1)^3$ wavelet functions on each cell (all combinations in 
-Eq.~(\ref{eq:tensor_basis}) that contain at least one wavelet function), and it becomes 
-apparent that the treatment of more than three dimensions is problematic as the size of 
-the basis grows exponentially in the dimension.
+The main advantage of multiwavelets over the similar finite element bases is the
+possibility of constructing non-uniform grids, and thus focusing the computational
+efforts into the problematic nuclear region. Moreover, the grid construction can 
+be completely automated while the accuracy of the representation is guaranteed.
+
+Although similar constructions were already familiar through the multigrid approaches 
+within the finite element community, these methods suffered from a lack of mathematical
+rigour and generality, with complicated problem-specific algorithms. Alpert's construction, 
+on the other hand, was founded upon the well established, powerful theory of wavelets, 
+making the basis applicable to a wide variety of physical problems and operators,
+yielding sparse representations and fast algorithms.
+
+\section{Organization of the thesis}
+The multiwavelet basis is described in detail within the framework of multiresolution 
+analysis in chapter \ref{chap:math}, and the practical implementation of this formalism
+into a working computer code is presented in chapter \ref{chap:implementation}. In 
+particular, we describe the mathematical operations necessary to solve the equations 
+appearing in the self-consistent field methods of quantum chemistry. An introduction
+to these methods are given in chapter \ref{chap:chemistry}, together with algorithms 
+for their numerical solution.
+
+Included in this thesis are also three papers submitted for publication, that can be
+considered linked to each of the three main chapters. The first paper involves the
+construction of the multiwavelet basis and is an attempt to reduce the memory 
+requirements of the method by decreasing the polynomial order $k$ of the basis as 
+the level of refinement $n$ is increased. 
+
+The second paper describes the implementation of the code with particular focus on its
+application to parallel computer architectures. The performance of the code (numerical
+accuracy, linear scaling of computational time with respect to system size, and parallel
+efficiency) is demonstrated on realistic molecular systems of up to 600 atoms.
+
+The topic of the third paper is the solution of the self-consistent field problem
+in quantum chemistry. General algorithms som are presented for the iterative solution
 
 
-\pagebreak
+

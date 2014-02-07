@@ -6,7 +6,7 @@ of small wavelet coefficients, functions can be represented on adaptive,
 multiresolution grids, where each grid is specifically constructed to the function
 it holds. For operators, we use the concept of separation of 
 variables~\cite{Beylkin:2002p429,Beylkin:2005p45} in order to reduce the complexity
-of application i three dimensions, together with a priori thresholding of long-range
+of application i three dimensions, together with \emph{a priori} thresholding of long-range
 wavelet terms according to the estimates of Eq.~(\ref{eq:operbandwidth}).
 
 In the following we describe the important data structures
@@ -17,12 +17,12 @@ is immediately applicable to any dimension, although some algorithms are
 specialized and optimized for $d=3$.
 
 Due to the inherent high demands on memory and computational resources that comes
-with all real-space numerical methods, the code relies heavily on parallel 
+with all real-space numerical methods, the code relies heavily upon parallel 
 algorithms and data distribution. In the current code data distribution is handled 
 by the Message-Passing Interface (MPI), and further work load distribution is 
 provided by an additional shared memory (OpenMP) parallelization on top. The 
 parallel implementation and the performance of the code is discussed fully in 
-publication 1.
+publication II.
 
 \section{Data structures}
 \subsection{\Node}
@@ -43,7 +43,7 @@ functions, etc) are stored in the \tree structure. The \tree keeps the entire
 set of \texttt{nodes}, from root to leaf, and each \node keeps both the scaling and 
 wavelet coefficients. This means that there is a redundancy in the function 
 representation as the multiresolution representation in Eq.~(\ref{eq:multires})
-requires scaling coefficients only at the coarsest scale. However, it proves 
+requires scaling coefficients at the coarsest scale only. However, it proves 
 more efficient to keep all scaling coefficients in memory rather than obtaining
 them by the filter operations of Eq.~(\ref{eq:twoscalerelations}), as they are 
 needed e.g. in the non-standard operator application.
@@ -92,7 +92,7 @@ lead to a discontinuous path. For $d=2$ this is shown as the Z shape of the bit 
 (00, 01, 10, 11) in figure \ref{fig:lebesgue}. A corresponding (there are several 
 possibilities) Hilbert path through the four children in two dimensions could be the 
 bit sequence (00, 10, 11, 01) shown in the first panel in figure \ref{fig:hilbert}. 
-In order to keep the continuouity as the path is recursively refined, the order in 
+In order to keep the continuity as the path is recursively refined, the order in 
 which the children are traversed needs to be adapted, and will depend on the position 
 of the parent among its siblings, as shown in figure \ref{fig:hilbert}.
 
@@ -127,7 +127,7 @@ Algorithm \ref{alg:function} used to obtain adaptive representations of function
 was originally presented in \cite{Frediani:2013p1143}, but is here extended to 
 include parallelization. The first lines in this algorithm are very important in 
 order to ensure a good
-load balancing among MPI hosts. By utilizing some a priori knowledge of the
+load balancing among MPI hosts. By utilizing some \emph{a priori} knowledge of the
 function that is about to be buildt, we try to estimate the final \tree structure
 as closely as possible before calculating any coefficients. In this way we have
 a lot more flexibility when it comes to parallel distribution of data and work load 
@@ -184,8 +184,8 @@ In practical calculations one can easily get significant contribution over a ran
 of ten length scales, and a uniform grid in three dimensions at scale $n=10$ would
 require $(2^d)^n = 8^{10} \sim 10^9$ \texttt{nodes}, while a typical multi-resolution
 representation requires in the order of $10^2-10^4$ \nodes per scale. Figure 
-\ref{fig:adapgrid} shows the grid needed to represent a spherical Gaussian
-positioned at the center of the unit cube.
+\ref{fig:adapgrid} shows the an adaptive grid used for representing a spherical 
+Gaussian positioned at the center of the unit cube.
 
 The presented algorithm is very general, and is used to build adaptive 
 representations of functions regardless of how the expansion coefficients are 
@@ -254,15 +254,15 @@ interpolating property
     \scaling_j^I(x_i) = \frac{\delta_{j,i}}{\sqrt{\omega_i}}
 \end{equation}
 which will prove important for numerical efficiency. A detailed discussion on 
-the properties of Interpolating wavelets can be found in Donoho~\cite{Donoho:1992}.
+the properties of interpolating wavelets can be found in Donoho~\cite{Donoho:1992}.
 
 \subsection{Wavelet basis}
 There are two necessary constraints in the construction of the wavelet functions
 $\wavelet_j$: they must be orthogonal to the scaling functions and orthogonal among 
-themselves. It turns out that this is not sufficient to determine the wavelet functions
-uniquely, so Alpert~\cite{Alpert:1993p5460} posed additional conditions in terms of 
-vanishing moments. The exact construction is done iteratively, starting with the 
-following set of functions $\lbrace f_j(x) \rbrace_{j=0}^k$ defined on the interval 
+themselves. It turns out that this is not sufficient in order to determine the wavelet 
+functions uniquely, so Alpert~\cite{Alpert:1993p5460} posed additional conditions in 
+terms of vanishing moments. The exact construction is done iteratively, starting with 
+the following set of functions $\lbrace f_j(x) \rbrace_{j=0}^k$ defined on the interval 
 $(-1,1)$
 
 \begin{equation}
@@ -339,8 +339,8 @@ case in the quadrature sum. This reduces Eq.~(\ref{eq:multidimprojection}) to
     \scalingcoef^{n,f}_{\bs{j},\bs{l}} = 2^{-nd/2}
 	f\big(2^{-n}(\bs{x_j}+\bs{l})\big)\prod_{i=1}^d \sqrt{\omega_{j_i}}
 \end{equation}
-which means that the scaling coefficients are related by simple constant factors to 
-the function values on the quadrature grid, leading to very efficient evaluation.
+which means that the scaling coefficients are related to the function values on the
+quadrature grid by simple constant factors, leading to very efficient evaluation.
 
 \subsection{Obtaining the wavelet coefficients}
 The wavelet coefficients are formally obtained by the projection of the
@@ -470,9 +470,9 @@ the expression Eq.~(\ref{eq:legmultND}), which will speed up the process.
 
 Working in the Interpolating basis, the multiplication complexity is significantly 
 reduced, as the basis is specifically designed to return Kronecker deltas when 
-evaluated in the quadrature roots. Inserting this property in 
-Eq.~(\ref{eq:legmultND}), all nested summations are removed and we are left with a 
-single term in the evaluation of the coefficient of the product 
+evaluated in the quadrature roots. Inserting this property into 
+Eq.~(\ref{eq:legmultND}) will remove all nested summations are left with a single 
+term in the evaluation of the coefficient of the product 
 \begin{equation}
     \scalingcoef^{n,h}_{\bs{j}^h\bs{l}} =\ 2^{nd/2}
 	\scalingcoef^{n,f}_{\bs{j}^h\bs{l}}
@@ -746,8 +746,8 @@ the memory of several computational hosts, the presented algorithm inevitably re
 some communication, as the calculation of a given \node of the result requires all \nodes
 of the input function within the bandwidth, and these input \nodes are not necessarily 
 located on the same host. There are different strategies for how this data transfer can 
-be performed, and this is discussed in publication 1, where the performance (linear scaling
-and parallelelization) of the code is presented.
+be performed, and this is discussed in publication II, where the performance (linear scaling
+and parallelization) of the code is presented.
 
 The actual calculation of the coefficients is performed in the following way,
 for simplicity presented for a single operator component in one dimension.
@@ -813,9 +813,9 @@ Instead we
 will set up a much simplified operator whose purpose is only to build the initial 
 grid. We have found that by only applying the purly diagonal part ($l = m$) 
 of the original operator, we capture more than 95\% of the norm of the result, 
-but at a fraction of the computational time, and by building an adaptive grid using
+but at a fraction of the computational cost, and by building an adaptive grid using
 this operator, we end up with a \tree structure that is quite close to the final 
-grid of the full operator. Only when this estimated grid is complete do we apply the
+grid of the full operator. Only when this estimated grid is complete we apply the
 full operator, and the grid is further refined if needed. Moreover, if the operator
 expansion has $M$ terms, it is in general not necessary to include all of
 them in the simplified operator, and typically $M/10$ should be sufficient,

@@ -454,15 +454,15 @@ by a post-processing step.
 An essential feature in the discussion of operators in the multiresolution framework
 is the number of vanishing moments of the chosen basis. This property leads to 
 effectively sparse representations of certain operators (in the sense that sparse
-representations can be obtained to a given accuracy by a priori thresholding of small 
-coefficients), and fast (linear-scaling) algorithms can be obtained for the operator 
+representations can be obtained to a given accuracy by \emph{a priori} thresholding of 
+small coefficients), and fast (linear-scaling) algorithms can be obtained for the operator 
 application.
 
 A necessary assumption for an efficient implementation of a multi-dimensional operator
 is that it is separable in the Cartesian coordinates. This, combined with the tensor
 structure of the multiwavelet basis, ensures that the multi-dimensional operator 
 application can be performed using mono-dimensional algorithms, and that the exponential
-scaling in the dimension is significantly reducecd. This assumption does not
+scaling in the dimension is significantly reduced. This assumption does not
 limit the applicability of the method on real-world problems, as many important 
 non-separable operators in physics can be made separable to a finite, but arbitrary
 precision.
@@ -691,7 +691,8 @@ into $\scalingrep{g}{n-1} + \waveletrep{g}{n-1}$. The matrix equation now turns 
     \right)
 \end{split}
 \end{equation}
-We can continue this transformation recursively until we reach the coarsest scale. 
+and we can continue this transformation recursively until we reach the coarsest scale. 
+
 Symbolically, we can do the decomposition of Eq.~(\ref{eq:ABCT}) by recursive 
 application of itself as well as Eqs.~(\ref{eq:Bdecomp}) and (\ref{eq:Cdecomp}), 
 where we gradually introduce more $A$-character into the operator
@@ -878,7 +879,7 @@ from Eq.~(\ref{eq:scaling_coef})
 \end{equation}
 We can now identify $\taumat^n_{lm}$ as the matrix elements of \T{n}{n} 
 and Eq.~(\ref{eq:Tact}) is Eq.~(\ref{eq:Tmatrix}) written explicitly. 
-Similarly, we define \alphamat, \betamat and \gammamat as the matrix 
+Similarly, we define \alphamat, \betamat\ and \gammamat\ as the matrix 
 elements of $A$, $B$ and $C$, respectively
 \begin{align}
     \label{eq:tcbadef}
@@ -915,8 +916,8 @@ that the integral kernel in Eq.~(\ref{eq:intop1d}) satisfy the estimates
     |\partial_x^M K(x,y)|+ |\partial_y^M K(x,y)| &\leq \frac{C_M}{|x-y|^{M+1}}
 \end{align}
 for some $M\geq1$. Such operators are called Calderon-Zygmund operators, and
-include both the Poisson and bound-state Helmholtz operators which is discussed 
-in detail below. Beylkin \etal~\cite{Beylkin:1991} 
+include both the Poisson and bound-state Helmholtz operators which are discussed 
+in detail in chapter \ref{chap:implementation}. Beylkin \etal~\cite{Beylkin:1991} 
 shows that in a basis with $M$ vanishing moments, the wavelet 
 components \alphamat, \betamat\ and \gammamat\ will be bounded as
 \begin{equation}

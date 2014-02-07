@@ -1,11 +1,11 @@
 %TODO Discuss chemical accuracy in relation to HF and KS approximations as well as basis sets
 %TODO Mention DFAs at the end of exchange-correlation subsection
 %TODO AOs ideal for fast qualitative numbers, struggle with high-accuracy calculations
-\chapter{Electronic structure theory}
+\chapter{Electronic structure theory}\label{chap:chemistry}
 In this chapter we present the equations that govern chemical systems, in particular
 the electronic stucture of atoms and molecules. At the molecular length scale, nature
 is most accurately described by the theory of quantum mechanics, where the central
-problem is the solution of the non-relativistic Schr\"{o}dinger.
+problem is the solution of the non-relativistic Schr\"{o}dinger equation.
 
 Being that this problem cannot be solved exactly by any analytical method whenever
 the system contains more than two particles, much of the work in the field of quantum
@@ -301,7 +301,7 @@ semi-empirically by fitting parameters to experimental data.
 
 \subsection{The Kohn-Sham equations}
 The general idea of DFT appears very appealing, as we only need to solve one three-dimensional 
-equationfor the electron density. However, it turns out to be very difficult to find good 
+equation for the electron density. However, it turns out to be very difficult to find good 
 approximations for the kinetic energy functional, and according to the virial theorem this 
 energy is of the order of the total energy of the system, and thus needs to be accurately 
 represented. To circumvent this problem, Kohn and Sham\cite{Kohn-Sham:1965} proposed to express 
@@ -475,10 +475,10 @@ attractive\cite{Losilla_thesis:2013}
 \end{itemize}
 It turns out that no basis can give you all these properties at once, so we have to make some 
 kind of compromise when choosing a basis set for a certain problem, and the choice will often 
-depend on known analytical properties of the solution. For instance, it is known that the ground
-state wave function is continous, but not differentiable at the nuclear 
-positions\cite{Kato:1957}.
+depend on known analytical properties of the solution. 
 
+For instance, it is known that the ground state wave function is continous, but not differentiable 
+at the nuclear positions\cite{Kato:1957}.
 Similar \emph{cusps} appear in the wave function when the coordinate of two electrons coincide, 
 as well as for the molecular orbitals and the electron density at the nuclear positions. 
 Specifically, the behavior of the density close to a nucleus is known to be
@@ -500,7 +500,7 @@ a collection of atoms suggests that a reasonable approach would be to express th
 \begin{equation}
     \orbital_i(\bs{r}) = \sum_I\sum_p^{M_I} c_{ip}\AO_p(\bs{r}-\bs{R}_I) 
 \end{equation}
-where the atomic orbitals (AOs) are atom centered functions similar to the eigenfunctions of the 
+where the atomic orbitals (AOs) are atom-centered functions similar to the eigenfunctions of the 
 hydrogen atom. Even if the presence of several nuclei in a molecule breaks the angular symmetry
 around each atom, the nuclear potential is so steep that the symmetry is to a large extent retained
 in the vicinity of the nucleus. The AOs are thus chosen to be spherically symmetric functions that 
@@ -662,7 +662,7 @@ operators, with respective integral kernels
 \end{align}
 The Poisson operator $\hat{P}=\big[-\nabla^2\big]^{-1}$ will be used in the calculation of 
 electrostatic potentials as well as the Hartree-Fock exchange operator, the Helmholtz 
-operator $\hat{H}^\mu=\big[-\nabla^2-\mu^2\big]^{-1}$ appears in the integral formulation 
+operator $\hat{H}^\mu=\big[-\nabla^2+\mu^2\big]^{-1}$ appears in the integral formulation 
 of the Hartree-Fock and Kohn-Sham equations, and the derivative operator $\hat{D}^x$ is 
 needed for the calculation of exchange-correlation potentials using GGA functionals.
 
@@ -716,8 +716,8 @@ potential, and are solved self-consistently with respect to the orbitals and ene
 
 \subsection{Calculation of energy}
 We will now assume that the Hartree-Fock or Kohn-Sham equations have been solved to obtain
-the orbitals $\orbital_i$ that make up ground state wave function, and their energies 
-$\epsilon_i$ and use these to calculate the electronic energy of the molecular system.
+the orbitals $\orbital_i$ that make up ground state wave function, as well as their energies 
+$\epsilon_i$, and use these to calculate the electronic energy of the molecular system.
 Numerical algorithms for how to solve these equations are presented in section 
 \ref{sec:algorithms} in the simple case of a one-electron system, and more generally in
 publication III for many-electron systems. In addition to the electronic energy we have 
@@ -759,8 +759,8 @@ the total electronic energy can be calculated as
     E = 2 \sum_i^{N/2} \epsilon_i - \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
 	- \sum_i^{N/2} \langle\orbital_i|\hat{K}|\orbital_i\rangle
 \end{equation}
-without the need of applying the kinetic energy operator, given the orbitals and Fock matrix that
-solves the Hartree-Fock equations.
+without the need of applying the kinetic energy operator, given the orbitals and orbital energies
+that solves the Hartree-Fock equations.
 
 \subsubsection{Kohn-Sham DFT}
 The energy in Kohn-Sham DFT was given through the energy functionals
@@ -994,6 +994,6 @@ where all orbitals and energies are included in the Krylov vector
 	\Delta\epsilon_0^n,\cdots,\Delta\epsilon_N^n\right)
 \end{align}
 where it is important to keep track of the ordering of the orbitals throughout the iteration, 
-especially in the case of degeneracies, where the orbitals are now uniquely defined. This is 
+especially in the case of degeneracies, where the orbitals are not uniquely defined. This is 
 discussed further in publication III.
 
