@@ -1,0 +1,25 @@
+\chapter*{Abstract}
+This thesis presents the implementation of a numerical real-space 
+method for the calculation of the electronic structure of molecular systems
+within the self-consistent field approximations of quantum chemistry. The
+code is based on the multi-resolution multiwavelet basis which provide
+sparse representations of functions and operators, in particular integral
+operators with Green's function convolution kernels. The mathematical
+formalism provides efficient (linear-scaling) algorithms for operator
+application, e.g. for the Coulomb operator for the calculation of 
+electrostatic potentials, as well as rigorous error control.
+
+The Hartree-Fock and Kohn-Sham equations of quantum chemistry are reformulated 
+in integral form and solved to self-consistency using iterative solution 
+techniques. The code is able to attain high-accuracy for many-electron 
+molecular systems, both restricted closed-shell and unrestricted open-shell.
+
+Because of the inherent high demands on computational resources that
+comes with real-space methods, the code relies on parallel algorithms and
+data distribution in order to become competitive with conventional methods,
+and the code has been properly adapted in order to utilize modern massively 
+parallel computing architectures.
+
+\pagebreak
+\ 
+\pagebreak

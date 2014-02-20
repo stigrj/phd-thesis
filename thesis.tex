@@ -8,6 +8,7 @@
 \usepackage{float}
 \usepackage{multirow}
 \usepackage{multicol}
+\usepackage{enumerate}
 
 %\usepackage{a4wide}
 %\usepackage[pdftex,colorlinks=true,
@@ -26,30 +27,31 @@
 \input{newcommands}
 
 \begin{document}
-\title{PhD Thesis}
+\title{Quantum Chemistry at high resolution: a parallel Multiwavelet implementation}
 
 \author{Stig Rune Jensen}
 \date{\today}
 %\maketitle
 
 \pagenumbering{roman}
-%\pagebreak
-%\ \\
-%\pagebreak
+\pagebreak
+\ \\
+\pagebreak
+\input{abstract}
+\input{acknowledgments}
 \tableofcontents
-%\input{acknowledgments}
+\input{papers}
+\pagebreak
+\ \\
+\pagebreak
 \pagenumbering{arabic}
 \include{introduction}
 \include{mathematics}
 \include{implementation}
 \include{chemistry}
-%\include{algorithms}
 \include{of-dft}
-%\listoffigures
-%\listoftables
-%\pagebreak
-%\ \\
-%\pagebreak
+\include{summary}
+%\include{outlook}
 \bibliographystyle{unsrt}
 \bibliography{RefDataBase}
 

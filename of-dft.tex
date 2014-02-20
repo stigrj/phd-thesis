@@ -1,7 +1,4 @@
-%TODO Separate kinetic energy discussion from xc
-%TODO Separate MW discussion
-%TODO Be more precise in conclusions regarding applicability of MW vs. SCF formulation
-\chapter{Orbital-Free DFT}
+\chapter{Orbital-Free DFT}\label{chap:of-dft}
 The orbital-based formulation of density functional theory that was introduced by Kohn and Sham\cite{Kohn-Sham:1965} 
 fifty years ago has been the most widely used method for determining the electronic structure 
 of molecules during the last few decades. Even without the systematic improvability of the wave function based,
@@ -76,7 +73,7 @@ coordinate scaling if it satisfies
 \begin{equation}
     F[\lambda^3\rho(\lambda\bs{r})] = \lambda^mF[\rho(\bs{r})]
 \end{equation}
-and the exact exchange and non-interacting kinetic energies are homogeneus of degree 1 and 2, respectively, leading 
+and the exact exchange and non-interacting kinetic energies are homogeneus of degrees 1 and 2, respectively, leading 
 to their respective exponents $\rho^{4/3}$ and $\rho^{5/3}$. 
 
 In a recent work, Borgoo and Tozer\cite{Borgoo:2013} have looked
@@ -84,6 +81,7 @@ into the less familiar \emph{density scaling}, where a functional homogeneous of
 \begin{equation}
     F[\lambda\rho(\bs{r})] = \lambda^kF[\rho(\bs{r})]
 \end{equation}
+and the exact functional is believed to be inhomogeneous.
 However, the sufficiently accurate approximation that would make OF-DFT useful for the description of molecular
 systems remains to be found\cite{Xia:2012}, although some applications are found for large, periodic systems in 
 condensed-phase physics in combination with pseudo-potentials, where the valence electrons are better 
@@ -160,7 +158,7 @@ the Thomas-Fermi kinetic functional given in Eq.~(\ref{eq:thomas-fermi}), giving
 \begin{equation}
     v_\theta(\bs{r}) = \frac{\delta T_\theta[\rho]}{\delta\rho} = \frac{1}{2}\left(3\pi^2\right)^{2/3} \rho^{2/3}(\bs{r})
 \end{equation}
-The results (chemical potential and total energy) of such calculations are presented in table \ref{tab:of-results}, where
+The results (chemical potential and total energy) of such calculations are presented in Tab.~\ref{tab:of-results}, where
 the total energies are compared to conventional (spin-restricted) KS-DFT calculations, using the same Dirac exchange,
 as well as (spin-restricted) Hartree-Fock energies, taken from Karasiev and Trickey\cite{Karasiev:2012} and Chan 
 \etal\cite{Chan:2000}, respectively (The Hartree-Fock energies presented in Ref.\cite{Chan:2000} are actually calculations 
@@ -241,7 +239,7 @@ BH	& MRChem		&  -1.170066    &  -0.146852    &  -38.589138   & -15.301851    &  
     \label{fig:of-atoms}
 \end{figure}
 
-As can be seen from table \ref{tab:of-results}, we are able to reach self-consistent solutions that agree 
+As can be seen from Tab.~\ref{tab:of-results}, we are able to reach self-consistent solutions that agree 
 with previously reported numbers for small systems. All calculations were performed using a 9th order 
 multiwavelet basis with an relative accuracy threshold of $\epsilon=10^{-6}$, and converged to a residual norm 
 of $\|\orbital^{n+1}-\orbital^n\| < 10^{-6}$, which means that the presented numbers should be correct to
@@ -275,22 +273,26 @@ to optimize the parameters on this respect.
     \label{fig:of-molecules}
 \end{figure}
 
-If we examine the physics of these models we see that both DvW and TFDvW fail to reproduce the Hartree-Fock energies,
-even qualitatively. As mentioned above, the von Weiz\"{a}cker functional is exact for one-orbital systems, which means
-that DvW model is identical to LDA for the hydrogen and helium atoms, as well as the hydrogen molecule, as can be seen 
-from the numbers. The same is observed in the density plots in figures \ref{fig:of-atoms} and \ref{fig:of-molecules},
-where we can see the radial density of the hydrogen and neon atoms in fig. \ref{fig:of-atoms}, and the density along
-the internuclear axis of the $H_2$ and $BH$ molecules in fig. \ref{fig:of-molecules}. 
+If we examine the physics of these models we see that both DvW and TFDvW fail to reproduce 
+the Hartree-Fock energies, even qualitatively. As mentioned above, the von Weiz\"{a}cker 
+functional is exact for one-orbital systems, which means that DvW model is identical to LDA 
+for the hydrogen and helium atoms, as well as the hydrogen molecule, as can be seen from the 
+numbers. The same is observed in the density plots in Figs.~\ref{fig:of-atoms} and 
+\ref{fig:of-molecules}, where we can see the radial density of the hydrogen and neon atoms 
+in Fig.~\ref{fig:of-atoms}, and the density along the internuclear axis of the $H_2$ and 
+$BH$ molecules in Fig.~\ref{fig:of-molecules}. 
 
-From this we can conclude, as is already well established, that the Thomas-Fermi-Dirac-von-Weiz\"{a}cker models do
-not perform well for atomic and molecular systems. It is common to introduce a parameter $\lambda$ for the von Weiz\"{a}cker
-term in order to correct for a known over-estimation for molecular systems
+From this we can conclude, as is already well established, that the 
+Thomas-Fermi-Dirac-von-Weiz\"{a}cker models do not perform well for atomic and molecular 
+systems. It is common to introduce a parameter $\lambda$ for the von Weiz\"{a}cker term 
+in order to correct for a known over-estimation for molecular systems
 \begin{equation}
     T_s = \lambda T_W + T_\theta
 \end{equation}
-and by adjusting this parameter one can get within a few per cent of the Hartree-Fock energy for the given atomic systems, 
-as is shown by Chan \etal\cite{Chan:2000} using $\lambda=1/5$. However, this parameter is not universal, and the densities 
-that are obtained are not equally accurate (see Ref.\cite{Chan:2000} for details).
+and by adjusting this parameter one can get within a few per cent of the Hartree-Fock energy 
+for the given atomic systems, as is shown by Chan \etal\cite{Chan:2000} using $\lambda=1/5$. 
+However, this parameter is not universal, and the densities that are obtained are not equally 
+accurate (see Ref.\cite{Chan:2000} for details).
 
 \section{Outlook}
 The purpose of this study was not to examine the performance of the given kinetic energy 
@@ -299,12 +301,14 @@ but rather to see whether the multiresolution framework is appropriate for the s
 of the OF-DFT Euler equation. It seems quite clear that its formulation as a one-orbital 
 Kohn-Sham problem is not appropriate, as the convergence of the iterative solution for 
 many-electron systems is problematic at best, as the Thomas-Fermi contribution had to be 
-introduced very carefully to avoid divergence. However, once the full TF potential had 
+introduced very carefully to avoid divergence. However, this is related to the
+mathematical formulation of the problem, and is not specific to the multiwavelet basis.
+Also, once the full TF potential had 
 been included, high order convergence was not difficult to obtain, and accuracies of 
 $10^{-9}$ was easily achieved.
 
 Given the properties of the multiwavelet basis, which is easily parallelizable for the few 
 global functions that are involved, and with representations that are free of basis set error, 
-this could be the ideal framework for the development of better kinetic energy functionals, 
+this could still be the ideal framework for the development of better kinetic energy functionals, 
 but this will require much more robust optimization algorithms. This will be subject for 
 further investigation.

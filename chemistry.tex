@@ -1,6 +1,3 @@
-%TODO Discuss chemical accuracy in relation to HF and KS approximations as well as basis sets
-%TODO Mention DFAs at the end of exchange-correlation subsection
-%TODO AOs ideal for fast qualitative numbers, struggle with high-accuracy calculations
 \chapter{Electronic structure theory}\label{chap:chemistry}
 In this chapter we present the equations that govern chemical systems, in particular
 the electronic stucture of atoms and molecules. At the molecular length scale, nature
@@ -10,16 +7,15 @@ problem is the solution of the non-relativistic Schr\"{o}dinger equation.
 Being that this problem cannot be solved exactly by any analytical method whenever
 the system contains more than two particles, much of the work in the field of quantum
 chemistry has been concerned with developing accurate and efficient approximations,
-a work that has been given invaluable support by the remarkable increase in 
-computational power that has taken place since the advent of the electronic computer 
-more than halv a century ago.
+a work that has been given invaluable support by the developments in computer
+technology over the last half-century.
 
 This chapter will give an introduction to the self-consistent field (SCF) approximations 
 that are commonly employed in computational chemistry. We will start with a traditional 
 presentation of the orbital based methods of Hartree-Fock and Kohn-Sham density functional 
 theory, where the aim of the chapter is to rewrite the equations into their less familiar 
 integral form. An optimization algorithm using the mathematical tools as implemented in 
-chapter \ref{chap:implementation} is demonstrated for simple one-electron systems, while 
+Chap.~\ref{chap:implementation} is demonstrated for simple one-electron systems, while 
 the treatment of general many-electron systems is the topic of publication III.
 
 Most of the exposition follows that of the standard textbooks of computational chemistry, 
@@ -57,7 +53,7 @@ electrons and nuclei that make up the system
 \begin{equation}
     \hat{H} = \hat{T}_{nuc} + \hat{T}_{el} + \hat{V}_{nn} + \hat{V}_{ee} + \hat{V}_{ne}
 \end{equation}
-Analytical solutions exists only for the one- and two-particle problems, and approximations 
+Analytic solutions exists only for the one- and two-particle problems, and approximations 
 are inevitable if we want to be able to treat more interresting chemical systems. 
 
 The first approximation for molecular systems is almost exclusively the Born-Oppenheimer 
@@ -210,7 +206,7 @@ are grouped into $N/2$ pairs sharing the same spatial function, but with opposit
     \orbital_i^\sigma(\bs{x}) = \orbital_i(\bs{r})\sigma(s), \qquad \sigma = \alpha,\beta
 \end{equation}
 By imposing the constraint that the spatial orbitals remain orthonormal 
-$\langle\orbital_i|\orbital_j\rangle = \delta_{ij}$
+$\langle\orbital_i|\orbital_j\rangle = \delta_{i,j}$
 by means of Lagrange multipliers, the energy minimization yields the Hartree-Fock equations
 \begin{equation}
     \hat{F}\orbital_i(\bs{r}) = \epsilon_i \orbital_i(\bs{r})
@@ -260,8 +256,8 @@ only interacts with the average field created by the other electrons. While this
 approximation for the electron's interaction with the slow moving nuclei, the instantaneous 
 correlation is more important between two electrons. The Hartree-Fock method still provides 
 a reasonable qualitative description of molecules near their equilibrium geometry, capturing 
-95-99\% of the total energy.  This, however, is generally not sufficient to reach chemical 
-accuracy, and there exists several post-Hartree-Fock methods that model the missing 
+95-99\% of the total energy.  This, however, is generally not sufficient in order to reach 
+chemical accuracy, and there exist several post-Hartree-Fock methods that model the missing 
 \emph{correlation} energy, including configuration interaction (CI) and coupled-cluster (CC)
 theory, but these will not be discussed 
 (see e.g.\cite{Szabo-Ostlund:1982,Jensen:2007,Helgaker:2000}).
@@ -477,7 +473,7 @@ It turns out that no basis can give you all these properties at once, so we have
 kind of compromise when choosing a basis set for a certain problem, and the choice will often 
 depend on known analytical properties of the solution. 
 
-For instance, it is known that the ground state wave function is continous, but not differentiable 
+For instance, it is known that the ground state wave function is continuous, but not differentiable 
 at the nuclear positions\cite{Kato:1957}.
 Similar \emph{cusps} appear in the wave function when the coordinate of two electrons coincide, 
 as well as for the molecular orbitals and the electron density at the nuclear positions. 
@@ -509,8 +505,8 @@ and a radial part $R(r)$
 \begin{equation}
     \AO_p (\bs{r}) = R_p(r)Y_{l_p,m_p}(\theta,\varphi)
 \end{equation}
-This basis can approach completeness either in the angular part, by increasing the maximum angular 
-momentum $L$ in the spherical harmonics, or in the radial part by adding more linearly independent
+This basis can approach completeness both in the angular part, by increasing the maximum angular 
+momentum $L$ in the spherical harmonics, and in the radial part by adding more linearly independent
 radial functions. It is well established that the convergence in the angular part is exponential
 ($\sim e^{-\sqrt{L}}$) for Hartree-Fock energies (for post-Hartree-Fock methods the convergence is 
 slower $\sim L^{-3}$), which means that very large $L$ is typically not needed for SCF calculations. 
@@ -569,69 +565,84 @@ parameters biases the results towards a particular property, making it difficult
 of the calculation of other properties.
 
 \subsection{Plane wave basis functions}
-Rather than using localized AO-like basis functions that are trying to model each atom separately,
-and forming molecular orbitals through LCAOs, one can start with basis functions that are aimed directly
-at the full system. This approach is most appropriate for modelling infinite systems represented by
-a unit cell with periodic boundary conditions, such as metals where the valence electrons are delocalized
-and thus well represented by solutions of the free electron Sch\"{o}dinger equation. The three-dimensional 
-plane wave basis is usually written in terms of complex exponentials
+Rather than using localized AO-like basis functions that are trying to model 
+each atom separately, and forming molecular orbitals through LCAOs, one can 
+start with basis functions that are aimed directly at the full system. This 
+approach is most appropriate for modelling infinite systems represented by
+a unit cell with periodic boundary conditions, such as metals where the 
+valence electrons are delocalized and thus well represented by solutions of 
+the free electron Schr\"{o}dinger equation. The three-dimensional plane wave 
+basis is usually written in terms of complex exponentials
 \begin{equation}
     \AO_p(\bs{r}) = e^{i\bs{k}_p\cdot\bs{r}}
 \end{equation}
-where the wave vector $\bs{k}$ gives the oscillation frequency and is related to the energy of the basis
-function. The size of the basis is determined by the sampling resolution in $k$-space (spacing between 
-$k$-vectors) and the highest energy $\bs{k}$-vector included, which depend on the size of the unit cell,
-and is usually significantly larger than the size of typical Gaussian basis sets. 
+where the wave vector $\bs{k}$ gives the oscillation frequency and is related 
+to the energy of the basis function. The size of the basis is determined by 
+the sampling resolution in $k$-space (spacing between $k$-vectors) and the 
+highest energy $\bs{k}$-vector included, which depend on the size of the unit 
+cell, and is usually significantly larger than the size of typical Gaussian 
+basis sets. 
 
-Plane waves can in principle be used
-for non-periodic systems as well, by placing the molecule in a sufficiently large unit cell where its 
-interaction with its own image in the neighboring cells can be neglected. However, placing a small
-molecule in a large unit cell requires disproportionally many basis functions, and the molecule is 
-represented much more efficiently using localized atomic orbitals.
+Plane waves can in principle be used for non-periodic systems as well, by 
+placing the molecule in a sufficiently large unit cell where its interaction 
+with its own image in the neighboring cells can be neglected. However, placing 
+a small molecule in a large unit cell requires disproportionally many basis 
+functions, and the molecule is represented much more efficiently using 
+localized atomic orbitals.
 
-The plane wave basis is also ill-suited to represent the core region of atoms, where many rapidly 
-oscillating functions are required, and especially the singularity in the nuclear potential, which 
-is almost impossible to describe in this basis. On the other hand, plane waves are ideal for 
-representing the smooth density of delocalized valence electrons, and are usually used in connection 
-with pseudopotentials, where the effect of the core electrons are combined with the nuclear charges 
-to give an \emph{effective core potential}, and only the valence electrons are treated explicitly. 
-This, in combination with the fast Fourier transform (FFT), have made plane wave methods the 
-preferred choice for the treatment of many-particle problems of condensed phases. 
+The plane wave basis is also ill-suited to represent the core region of atoms, 
+where many rapidly oscillating functions are required, and especially the 
+singularity in the nuclear potential, which is almost impossible to describe 
+in this basis. On the other hand, plane waves are ideal for representing the 
+smooth density of delocalized valence electrons, and are usually used in 
+connection with pseudopotentials\cite{Vanderbilt:1990}, where the effect of 
+the core electrons are combined with the nuclear charges to give an 
+\emph{effective core potential}, and only the valence electrons are treated 
+explicitly. This, in combination with the fast Fourier transform (FFT), have 
+made plane wave methods the preferred choice for the treatment of many-particle 
+problems of condensed phases. 
 
 \subsection{Real-space representations}
-Most of the problems connected with atom-centered basis sets are related to their global support,
-and these issues can be adressed using numerical real-space methods. In these methods each expansion
-coefficient is usually directly related to the function value at a certain grid point in space, and
-a systematic improvement of the accuracy is readily obtained by decreasing the spacing between the 
-grid points. The finite element (FE) basis is considered a real-space method even if the representations
-are given through basis set expansions. The reason for this is that the basis is grouped into a small
-number of $n$ functions sharing the same compact support, disjoint from the support of all other basis 
-functions, making them responsible for the function representation in a certain region of real space.
-The expansion coefficients are usually obtained through numerical quadrature, which means that the $n$
-functions are related to $n$ point values. Moreover, using interpolating polynomials each basis function 
-is directly connected to a single grid point.
+Most of the problems connected with atom-centered basis sets are related to their 
+global support, and these issues can be adressed using numerical real-space methods. 
+In these methods each expansion coefficient is usually directly related to the 
+function value at a certain grid point in space, and a systematic improvement of 
+the accuracy is readily obtained by decreasing the spacing between the grid points. 
+The finite element (FE) basis is considered a real-space method even if the 
+representations are given through basis set expansions. The reason for this is 
+that the basis is grouped into a small number of $n$ functions sharing the same 
+compact support, disjoint from the support of all other basis functions, making 
+them responsible for the function representation in a certain region of real space.
+The expansion coefficients are usually obtained through numerical quadrature, which 
+means that the $n$ functions are related to $n$ point values. Moreover, using 
+interpolating polynomials each basis function is directly connected to a single grid 
+point.
 
-While the FE basis solves the problems of the AO basis concerning systematicity, universality and 
-attainable accuracy, it takes a heavy blow when it comes to compactness of the representation. 
-Originally, the FE bases required a uniform grid, making them highly inefficient for the treatment of
-multiscale problems like the electronic structure of molecules, where high precision requires 
-high resolution in the nuclear region. A uniform grid will in this case result in an excessive 
-overrepresentation of the much smoother interatomic region, making accurate calculations very 
-computationally demanding, even if the fundamental mathematical operations involving the polynomial
-basis are very efficient. 
+While the FE bases can solve the problems of the AO basis concerning systematicity, 
+universality and attainable accuracy, they suffer from a lack of 
+compactness of the representation. Originally, the FE bases required a uniform 
+grid, making them highly inefficient for the treatment of multiscale problems 
+like the electronic structure of molecules, where high precision requires high 
+resolution in the nuclear region. A uniform grid will in this case result in an 
+excessive overrepresentation of the much smoother interatomic region, making 
+accurate calculations very computationally demanding, even if the fundamental 
+mathematical operations involving the polynomial basis are very efficient. 
 
-Due to the high cost of real-space methods, applications in electronic structrure calculations are
-uncommon, and for a long time they were limited to benchmarking calculations on small systems 
-of high symmetry\cite{Laaksonen:1983-1,Laaksonen:1983-2,Laaksonen:1983-3,Kobus:1996}. Some 
-attempts have been made to overcome the problem, either by 
-removing the high frequency core region by means of pseudopotentials, or by combining the FE basis 
-with another basis of AO type with complementary properties that is able to treat the nuclear region 
-more efficiently\cite{Kurashige:2007,Watson:2008,Kurashige:2010,Losilla:2012}. Another approach, 
-which is the one persued in this work,
-that is applicable to all-electron calculations of systems of arbitrary geometries, is based on 
-multiresolution analysis and the multiwavelet basis. This approach, that was pioneered by Harrison and 
-coworkers\cite{Harrison_basic:2004} some ten years ago, allows for strict error control using adaptive 
-non-uniform grids, thus reducing the computational cost significantly.
+Due to the high cost of real-space methods, applications in electronic structrure 
+calculations are uncommon, and for a long time they were limited to benchmarking 
+calculations on small systems of high 
+symmetry\cite{Laaksonen:1983-1,Laaksonen:1983-2,Laaksonen:1983-3,Kobus:1996}. 
+Some attempts have been made to overcome the problem, either by removing the high 
+frequency core region by means of pseudopotentials, or by combining the FE basis 
+with another basis of AO type with complementary properties that is able to treat 
+the nuclear region more 
+efficiently\cite{Kurashige:2007,Watson:2008,Kurashige:2010,Losilla:2012}. Another 
+approach, which is the one persued in this work, that is applicable to all-electron 
+calculations of systems of arbitrary geometries, is based on multiresolution analysis 
+and the multiwavelet basis. This approach, that was pioneered by Harrison and 
+coworkers\cite{Harrison_basic:2004,Yanai_HF:2004,Yanai_anal:2004,Yanai_TDDFT:2005} 
+ten years ago, allows for strict error control 
+using adaptive non-uniform grids, thus reducing the computational cost significantly.
 
 \section{Integral formulation}
 The discretization of the Hartree-Fock (\ref{eq:HF_equations}) and Kohn-Sham (\ref{eq:KS_equations})
@@ -639,8 +650,8 @@ equations using the atom-centered basis leads to the Roothaan-Hall\cite{Roothaan
 matrix 
 equations that are solved iteratively using standard convergence acceleration techniques like
 the direct inversion of the iterative subspace (DIIS)\cite{Pulay:1980}. This approach is not 
-appropriate
-for the FE and multiwavelet bases due to the high number of basis functions involved. Moreover,
+appropriate for the FE and multiwavelet bases due to the high number of basis functions involved,
+as well as the requirement of a fixed basis set. Moreover,
 in a discontinuous basis, differential operators (especially higher order operators like
 the kinetic energy) should be avoided in order to maintain high accuracy\cite{Harrison_basic:2004}.
 
@@ -652,7 +663,7 @@ convolution operators
 \begin{equation}
     g(\bs{r}) = \hat{G}\big[f\big](\bs{r}) \mydef \int G(\bs{r}-\bs{r}') f(\bs{r}') \ud\bs{r}'
 \end{equation}
-that were presented in chapter \ref{chap:implementation}, where we specifically described
+that were presented in Chap.~\ref{chap:implementation}, where we specifically described
 the implementation of the Poisson, the bound-state Helmholtz and the first order derivative 
 operators, with respective integral kernels
 \begin{align}
@@ -664,7 +675,8 @@ The Poisson operator $\hat{P}=\big[-\nabla^2\big]^{-1}$ will be used in the calc
 electrostatic potentials as well as the Hartree-Fock exchange operator, the Helmholtz 
 operator $\hat{H}^\mu=\big[-\nabla^2+\mu^2\big]^{-1}$ appears in the integral formulation 
 of the Hartree-Fock and Kohn-Sham equations, and the derivative operator $\hat{D}^x$ is 
-needed for the calculation of exchange-correlation potentials using GGA functionals.
+needed for the calculation of exchange-correlation potentials using GGA functionals through
+Eq.~(\ref{eq:GGA_pot}).
 
 \subsection{Hartree-Fock}
 In the closed-shell restricted Hartree-Fock model, the electron density is given from
@@ -718,8 +730,8 @@ potential, and are solved self-consistently with respect to the orbitals and ene
 We will now assume that the Hartree-Fock or Kohn-Sham equations have been solved to obtain
 the orbitals $\orbital_i$ that make up ground state wave function, as well as their energies 
 $\epsilon_i$, and use these to calculate the electronic energy of the molecular system.
-Numerical algorithms for how to solve these equations are presented in section 
-\ref{sec:algorithms} in the simple case of a one-electron system, and more generally in
+Numerical algorithms for how to solve these equations are presented in Sec.~\ref{sec:algorithms} 
+in the simple case of a one-electron system, and more generally in
 publication III for many-electron systems. In addition to the electronic energy we have 
 the constant nuclear repulsion energy
 \begin{equation}
@@ -789,7 +801,7 @@ kinetic energy
     E = 2 \sum_i^{N/2} \epsilon_i - \frac{1}{2} \int \rho(\bs{r})v_{el}(\bs{r}) \ud\bs{r}
 	+ \int F_{xc} \ud\bs{r} - \int \rho(\bs{r})v_{xc}(\bs{r}) \ud\bs{r}
 \end{equation}
-where it should be notet that
+where it should be noted that
 \begin{equation}
     E_{xc}[\rho] = \int F_{xc} \ud\bs{r} \neq \int \rho(\bs{r})v_{xc}(\bs{r}) \ud\bs{r}
 \end{equation}
@@ -878,7 +890,7 @@ from the application of the Helmholtz operator. For future reference, we also de
 	- \wavefunction^n
 \end{equation}
 
-\subsection{Krylov accelerated inexact Newton method}
+\subsection{Krylov subspace accelerated inexact Newton method}
 The fixed-point problem in Eq.~(\ref{eq:int_schr}) can be viewed as finding 
 the roots of the the following residual function
 \begin{equation}
@@ -896,7 +908,7 @@ Eq.~(\ref{eq:power}), we can identify the power method as an \emph{inexact}
 Newton method where the Jacobian is approximated by $J(\wavefunction) \approx -1$.
 Harrison\cite{Harrison_kain:2004} describes how to make use of the information in the
 iterative history (Krylov subspace) to improve the approximation of the 
-Jacobian in the Krylov accelerated inexact Newton (KAIN) method. The method 
+Jacobian in the Krylov subspace accelerated inexact Newton (KAIN) method. The method 
 is similar to the more commonly used direct inversion of iterative subspace 
 (DIIS) method of Pulay\cite{Pulay:1980}, but while DIIS is looking for the best 
 step within the iterative subspace, KAIN is using the same information to 
@@ -922,7 +934,7 @@ where the coefficients $c_j$ are obtained by solving the linear system $Ac=b$
 \end{align}
 The size $m$ of the Krylov subspace is without constraints. The larger it is, 
 the better is the Krylov update, but also the larger is the linear system. In 
-general, the Krylov update will not conserve the norm of the orbital, so an 
+general, the Krylov update will not conserve the norm of the wave function, so an 
 additional normalization step should be added at this point.
 
 \subsection{Algorithm for one-electron systems}

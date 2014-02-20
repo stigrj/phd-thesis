@@ -1,6 +1,6 @@
 \chapter{Multiresolution analysis}\label{chap:mathematics}
 In this chapter a general introduction to multiwavelet theory will be given through 
-the concept of multiresolution analysis (MRA)\footnote{Mallat uses the term 
+the concept of multiresolution analysis (MRA)\footnote{Mallat\cite{Mallat:1989} uses the term 
 multiresolution \emph{approximation}, but in this work we will use multiresolution 
 \emph{analysis}, as it is more commonly used in the literature.}, that was developed 
 by Mallat\cite{Mallat:1989} and Daubechies\cite{Daubechies:1988} in the late 1980s. 
@@ -38,7 +38,7 @@ Since $\scalingspace{n} \subset \scalingspace{n+1}$ the basis functions of
     \scaling^n_{i,l}(x) \mydef 2^{n/2}\scaling_i(2^nx-l) = 
 	\sum_{m=0}^{2^n-1} \sum_{j=0}^k H_{ij}^{(m)} \scaling^{n+1}_{j,m}(x)
 \end{equation}
-where the $H^{(m)}$s are the so-called filter matrices that describes the 
+where $H^{(m)}$ are the so-called filter matrices that describe the 
 transformation between different spaces \scalingspace{n}. The MRA is called 
 orthogonal if 
 \begin{equation}
@@ -82,10 +82,10 @@ Recursive application of Eq.~(\ref{eq:MRAcomplement}) yields the important relat
 
 \section{Multiwavelets}
 There are many ways to choose the basis functions $\scalingvec$ and $\waveletvec$ 
-(which define the spanned spaces \scalingspace{n} and \waveletspace{n},
+(which define the spanned spaces \scalingspace{n} and \waveletspace{n}),
 leading to different wavelet families. There is a one-to-one correspondence between 
-the basis functions $\scalingvec$ and $\waveletvec$, and the filter matrices $H^{(l)}$ 
-and $G^{(l)}$ used in the two-scale relations Eq.~(\ref{eq:twoscalescaling}) and 
+the basis functions $\scalingvec$ and $\waveletvec$, and the filter matrices $H^{(m)}$ 
+and $G^{(m)}$ used in the two-scale relations Eq.~(\ref{eq:twoscalescaling}) and 
 Eq.~(\ref{eq:twoscalewavelet}), and most well known wavelet families are defined 
 only through their filter coefficients, such as Daubechies' family of compactly
 supported wavelets\cite{Daubechies:1988}.
@@ -137,8 +137,9 @@ approximation order of the scaling functions. If the wavelet function $\wavelet$
 has $M$ vanishing moments, any polynomial of order $\leq M-1$ can be exactly 
 reproduced in the scaling space, and the error in representing an arbitrary 
 function in the scaling basis is of $M$-th order. By construction, $x^m$ is in 
-the space \scalingspace{0} for $0\leq m \leq k$, and since $\waveletspace{0} 
-\perp \scalingspace{0}$, the first $k+1$ moments of $\wavelet^0_j$ must vanish.
+the space \scalingspace{0} for $0\leq m \leq k$, and since $\waveletspace{n} 
+\perp \scalingspace{0}$ for all $n>=0$, the first $k+1$ moments of 
+$\wavelet^n_j$ must vanish.
 
 \subsection{Filter relations}
 With the multiwavelet basis defined, we can construct the filter matrices that 
@@ -256,8 +257,8 @@ Details of this construction can be found in the supporting information of
 Frediani \etal\cite{Frediani:2013p1143}, where the corresponding matrices are 
 shown to be tensor products of the mono-dimensional matrices. This means that 
 the multi-dimensional wavelet transform can be done by consecutive application 
-of $d$ mono-dimensional filters. Much more is said on multi-dimensional MRAs
-and wavelet transforms in Tymczak \etal\cite{Tymczak:2002}.
+of $d$ mono-dimensional filters. A detailed discussion on multi-dimensional MRAs
+and wavelet transforms can be found in Tymczak \etal\cite{Tymczak:2002}.
 
 \section{Function representation}
 In this section we will describe how to represent functions in the multiwavelet
@@ -278,7 +279,7 @@ where the expansion coefficients $\scalingcoef^{n,f}_{j,l}$, the so-called
     \scalingcoef^{n,f}_{j,l} \mydef \int_0^1f(x)\scaling^n_{j,l}(x)\ud x
 \end{equation}
 The accuracy of this approximation is determined by the scale $n$ at which the
-projection is performed: the higher the scale, the better the approximation.
+projection is performed, and the order $k$ of the polynomial basis. 
 
 \subsection{Multiresolution functions}
 We can also introduce the projection operator \waveletproj{n} that projects
@@ -497,8 +498,8 @@ the representations are satisfactory, and we can assume that
 \begin{equation}
     \scalingrep{\hat{g}}{N} \approx \scalingrep{g}{N} \mydef (Tf)^N \approx g
 \end{equation}
-Algorithms for how to achieve this accuracy is presented in chapter 
-\ref{chap:implementation}.
+Algorithms for how to achieve this accuracy is presented in 
+Chap.~\ref{chap:implementation}.
 
 \subsection{Multiresolution operators}
 Making use of Eqs.~(\ref{eq:defTn}) and (\ref{eq:proj_rel}) we can decompose the 
@@ -823,7 +824,7 @@ straightforward adaptive algorithms, as the operator can be applied one scale
 at the time, starting from the coarsest (usually $n=0$). As pointed out above, 
 this does not directly account for the interaction between scales, but this can
 be included by a series of wavelet transforms on parts of the result. This is 
-described fully in the implementation part in chapter \ref{chap:implementation}. 
+described fully in the implementation part in Chap.~\ref{chap:implementation}. 
 The post-processing wavelet transforms require $O(N)$ operations, and provided
 sparse $A$, $B$ and $C$ parts of the operator, the complete non-standard 
 application scales as $O(N)$, in contrast to the standard form, where 
@@ -917,7 +918,7 @@ that the integral kernel in Eq.~(\ref{eq:intop1d}) satisfy the estimates
 \end{align}
 for some $M\geq1$. Such operators are called Calderon-Zygmund operators, and
 include both the Poisson and bound-state Helmholtz operators which are discussed 
-in detail in chapter \ref{chap:implementation}. Beylkin \etal~\cite{Beylkin:1991} 
+in detail in Chap.~\ref{chap:implementation}. Beylkin \etal~\cite{Beylkin:1991} 
 shows that in a basis with $M$ vanishing moments, the wavelet 
 components \alphamat, \betamat\ and \gammamat\ will be bounded as
 \begin{equation}
@@ -942,11 +943,11 @@ viewed as the straightforward differentiation of the basis functions at the
 
 The matrix representation of the operator $T=d/dx$ is formally given as
 \begin{align}
-    \big[\tau_{lm}^{n,n}\big]_{ij} &= \int_{2^{-n}l}^{2^{-n}(l+1)} 
+    \big[\tau_{lm}^{n}\big]_{ij} &= \int_{2^{-n}l}^{2^{-n}(l+1)} 
         \scaling_{i,l}^n(x) T \scaling_{j,m}^n(x) \ud x\\
 	&= 2^n \int_0^1 \scaling_i(x) T \scaling_j(x-(l-m)) \ud x
 \end{align}
-however, for derivative operators, this integral is not absolutely convergent. 
+However, for derivative operators, this integral is not absolutely convergent. 
 Because of the disjoint support of the basis functions, it is immidiately clear that
 there will be no interaction beyond the neighboring interval, and $\taumat_{lm} = 0$ for
 $|l-m| > 1$. The case $|l-m| = 1$ needs to be treated with care, since there are

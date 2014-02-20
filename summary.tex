@@ -1,0 +1,46 @@
+\chapter{Summary of papers}
+\section{Paper I: Adaptive order polynomial algorithm in a multiwavelet representation scheme}
+In this work, a new strategy is presented for the reduction of the storage requirements of
+functions in a multiwavelet framework. The work is based on Alpert's\cite{Alpert:1993p5460} definition
+of the multiwavelet basis which leads to considerable data compression by allowing adaptive 
+refinement of the grid for a given order $k$ of the polynomial basis. We propose an additional 
+adaptivity in the polynomial order, where the order $k(n)$ depends on the refinement level $n$.
+We have found that decreasing the order with increasing refinement can lead to considerable
+reduction in storage requirements for the representations of multivariate functions to a given 
+accuracy.  
+
+Stig Rune Jensen wrote the computer implementation of the mathematical formalism presented in the 
+paper, and assisted in running the test calculations. The theory was developed by Antoine Durdek.
+
+\pagebreak
+
+\section{Paper II: Linear scaling Coulomb interaction in the multiwavelet basis, a parallel implementation}
+The paper describes the implementation of a general Poisson solver in a multiwavelet framework,
+using the non-standard form of operators. By exploiting the sparsity in the representation of the
+involved functions and operators, we were able to achieve linear scaling complexity with respect 
+to system size. The performance of the code was demonstrated for molecular systems with up to
+600 atoms. 
+
+The presented code is based on an implementation of the application of operators in the multiwavelet
+basis using the non-standard form, written in the C language by Frediani and 
+Fossgaard\cite{Frediani:2013p1143}.
+The code was completely rewritten in C++ by Stig Rune Jensen and Jonas Jus\`{e}lus using a hybrid 
+MPI/OpenMP parallelization strategy. The code, which is called MultiResolution Computational Program 
+Package (MRCPP) is organized as a mathematical library with general features such as function 
+representation and non-standard operator application in multiple dimensions. Jensen also planned and 
+ran all test calculations and wrote parts of the manuscript.
+
+\pagebreak
+
+\section{Paper III: Real-Space Density Functional Theory with Localized Orbitals and Multiwavelets}
+We present algorithms for the minimization of the Hartree-Fock and Kohn-Sham energies for many-electron 
+molecular systems. The general non-canonical HF/KS equations are rewritten in integral form and solved 
+in the multiwavelet framework using localized orbitals. Robust and fast convergence is demonstrated for 
+small and medium sized systems, and high accuracy energies are presented for a variety of small molecules.
+
+Stig Rune Jensen wrote (with contributions from Peter Wind) the computational chemistry program
+MultiResolution Chemistry (MRChem) based on the MRCPP library, and together with Antoine Durdek,
+developed the algorithms for the SCF optimization. Jensen also planned and ran all test calculations 
+and wrote parts of the manuscript.
+
+

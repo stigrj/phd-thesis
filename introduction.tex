@@ -1,91 +1,113 @@
 \chapter{Introduction}
+\section{Numerical analysis and real-world physics}
+The aim of the natural sciences is to model the complex processes occuring in
+nature as accurately as possible. It is a remarkable fact that the fundamental 
+features of nature are so well described in terms of mathematics, by simple 
+and elegant expressions like the wave equation, Newton's laws of motion and 
+gravitation, and Maxwell's equations of electrodynamics. Equally remarkable 
+is it that these simple expressions can give rise to the vast complexity that 
+we observe in the world around us.
 
-\section{Numerical analysis and physics in the real world}
-Simplifications and idealization for physics students.
-Many physics students over the years have been struggling to find real world application 
-of beeing able to calculate a cannon ball's trajectory ,
+The underlying complexity of the these equations means that analytic solutions 
+are available only for very simple, idealized systems, often with high symmetry, 
+thus limiting their practial usefullness. Over the years, not few science students 
+have been questioning the applicability of computing a cannon ball's 
+trajecory in vacuum or the electric field around a point charge alone in the universe.
 
-that the bird flying above your head, the violent roar of the water fall, the waves on the oscean, even the
-movement of the moon and the sun across the sky, are all subject to the same fundamental laws of physics.
+%The true power of physics, of course, lies in its generality. The bird flying 
+%above your head, the turbulent water fall, the waves on the ocean, even the 
+%movement of the moon and the sun across the sky, are all governed by the same 
+%fundamental laws of physics. It is not difficult to imagine each and every water 
+%droplet as a tiny cannon ball floating through space, only slightly influenced by 
+%all its fellow water droplets, together making up the turbulent, unpredictable 
+%motion of a water fall. You can understand \emph{why} nature behaves as it does, 
+%even if the process is way to complex for a solution of the underlying equations 
+%to available by paper and pencil.
 
-even if teh mathematical description of such real-world phenomena is way too complicated ... 
-it is not difficult to imagine each and every water droplet as a tiny cannon ball 
-floating through empty space, only slightly influenced by all its fellow water droplets, together
-making up the turbulent, unpredictable ...of a water fall.
+The bridge between the idealized model systems and what we observe in the real 
+world is made through numerical analysis, which involves the translation of the 
+physical equations into the language of the digital computer. Most modern applied 
+sciences relies heavily upon numerical analysis and simulations, either for 
+performing numerically intensive calculations or for analysing large amounts of 
+data. Over the last decades computer simulation has emerged as a third way in 
+science besides the experimental and theoretical approach, and has become an 
+indispesable tool for the investigation and prediction of physical and chemical 
+processes.
 
-The bridge between ... is made through numerical analysis, which involves the translation of the
-mathematical equations of the physical laws into the language of the digital computer.
-Most modern applied sciences relies hevily upon numerical analysis and simulations, either for performing
-numerically intensive calculations or for analyzing large amounds of data.
+However, with the breakdown of Moore's law (on a single computational device) the 
+computational scientist cannot blindly rely on the advances of computer technology 
+in order to push the limits of the attainable accuracy and the size of the systems, 
+and a lot more responsibility is put back to the computational scientist in developing 
+algorithms suitable for parallel execution. While the computational speed of a 
+processor no longer can be said to double every second year, Moore's law continues 
+to be valid in a more fundamental sense, as the number of transistors continues to 
+grow, but in the form of multi-core processors. This means this in the future we 
+might see a paradigm change where currently inferior numerical methods and algorithms 
+will enter the stage because of favourable scaling with respect to system size 
+\emph{and} with the number of processors.
 
-or the 
-The true power with physics, of course, lies in its generality. 
-Numerical simulations and modern applied science.
-Real-world problems too complicated.
-Increasing computational power. Moore's law. Parallel computers.
-
-\section{Theoretical chemistry}
-Chemistry is a branch science studying the composition, structure, properties and change of matter.
-Chemistry as lab/cataloguing science before the itroduction of QM.
-Through QM the complete physical theory became available, but although
-the exact problem is decievingly simply stated for an arbitrary system through the Schr\"{o}dinger equation
+\section{Chemistry without chemicals}
+Scientists have for centuries sought an \emph{ab initio} theory of chemical phenomena, 
+where molecular structure, properties and reactions can be computed with a minimal amount 
+of empirical parameters, but without the fundamental knowledge of the building blocks of 
+matter this was for a long time a hopeless endeavor. With the introduction of quantum 
+mechanics almost a century ago, the complete physical theory for molecular systems became 
+available, but although the exact problem is decievingly simple to state for an arbitrary 
+system through the Schr\"{o}dinger equation
 \begin{equation}
     \hat{H}\Wavefunction = E\Wavefunction
 \end{equation}
-its solution for many-body problems is quite the opposite. In fact, whenever the system contains more than 
-two particles the problem \emph{cannot} be solved (at least not in the usual sense in terms of the standard 
-elementary functions of calculus).
+its solution for many-body problems is quite the opposite. In fact, whenever the system 
+contains more than two particles the problem \emph{cannot} be solved (at least not in 
+the usual sense in terms of the standard elementary functions of calculus).
 
-
-
-
-Conventional KS/HF calculations routinely used.
-Well known chemical notion of electron orbital, which for simple systems 
+The most common approach in modern computational chemistry is the self-consistent field 
+approximations that are based on the familiar chemical concept of one-electron orbitals
+$\varphi_i$, each a solution of a Schr\"{o}dinger-like equation
 \begin{equation}
-    \rho(\bs{r}) = \sum_i^N |\orbital_i(\bs{r})|^2
+    \hat{F}\varphi_i = \epsilon_i\varphi_i
 \end{equation}
-orbital equations
-\begin{equation}
-    \hat{F}\orbital_i(\bs{r}) = \epsilon_i\orbital_i(\bs{r})
-\end{equation}
-While the solution of this set of $N$ coupled, non-linear, three-dimensional partial
+While the solution of this set of $N$ coupled, nonlinear, three-dimensional partial
 differential equations is still a formidable computational task, the complexity of the 
-full $3N$-dimensional Schr\"{o}dinger equation is sufficiently reduced for the numerical 
-solution to be feasable for systems with a remarkable number of particles.
+full $3N$-dimensional Schr\"{o}dinger equation has been sufficiently reduced for the 
+numerical solution to be feasable for systems with a remarkable number of particles.
 
 This has been made possible by combining a great deal of chemical intuition into the 
-development of computational methods. In particular, the introduction of the atomic orbital 
-basis in the form of atom-centered Gaussians can be attributed most of the success of modern 
-computational chemistry, by providing efficient and compact representations with a consistent 
-cancellation of errors. 
+development of computational methods. In particular, the introduction of the atomic 
+orbital basis in the form of atom-centered Gaussians can be attributed most of the 
+success of modern computational chemistry, by providing efficient and compact 
+representations with a consistent cancellation of errors. 
 
-However, although the Gaussian basis is ideal for obtaining qualitative numbers fast, it 
-struggles when high precision is required. Moreover, as the Gaussian functions extend 
-throughout the entire system, it is difficult to reduce the problem into truly independent 
-tasks that can be easily distributed among several computers and executed simultaneously.
+However, although the Gaussian basis is ideal for obtaining qualitative numbers fast, 
+it struggles when high precision is required. Moreover, as the Gaussian functions 
+extend throughout the entire system, it is difficult to reduce the problem into truly 
+independent tasks that can be easily distributed among several computers and executed 
+simultaneously.
 
-The alternative to the elegant, compact representations using a carefully chosen, preoptimized 
-atomic orbital basis, would be a brute force numerical solution using real-space representations 
-in terms of numerical grids or finite elements. Such an approach would yield robust, unbiased
-results that do not rely on cancellation of errors (but neither would it benefit from it).
+The alternative to the elegant, compact representations using a carefully chosen, 
+preoptimized atomic orbital basis, would be a brute force numerical solution using 
+real-space representations in terms of numerical grids or finite elements. Such an 
+approach would yield robust, unbiased results that do not rely on cancellation of 
+errors (but neither would it benefit from it).
 
-It is a well-known fact that the electronic density in molecular systems is rapidly varying 
-in the vicinity of the atomic nuclei, and a usual problem with real-space methods is that an 
-accurate treatment of the system requires high resolution of grid points in the nuclear regions. 
-Keeping this high resolution uniformly througout space would yield unnecessary high accuracy in 
-the interatomic regions, thus the real-space treatment of molecular systems is demanding a 
-\emph{multiresolution} framework in order to achieve numerical efficiency.
+It is a well-known fact that the electronic density in molecular systems is rapidly 
+varying in the vicinity of the atomic nuclei, and a usual problem with real-space 
+methods is that an accurate treatment of the system requires high resolution of grid 
+points in the nuclear regions. Keeping this high resolution uniformly througout the 
+computaitonal domain would yield unnecessary high accuracy in the interatomic regions, 
+thus the real-space treatment of molecular systems is demanding a \emph{multiresolution} 
+framework in order to achieve numerical efficiency.
 
 \section{Multiwavelets}
 As the theory of wavelets is vast and can be considered a rather advanced topic
 of applied mathematics, it remains unfamiliar to most chemists. However, 
-Alpert's\cite{Alpert} construction of \emph{multiwavelets} is actually
-rather simple. Starting with a small set of orthogonal polynomials 
-$\lbrace\scaling_j\rbrace_{j=0}^k$ of order $\leq k$ on the unit interval, we 
-attempt to represent a given function. If this basis turns out to be too crude 
-to accurately describe the function, we can increase the flexibility by adding
-higher order polynomials (thus increasing the polynomial order $k$), and we
-approach a complete basis (and an exact representation) as $k\rightarrow\infty$.
+Alpert's\cite{Alpert:1993p5460} construction of \emph{multiwavelets} is rather 
+simple. Starting with a small set of polynomials $\lbrace\scaling_j\rbrace_{j=0}^k$ 
+of order $\leq k$ on the unit interval, we attempt to represent a given function. 
+If this basis turns out to be too crude to accurately describe the function, we 
+can increase the flexibility by adding higher order polynomials (thus increasing 
+the polynomial order $k$), and we approach a complete basis (and an exact 
+representation) as $k\rightarrow\infty$.
 
 Alpert shows that there is a second way to approach completeness in this basis.
 Instead of increasing the polynomial order, we split the interval and double 
@@ -94,29 +116,22 @@ to both subintervals
 \begin{equation}
     \scaling_{j,l}^1(x) = 2^{1/2}\scaling_j(2x - l), \qquad l = 0,1
 \end{equation}
-The polynomials are defined only on their respective intervals, so basis functions 
-at different translations are by construction orthogonal. The splitting procedure 
-can be continued until we have reached a scale $n$ where we are satisfied with the 
-accuracy of the representation. At this level of refinement the unit interval has 
-been split into $2^n$ intervals, each of size $2^{-n}$ containing a dilated and 
-translated version of the original $k$-order basis
+The splitting procedure can be continued until we have reached a scale $n$ where 
+we are satisfied with the accuracy of the representation. At this level of 
+refinement the unit interval has been split into $2^n$ intervals, each of size 
+$2^{-n}$ containing a dilated and translated version of the original $k$-order basis
 \begin{equation}
     \scaling_{j,l}^n(x) = 2^{n/2}\scaling_j(2^nx - l), \qquad l = 0,\dots,2^n-1
 \end{equation}
 This basis can be used to represent any square integrable function to any finite 
 accuracy by adjusting the polynomial order $k$ and/or the level of refinement $n$. 
-
 The construction in three dimensions is similar, where at refinement level $n$
-the unit cube has been uniformly divided into $2^{3n}$ subcubes, each containing
-a polynomial basis of $(k+1)^3$ functions constructed by tensor products of the
-one-dimensional basis functions
-\begin{equation}
-    \scalingnd^n_{ijk}(x,y,z) = \scaling^n_i(x)\scaling^n_j(y)\scaling^n_k(z)
-\end{equation}
+the unit cube has been uniformly divided into $2^{3n}$ subcubes. 
+
 The main advantage of multiwavelets over the similar finite element bases is the
 possibility of constructing non-uniform grids, and thus focusing the computational
 efforts into the problematic nuclear region. Moreover, the grid construction can 
-be completely automated while the accuracy of the representation is guaranteed.
+be completely automated to yield representations with guaranteed accuracy.
 
 Although similar constructions were already familiar through the multigrid approaches 
 within the finite element community, these methods suffered from a lack of mathematical
@@ -127,12 +142,14 @@ yielding sparse representations and fast algorithms.
 
 \section{Organization of the thesis}
 The multiwavelet basis is described in detail within the framework of multiresolution 
-analysis in chapter \ref{chap:math}, and the practical implementation of this formalism
-into a working computer code is presented in chapter \ref{chap:implementation}. In 
-particular, we describe the mathematical operations necessary to solve the equations 
-appearing in the self-consistent field methods of quantum chemistry. An introduction
-to these methods are given in chapter \ref{chap:chemistry}, together with algorithms 
-for their numerical solution.
+analysis in Chap.~\ref{chap:mathematics}, and the practical implementation of this 
+formalism into a working computer code is presented in Chap.~\ref{chap:implementation}. 
+In particular, we describe the mathematical operations necessary in order to solve the 
+equations appearing in the self-consistent field methods of quantum chemistry. An 
+introduction to these methods is given in Chap.~\ref{chap:chemistry}, together with 
+algorithms for their numerical solution. Finally, in Chap.~\ref{chap:of-dft}, a brief 
+discussion is given on the orbital-free methods of density functional theory, and
+some preliminary results are presented.
 
 Included in this thesis are also three papers submitted for publication, that can be
 considered linked to each of the three main chapters. The first paper involves the
@@ -140,13 +157,17 @@ construction of the multiwavelet basis and is an attempt to reduce the memory
 requirements of the method by decreasing the polynomial order $k$ of the basis as 
 the level of refinement $n$ is increased. 
 
-The second paper describes the implementation of the code with particular focus on its
-application to parallel computer architectures. The performance of the code (numerical
-accuracy, linear scaling of computational time with respect to system size, and parallel
-efficiency) is demonstrated on realistic molecular systems of up to 600 atoms.
+The second paper describes the parallel implementation of the code with particular 
+focus on the calculation of electrostatic potentials. The performance of the code 
+(numerical accuracy, linear scaling of computational time with respect to system 
+size, and parallel efficiency) is demonstrated on realistic molecular systems of 
+up to 600 atoms.
 
 The topic of the third paper is the solution of the self-consistent field problem
-in quantum chemistry. General algorithms som are presented for the iterative solution
-
+in quantum chemistry. General algorithms are presented for the iterative solution
+of the Hartree-Fock and Kohn-Sham equations for many-electron systems in both a
+canonical and localized orbital framework. High accuracy energies are presented 
+for small molecules, while robust and fast convergence is demonstrated for small 
+and medium sized systems (less than 100 electrons).
 
 

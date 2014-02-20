@@ -1,5 +1,5 @@
 \chapter{Implementation}\label{chap:implementation}
-The multiresolution formalism presented in chapter \ref{chap:mathematics} gives
+The multiresolution formalism presented in Chap.~\ref{chap:mathematics} gives
 prospects of efficient (sparse) representations of functions and operators, and in
 this chapter we describe how this is achieved in practice. By local thresholding
 of small wavelet coefficients, functions can be represented on adaptive, 
@@ -9,8 +9,9 @@ variables~\cite{Beylkin:2002p429,Beylkin:2005p45} in order to reduce the complex
 of application i three dimensions, together with \emph{a priori} thresholding of long-range
 wavelet terms according to the estimates of Eq.~(\ref{eq:operbandwidth}).
 
-In the following we describe the important data structures
-and algorithms that are used in the MRChem program. The code is written in C++, 
+In the following we describe the important data structures and algorithms that are 
+used in the MultiResolution Computational Program Package (MRCPP). The code is 
+written in C++, 
 utilizing the concepts of object-orientation and generic programming, where for 
 instance the dimension appears as a template parameter, which means that the code 
 is immediately applicable to any dimension, although some algorithms are 
@@ -89,16 +90,16 @@ that can be partitioned among the hosts. The construction of the curve is done
 recursively, going through the $2^d$ children of each \node in a specific order. 
 Using bit notation (one bit for each dimension), the natural ordering (Lebesgue) will 
 lead to a discontinuous path. For $d=2$ this is shown as the Z shape of the bit sequence 
-(00, 01, 10, 11) in figure \ref{fig:lebesgue}. A corresponding (there are several 
+(00, 01, 10, 11) in Fig.~\ref{fig:lebesgue}. A corresponding (there are several 
 possibilities) Hilbert path through the four children in two dimensions could be the 
-bit sequence (00, 10, 11, 01) shown in the first panel in figure \ref{fig:hilbert}. 
+bit sequence (00, 10, 11, 01) shown in the first panel in Fig.~\ref{fig:hilbert}. 
 In order to keep the continuity as the path is recursively refined, the order in 
 which the children are traversed needs to be adapted, and will depend on the position 
-of the parent among its siblings, as shown in figure \ref{fig:hilbert}.
+of the parent among its siblings, as shown in Fig.~\ref{fig:hilbert}.
 
 \section{Adaptive algorithm}
 \begin{algorithm}
-    \footnotesize
+    \small
     \caption{Generation of adaptive multiwavelet representation of a function}
     \label{alg:function}
     \begin{algorithmic}[1]
@@ -123,7 +124,7 @@ of the parent among its siblings, as shown in figure \ref{fig:hilbert}.
 \end{algorithm}
 
 \noindent
-Algorithm \ref{alg:function} used to obtain adaptive representations of functions 
+Alg.~\ref{alg:function} used to obtain adaptive representations of functions 
 was originally presented in \cite{Frediani:2013p1143}, but is here extended to 
 include parallelization. The first lines in this algorithm are very important in 
 order to ensure a good
@@ -183,8 +184,8 @@ compared to the uniform high-resolution representation in Eq.~(\ref{eq:highres})
 In practical calculations one can easily get significant contribution over a range
 of ten length scales, and a uniform grid in three dimensions at scale $n=10$ would
 require $(2^d)^n = 8^{10} \sim 10^9$ \texttt{nodes}, while a typical multi-resolution
-representation requires in the order of $10^2-10^4$ \nodes per scale. Figure 
-\ref{fig:adapgrid} shows the an adaptive grid used for representing a spherical 
+representation requires in the order of $10^2-10^4$ \nodes per scale. 
+Fig.~\ref{fig:adapgrid} shows an adaptive grid used for representing a spherical 
 Gaussian positioned at the center of the unit cube.
 
 The presented algorithm is very general, and is used to build adaptive 
@@ -350,7 +351,7 @@ issues connected to this wavelet quadrature, so we will take another approach
 that utilizes the wavelet transform. We know that we can obtain the scaling and
 wavelet coefficients on scale $n$ by doing a wavelet decomposition of the
 scaling coefficients on scale $n+1$ according to Eq.~(\ref{eq:twoscalerelations}).
-Line 7 of algorithm \ref{alg:function} is thus performed by computing the scaling
+Line 7 of Alg.~\ref{alg:function} is thus performed by computing the scaling
 coefficients of the $2^d$ children of the current \node by the appropriate 
 expression (Legendre or Interpolating) followed by a wavelet decomposition. 
 
@@ -363,7 +364,7 @@ and exponent $\beta$
 tells you where and approximately how much the grid needs to be refined. Furthermore, 
 in the case of very narrow, high-exponent functions this "forced" refinement is
 essential, as the quadrature at the coarsest scale would probably not pick up
-any signal at all, leaving you with a zero-representation of the function.
+any signal at all, giving a zero-representation of the function.
 
 \section{Arithmetic operations}
 \subsection{Addition}
@@ -397,7 +398,7 @@ multiply the representations \scalingrep{f}{n} and \scalingrep{g}{n}
     h(x) \approx \hat{h}(x) \mydef \scalingrep{f}{n}(x) 
 	\times \scalingrep{g}{n}(x)\\
 \end{equation}
-However, as we have seen in section \ref{sec:multiplication}, the product of the
+However, as we have seen in Sec.~\ref{sec:multiplication}, the product of the
 scaling representations at scale $n$ will give wavelet contributions at higher
 scales, and Beylkin~\cite{Beylkin:1992}
 suggests to perform the multiplication of \emph{oversampled} function representations 
@@ -485,7 +486,7 @@ term in the evaluation of the coefficient of the product
 In the case of multiplication, the calculation of the wavelet coefficients on
 a given scale $n$ is done in the same way as for the
 projection, by wavelet transform of the scaling coefficients at scale $n+1$.
-Line 7 of algorithm \ref{alg:function} is again obtained by calculation of the 
+Line 7 of Alg.~\ref{alg:function} is again obtained by calculation of the 
 scaling coefficients of the $2^d$ children of the current \node by the
 appropriate expression (Legendre or Interpolating), followed by a wavelet
 decomposition.
@@ -499,10 +500,10 @@ multiplications, however, it might be necessary to refine a scale or two locally
 and this is taken care of by the adaptive algorithm.
 
 \section{Operator construction}
-It was shown in chapter \ref{chap:mathematics} that the matrix elements of a general
+It was shown in Chap.~\ref{chap:mathematics} that the matrix elements of a general
 one-dimensional integral operator is obtained by projection of the two-dimensional
 integral kernel onto the multiwavelet basis. This corresponds to a regular function
-projection, as described in section \ref{sec:impl_func_proj}, and at the end of the 
+projection, as described in Sec.~\ref{sec:impl_func_proj}, and at the end of the 
 day the construction of such operators will follow the algorithms presented above for
 projection. However, for $d$-dimensional problems, the integral kernel will in general
 have $2d$ dimensions, and this complexity needs to be reduced in order to obtain
@@ -510,7 +511,7 @@ efficient algorithms both in the construction and application of operators in mu
 dimensions. This can be achieved by the technique of separation of variables.
 
 \subsection{Separated representation of operators}
-In the discussion of multi-dimensional operators in chapter \ref{chap:mathematics} it
+In the discussion of multi-dimensional operators in Chap.~\ref{chap:mathematics} it
 was assumed that the kernel is separable in the Cartesian coordinates. This assumption 
 is necessary in order to make calculations feasable in higher dimensions, as the 
 straightforward generalization of a one-dimensional approach leads to a prohibitive 
@@ -634,7 +635,7 @@ using the derivative kernel
 	    = -2\beta \sqrt{\frac{\beta}{\pi}}(x-y)e^{-\beta (x-y)^2}
 \end{equation}
 This representation approaches the exact derivative as defined by Alpert 
-\etal~\cite{Alpert:2002p149} and presented in section \ref{sec:diff_oper} as 
+\etal~\cite{Alpert:2002p149} and presented in Sec.~\ref{sec:diff_oper} as 
 the Gaussian in Eq.~(\ref{eq:delta_approx}) approaches the delta function 
 ($\beta \rightarrow \infty$).
 
@@ -664,7 +665,7 @@ which significantly reduces the cost of constructing multi-dimensional operators
 In the non-standard operator application given in the matrix 
 equation~(\ref{eq:NSmatrix}), the length scales of the problem have been
 explicitly separated. In this way it is possible to use 
-algorithm~\ref{alg:function} to adaptively build the resulting function \texttt{tree}, 
+Alg.~\ref{alg:function} to adaptively build the resulting function \texttt{tree}, 
 also in several dimensions. For a \node at a given scale $n$ we need to calculate 
 the scaling and wavelet representations of the resulting function $g$
 \begin{equation}
@@ -673,7 +674,7 @@ the scaling and wavelet representations of the resulting function $g$
 	\big(\ \A{n}{n}\ +\ \B{n}{n}\ +\ \C{n}{n}\ +\ \T{n}{n}\ \big)
 	\big(\scalingrep{f}{n} + \waveletrep{f}{n}\big)
 \end{equation}
-but as was pointed out in the theory part in section~\ref{sec:operator}, the
+but as was pointed out in the theory part in Sec.~\ref{sec:operator}, the
 $T$ part of the operator is only applied at the coarsest scale, and thus, no
 interaction with the coarser scales are taken into account for $n>0$. However,
 when the operator is applied scale by scale, the effect of the missing $T$ part
@@ -701,7 +702,7 @@ sufficient accuracy, following the same algorithm as before.
 \subsection{Obtaining the coefficients}
 \begin{algorithm}
     \footnotesize
-    \caption{Operator application. Inserted in line 7 of algorithm \ref{alg:function}}
+    \caption{Operator application. Inserted in line 7 of Alg.~\ref{alg:function}}
     \label{alg:operator}
     \begin{algorithmic}[1]
 	\FOR{each separated component ($\kappa = 1,\dots,M$) of the operator}
@@ -726,9 +727,9 @@ sufficient accuracy, following the same algorithm as before.
 \end{algorithm}
 
 \noindent
-The calculation of scaling/wavelet coefficients (line 7 of algorithm \ref{alg:function}) 
+The calculation of scaling/wavelet coefficients (line 7 of Alg.~\ref{alg:function}) 
 in the operator application is somewhat involved in multiple dimensions, and is presented
-in algorithm \ref{alg:operator}. Each component of the separated representation of the
+in Alg.~\ref{alg:operator}. Each component of the separated representation of the
 operator needs to be applied separately in order to exploit the tensorial structure of
 the operator. Also, the different separated components will have very different bandwidths
 at a given scale (the higher the Gaussian exponent of the operator, the deeper in scale 
@@ -806,8 +807,9 @@ One way of estimating the \tree structure in the case of operator application
 is simply to copy the grid of the input function, which is done by Beylkin 
 \etal~\cite{Beylkin:2008p37}. However, as the integral
 operators treated in this work are known for their smoothing properties, the
-output function will in general require a coarser grid than the input, and such
-a construction will lead to an overestimation of the grid refinement. 
+output function will in general require a coarser (but possibly wider) grid 
+than the input, and such a construction will lead to an overestimation of the 
+grid refinement. 
 
 Instead we 
 will set up a much simplified operator whose purpose is only to build the initial 
